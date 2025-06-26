@@ -7,14 +7,14 @@
     "light": "#07C983",
     "dark": "#15803D"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Dökümantasyon",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "Başlangıç",
             "pages": [
               "index",
               "quickstart",
@@ -35,7 +35,7 @@
         ]
       },
       {
-        "tab": "API Reference",
+        "tab": "Geliştiriciler İçin",
         "groups": [
           {
             "group": "API Documentation",
