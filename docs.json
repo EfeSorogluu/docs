@@ -11,7 +11,7 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Dökümantasyon",
         "groups": [
           {
             "group": "Giriş",
@@ -46,7 +46,7 @@
         ]
       },
       {
-        "tab": "API Reference",
+        "tab": "Geliştiriciler İçin",
         "groups": [
           {
             "group": "API Documentation",
