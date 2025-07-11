@@ -1,0 +1,53 @@
+---
+title: 'Google Analytics Entegrasyonu'
+description: 'Crafter CMS sitenize Google Analytics izleme kodunu nasıl ekleyeceğinizi öğrenin.'
+---
+
+import { Steps, Callout } from 'nextra/components'
+
+# Google Analytics Entegrasyonu
+
+Bu kılavuz, Crafter CMS üzerinde yönettiğiniz web sitenize Google Analytics'i nasıl entegre edeceğinizi adım adım gösterir. Bu entegrasyon sayesinde sitenizin ziyaretçi trafiğini ve kullanıcı davranışlarını doğrudan Google Analytics panelinizden takip edebilirsiniz.
+
+## Adım 1: Google Analytics Mülkü Oluşturma ve Kimliği Alma
+
+Entegrasyona başlamadan önce, web siteniz için bir Google Analytics mülküne ve bu mülke ait "Ölçüm Kimliği"ne ihtiyacınız var.
+
+<Steps>
+### Google Analytics'te Oturum Açın
+[Google Analytics hesabınıza](https://analytics.google.com/) gidin. Sol alt köşedeki **Yönetici** (dişli ikonu) seçeneğine tıklayın.
+
+### Yeni Mülk Oluşturun
+"Mülk" sütununda, **"+ Mülk Oluştur"** butonuna tıklayın.
+
+### Mülk Ayrıntılarını Girin
+Siteniz için bir "Mülk adı" belirleyin. Raporlama saat dilimini ve para birimini seçip "İleri" butonuna tıklayın. İşletme bilgilerinizle ilgili sonraki adımları da tamamlayın.
+
+### Veri Akışı Oluşturun
+Veri toplamaya başlamak için bir platform seçmeniz istenecektir. **"Web"** seçeneğini seçin.
+
+### Web Sitesi URL'nizi Girin
+Web sitenizin URL'sini girin ve bir "Akış adı" belirleyin (örneğin, "Sitemin Web Akışı"). Ardından **"Akış oluştur"** butonuna tıklayın.
+
+### Ölçüm Kimliğini Kopyalayın
+Akışı oluşturduktan sonra, "Web akışı ayrıntıları" sayfası açılacaktır. Sağ üst köşede bulunan **"Ölçüm Kimliği"** (G- ile başlayan kimlik) değerini bulun ve kopyalayın. Crafter CMS paneline bu kimliği gireceksiniz.
+</Steps>
+
+## Adım 2: Crafter CMS Üzerinde Entegrasyon
+
+Google Analytics "Ölçüm Kimliği"nizi kopyaladıktan sonra aşağıdaki adımları izleyin.
+
+### Crafter CMS'e Giriş Yapın
+
+[Crafter Kontrol Paneli](https://crafter.net.tr/cms)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+
+### Web Sitenizi Seçin
+
+"Sitelerim" ekranından, Google Analytics'i eklemek istediğiniz web sitenizi bulun ve yönetmek için üzerine tıklayın.
+
+### Google Analytics Ayarlarına Gidin
+
+Sitenizin kontrol paneline girdikten sonra, sol menüden **Ayarlar** sekmesine tıklayın ve ardından açılan alt menüden **Google Analytics** seçeneğini seçin.
+
+Doğrudan erişim için aşağıdaki URL yapısını da kullanabilirsiniz:
+[https://crafter.net.tr/cms/website_idsi/settings/google-analytics](https://crafter.net.tr/cms/website_idsi/settings/google-analytics)

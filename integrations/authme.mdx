@@ -1,0 +1,89 @@
+---
+title: 'AuthMe Entegrasyonu'
+description: 'Bu rehber, Minecraft sunucunuzda AuthMe eklentisini Crafter CMS ile entegre etmek için gerekli adımları detaylıca açıklar.'
+---
+
+import { Steps, Callout } from 'nextra/components'
+
+## Adım 1: MySQL Sunucusu Kurulumu
+
+Öncelikle, Minecraft sunucunuzun çalıştığı makineye bir MySQL sunucusu kurmanız gerekmektedir. Ayrıca, güvenlik duvarında (firewall) MySQL portunu (genellikle 3306) açmalısınız.
+
+<CodeGroup>
+```powershell Windows (PowerShell)
+# Chocolatey ile MySQL Kurulumu
+choco install mysql
+
+# MySQL servisinin başlatılması
+Start-Service mysql
+
+# Gerekirse firewall'da 3306 portunu açın
+New-NetFirewallRule -DisplayName "MySQL Port" -Direction Inbound -LocalPort 3306 -Protocol TCP -Action Allow
+```
+
+```bash Linux (Ubuntu)
+# MySQL Server'ı yükleyin
+sudo apt update
+sudo apt install mysql-server
+
+# MySQL servisinin başlatılması
+sudo systemctl start mysql
+
+# Gerekirse firewall'da 3306 portunu açın
+sudo ufw allow 3306/tcp
+```
+</CodeGroup>
+
+## Adım 2: AuthMe ile MySQL Bağlantısı
+
+AuthMe'nin MySQL veritabanına bağlanabilmesi için, eklentinin konfigürasyon dosyasını (örneğin, `config.yml`) örnek dosya ile değiştirmelisiniz. Bu dosyada veritabanı bağlantı bilgileri doğru şekilde girilmiş olmalıdır.
+
+<Callout type="info">Kendi hazırladığınız <code>config.yml</code> dosyasını AuthMe'nin kurulu olduğu dizine kopyalayın ve eski dosyanın üzerine yazın.</Callout>
+
+## Örnek AuthMe config.yml Dosyası
+
+Aşağıda, AuthMe eklentisinin MySQL bağlantısı için kullanabileceğiniz örnek bir `config.yml` yapılandırması yer almaktadır. 
+
+<Callout type="warning">
+<strong>Önemli:</strong> <code>mySQLTablename</code> değeri, Crafter CMS panelinde AuthMe ayarlarında belirttiğiniz tablo ismiyle <b>birebir aynı</b> olmalıdır. Aksi halde entegrasyon çalışmaz.
+</Callout>
+
+
+```yaml config.yml
+DataSource:
+    backend: MYSQL
+    caching: true
+    mySQLHost: 127.0.0.1
+    mySQLPort: '3306'
+    mySQLUseSSL: false
+    mySQLCheckServerCertificate: true
+    mySQLAllowPublicKeyRetrieval: true
+    mySQLUsername: root
+    mySQLPassword: 'şifrenizideğiştirin'
+    mySQLDatabase: authme
+    mySQLTablename: users # Crafter'a verilecek tablo ismi
+```
+
+## Adım 3: Crafter CMS Yönetim Paneline Giriş
+
+[Crafter Kontrol Paneli](https://crafter.net.tr/cms)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+
+## Adım 4: Ayarlar Menüsünü Açın
+
+Sol taraftaki menüden <b>Ayarlar</b> sekmesini seçin.
+
+## Adım 5: AuthMe Ayarlarını Seçin
+
+Açılan menüden <b>AuthMe</b> ayarlarını seçin.
+
+## Adım 6: AuthMe Veritabanı Bilgilerini Girin
+
+AuthMe'nin bağlanacağı MySQL veritabanı bilgilerini (sunucu adresi, kullanıcı adı, şifre, veritabanı adı vb.) ilgili alanlara girin.
+
+## Adım 7: Ayarları Kaydedin ve Oyuncuları Kontrol Edin
+
+Yaptığınız değişiklikleri kaydedin. Ardından, oyuncu verilerinin doğru şekilde aktarıldığını ve AuthMe entegrasyonunun çalıştığını kontrol edin.
+
+---
+
+Kurulum tamamlanmıştır! Artık Minecraft sunucunuzdaki AuthMe verileri Crafter CMS ile entegre şekilde çalışacaktır.

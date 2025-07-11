@@ -1,6 +1,6 @@
 ---
-title: 'Hızlı Kurulum'
-description: '5 dakikadan kısa sürede Crafter ile sitenizi kurmaya başlayın.'
+title: "Hızlı Kurulum"
+description: "5 dakikadan kısa sürede Crafter ile sitenizi kurmaya başlayın."
 ---
 
 ## Kurulum Adımları
@@ -16,7 +16,8 @@ Crafter'ı kullanmaya başlamak ve kendi sunucu web sitenizi yönetmek için aş
   icon="user-plus"
   href="https://crafter.net.tr/auth/sign-up"
 >
-  Ücretsiz bir Crafter hesabı oluşturmak için kayıt formunu doldurun ve e-posta adresinizi doğrulayın.
+  Ücretsiz bir Crafter hesabı oluşturmak için kayıt formunu doldurun ve e-posta
+  adresinizi doğrulayın.
 </Card>
 
 ---
@@ -30,7 +31,7 @@ Başarıyla giriş yaptıktan sonra, yönetim paneliniz (dashboard) sizi karşı
 - **Site Bilgilerinizi Girin:** Sitenizin adı, adresi gibi temel bilgileri forma girerek kaydı tamamlayın.
 
 ![Yönetim Paneli Görünümü](/images/dashboard.png)
-*<center>Yukarıdaki görseli kendi panel ekran görüntünüzle güncelleyebilirsiniz.</center>*
+_<center>Yukarıdaki görseli kendi panel ekran görüntünüzle güncelleyebilirsiniz.</center>_
 
 ---
 
@@ -42,7 +43,7 @@ Web sitenizi başarıyla oluşturduğunuza göre, şimdi projenizi kendi bilgisa
   <Accordion icon="github" title="Proje Dosyalarını İndirin">
     Crafter'ın varsayılan temasını (Crafter Default Theme) GitHub üzerinden bilgisayarınıza klonlayın veya ZIP olarak indirin.
     ```bash
-    git clone [https://github.com/EfeSorogluu/Crafter-Default-Theme.git](https://github.com/EfeSorogluu/Crafter-Default-Theme.git)
+    git clone https://github.com/EfeSorogluu/Crafter-Default-Theme.git
     ```
   </Accordion>
   <Accordion icon="rectangle-terminal" title="Gerekli Paketleri Yükleyin">
@@ -64,7 +65,8 @@ Web sitenizi başarıyla oluşturduğunuza göre, şimdi projenizi kendi bilgisa
 Projenin Crafter servisleriyle iletişim kurabilmesi için ortam değişkenlerini ayarlamanız gerekmektedir. Bu adım, projeyi başlatmadan önce tamamlanmalıdır. Projenizin ana dizininde `.env.local` adında bir dosya oluşturun ve aşağıdaki içeriği içine yapıştırın.
 
 <Info>
-  `WEBSITE_ID` ve `LICENCE_KEY` bilgilerinizi [Crafter Yönetim Paneli](https://crafter.net.tr)'ndeki site ayarlarınızdan alabilirsiniz.
+  `WEBSITE_ID` ve `LICENCE_KEY` bilgilerinizi [Crafter Yönetim
+  Paneli](https://crafter.net.tr)'ndeki site ayarlarınızdan alabilirsiniz.
 </Info>
 
 ```bash
@@ -88,10 +90,52 @@ NEXT_PUBLIC_BASE_URL="https://demo.crafter.net.tr"
 
 Tüm kurulum ve yapılandırma adımları tamamlandığında, geliştirme sunucusunu başlatmak için aşağıdaki komutu kullanın.
 
-```bash
-npm run dev
-```
-Projeniz artık tarayıcınızda [http://localhost:3000](http://localhost:3000) adresinde çalışıyor olacak.
+<Tabs>
+  <Tab title="Windows için" label="Windows">
+    <CodeBlock language="powershell">
+@echo off
+title Crafter Başlatıcı
+set PORT=80
+
+echo ============================
+echo Crafter Başlatıcı
+echo ============================
+
+npm run start
+if %errorlevel% neq 0 (
+  echo.
+  echo Hata oluştu! Çıkmak istiyor musunuz? (E/H)
+  set /p cevap=
+  if /I "%cevap%"=="E" exit /b
+  goto :eof
+)
+pause
+</CodeBlock>
+
+  </Tab>
+  <Tab title="Linux için" label="Linux">
+    <CodeBlock language="bash">
+#!/bin/bash
+echo "============================"
+echo "     Crafter Başlatıcı"
+echo "============================"
+export PORT=80
+
+npm run start
+if [ $? -ne 0 ]; then
+  echo
+  read -p "Hata oluştu! Çıkmak istiyor musunuz? (E/H): " cevap
+  if [[ "$cevap" == "E" || "$cevap" == "e" ]]; then
+    exit 1
+  fi
+fi
+</CodeBlock>
+<Info>
+Linux dosyasını çalıştırmadan önce <code>chmod +x start-crafter.sh</code> ile çalıştırılabilir yapmalısın.
+</Info>
+
+  </Tab>
+</Tabs>
 
 ---
 
@@ -101,14 +145,14 @@ Dokümantasyonunuza görsellik katmak için bu alana kendi ekran görüntülerin
 
 **Örnek Resim Alanları:**
 ![Kayıt Aşaması Görseli](/images/dashboard-step1.png)
-*<center>Website Oluşturma 1. Aşama</center>*
+_<center>Website Oluşturma 1. Aşama</center>_
 
 ---
 
 ![Panel Aşaması Görseli](/images/dashboard-step2.png)
-*<center>Website Oluşturma 2. Aşama</center>*
+_<center>Website Oluşturma 2. Aşama</center>_
 
 ---
 
 ![Yerel Kurulum Görseli](/images/dashboard-step3.png)
-*<center>Website Oluşturma 3. Aşama</center>*
+_<center>Website Oluşturma 3. Aşama</center>_

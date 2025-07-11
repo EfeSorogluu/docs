@@ -1,0 +1,34 @@
+---
+title: 'Cloudflare Turnstile Entegrasyonu'
+description: 'Bu kılavuz, Crafter CMS üzerinde yönettiğiniz web sitenize Cloudflare Turnstile doğrulamasını nasıl entegre edeceğinizi adım adım gösterir. Bu entegrasyon sayesinde formlarınızı botlara ve kötüye kullanıma karşı koruyabilirsiniz.
+'
+---
+
+import { Steps, Callout } from 'nextra/components'
+
+<Steps>
+### 1. [Cloudflare Dashboard](https://dash.cloudflare.com/) adresine giriş yapın.
+
+### 2. Turnstile Menüsüne Geçin
+
+### 3. Yeni Widget Ekleyin
+
+### 4. Widget Bilgilerini Girin
+- **Widget name** alanına `Crafter CMS Widget` yazın.
+- **Add hostnames** bölümünde **Add a custom hostname** seçeneğini kullanarak önce `crafter.net.tr`, ardından kendi domaininizi (ör. `kendinizeaitdomain.com`) ekleyin.
+
+### 5. **Create** butonuna basarak ayarları kaydedin.
+
+### 6. Oluşturulan widget için size verilen **Site Key** ve **Secret Key**'i kopyalayın.
+
+### 7. [Crafter Kontrol Paneli](https://crafter.net.tr/dashbord)'ne giriş yapın.
+
+### 8. CMS Panele giriş yapıp sol menüden **Güvenlik** sekmesini seçin.
+
+### 9. Açılan sayfada **Cloudflare Turnstile** bölümünü bulun. **Cloudflare Turnstile'ı Aktif Et** seçeneğini işaretleyin.
+
+### 10. Aldığınız **Site Key** ve **Secret Key** değerlerini ilgili alanlara girin ve değişiklikleri kaydedin.
+
+</Steps>
+
+<Callout type="info">Cloudflare Turnstile entegrasyonu ile formlarınız artık daha güvenli!</Callout>

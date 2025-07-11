@@ -24,46 +24,21 @@
           {
             "group": "Entegrasyonlar",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
+              "integrations/authme",
+              "integrations/virtual-pos",
+              "integrations/google-analytics",
+              "integrations/cloudflare-turnstile"
             ]
           },
           {
             "group": "Crafter'ın Kullanımı",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
-            ]
+            "pages": []
           }
         ]
       },
       {
         "tab": "Geliştiriciler İçin",
-        "groups": [
-          {
-            "group": "API Documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoint Examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
-            ]
-          }
-        ]
+        "href": "https://dev.crafter.net.tr"
       }
     ],
     "global": {
@@ -89,8 +64,8 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/kickefesoroglu",
-      "github": "https://github.com/EfeSorogluu"
+      "github": "https://github.com/EfeSorogluu",
+      "instagram": "https://instagram.com/crafter.net.tr"
     }
   }
 }
