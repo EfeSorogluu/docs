@@ -1,0 +1,22 @@
+---
+title: 'Shopier Ödeme Entegrasyonu'
+description: 'Bu rehber, Crafter CMS ile Shopier ödeme entegrasyonunu yapmak için gerekli adımları detaylıca açıklar.'
+---
+
+import { Steps, Callout } from 'nextra/components'
+
+## Adım 1: Crafter CMS Yönetim Paneline Giriş
+
+[Crafter Kontrol Paneli](https://crafter.net.tr/dashboard)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+
+## Adım 2: Ödeme Sağlayıcı Ayarlarını Yapılandırın
+
+Ödeme sağlayıcısı ayarlarına geçiş yapın.
+<img src="/images/payment/select-payment.png" alt="Shopier Entegrasyonu Aşama 1" />
+Sağlayıcı ekle butonuna tıklayın.
+<img src="/images/payment/click-to-add.png" alt="Shopier Entegrasyonu Aşama 2" />
+Gelen formda *Ödeme Sağlayıcı* olarak *Shopier* seçin ve bilgileri Shopier üye işyeri hesabınıza göre düzenleyin.
+<img src="/images/payment/information.png" alt="Shopier Entegrasyonu Aşama 3" />
+
+## Adım 3: Webhook Adresi
+Shopier Callback URL'si: https://api.crafter.net.tr/website/payment/callback/shopier olmalıdır.

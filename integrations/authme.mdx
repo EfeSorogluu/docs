@@ -34,7 +34,36 @@ sudo ufw allow 3306/tcp
 ```
 </CodeGroup>
 
-## Adım 2: AuthMe ile MySQL Bağlantısı
+
+## Adım 2: MySQL Kullanıcınızı yapılandırın.
+
+Öncelikle bir CMD, Powershell veya terminal açın ve aşağıdaki komutu çalıştırın.
+
+<CodeBlock language="bash">
+mysql -u root
+</CodeBlock>
+
+Girdiğiniz komutu çalıştırdıktan sonra MySQL'e bağlanacaksınız, aşağıdaki komutları sırasıyla çalıştırın.
+
+```sql
+CREATE USER 'authme'@'localhost' IDENTIFIED BY 'burayagüvenlişifrenizigirin';
+CREATE USER 'authme'@'*' IDENTIFIED BY 'burayagüvenlişifrenizigirin';
+GRANT ALL PRIVILEGES ON authme.* TO 'authme'@'localhost';
+GRANT ALL PRIVILEGES ON authme.* TO 'authme'@'*';
+FLUSH PRIVILEGES;
+```
+
+Bağlantı testi yapın, yeni bir komut satırı açın ve aşağıdaki komutu çalıştırın.
+
+```mysql
+mysql -u authme -p
+
+Password: ....
+```
+
+Eğer bağlantı başarılıysa, sonraki adımlara ilerleyebilirsiniz.
+
+## Adım 3: AuthMe ile MySQL Bağlantısı
 
 AuthMe'nin MySQL veritabanına bağlanabilmesi için, eklentinin konfigürasyon dosyasını (örneğin, `config.yml`) örnek dosya ile değiştirmelisiniz. Bu dosyada veritabanı bağlantı bilgileri doğru şekilde girilmiş olmalıdır.
 
@@ -58,31 +87,30 @@ DataSource:
     mySQLUseSSL: false
     mySQLCheckServerCertificate: true
     mySQLAllowPublicKeyRetrieval: true
-    mySQLUsername: root
-    mySQLPassword: 'şifrenizideğiştirin'
+    mySQLUsername: authme
+    mySQLPassword: 'burayagüvenlişifrenizigirin'
     mySQLDatabase: authme
     mySQLTablename: users # Crafter'a verilecek tablo ismi
+    ....
+    # Aşağıdaki alanları AuthMe config.yml dosyanızda bulun.
+    passwordHash: BCRYPT
+    legacyHashes: ['SHA256'] # Eğer ki önceden farklı bir hash algoritması kullanıyorsanız, bu alanı kullandığınız hash algoritmasına göre düzenleyin.
 ```
 
-## Adım 3: Crafter CMS Yönetim Paneline Giriş
+## Adım 4: Crafter CMS Yönetim Paneline Giriş
 
-[Crafter Kontrol Paneli](https://crafter.net.tr/cms)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+[Crafter Kontrol Paneli](https://crafter.net.tr/dashboard)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
 
-## Adım 4: Ayarlar Menüsünü Açın
+## Adım 5: Resimlerdeki yönlendirmeleri takip edin.
 
-Sol taraftaki menüden <b>Ayarlar</b> sekmesini seçin.
-
-## Adım 5: AuthMe Ayarlarını Seçin
-
+Yan menüde sunucu ikonunu seçin.
+<img src="/images/select-servers.png" alt="AuthMe Entegrasyonu Aşama 1" />
 Açılan menüden <b>AuthMe</b> ayarlarını seçin.
+<img src="/images/authme/select-authme.png" alt="AuthMe Entegrasyonu Aşama 2" />
+Bilgileri doldurduktan sonra <b>Kaydet</b> butonuna tıklayın.
+<img src="/images/authme/send-form.png" alt="AuthMe Entegrasyonu Aşama 3" />
 
-## Adım 6: AuthMe Veritabanı Bilgilerini Girin
-
-AuthMe'nin bağlanacağı MySQL veritabanı bilgilerini (sunucu adresi, kullanıcı adı, şifre, veritabanı adı vb.) ilgili alanlara girin.
-
-## Adım 7: Ayarları Kaydedin ve Oyuncuları Kontrol Edin
-
-Yaptığınız değişiklikleri kaydedin. Ardından, oyuncu verilerinin doğru şekilde aktarıldığını ve AuthMe entegrasyonunun çalıştığını kontrol edin.
+<Info>Eğer ki bu aşamada çok uzun süre bekliyor veya hata alıyorsanız, yapılandırma sırasında bir hata oluşmuş demektir.</Info>
 
 ---
 

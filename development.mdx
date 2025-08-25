@@ -32,9 +32,9 @@ Eğer belirlediğiniz port kullanımda ise, sistem otomatik olarak bir sonraki u
 Crafter, sunucu verilerinizi yönetmek ve özel entegrasyonlar oluşturmak için güçlü bir API sunar. Tüm API endpoint'lerini ve modellerini Swagger arayüzü üzerinden inceleyebilirsiniz.
 
 <Card
-  title="Swagger API Dokümantasyonu"
+  title="Detaylı API Dokümantasyonu"
   icon="code"
-  href="https://api.crafter.net.tr/swagger"
+  href="https://dev.crafter.net.tr"
 >
   Tüm API endpoint'lerini, gerekli parametreleri ve yanıt modellerini görmek için Swagger arayüzünü ziyaret edin.
 </Card>
@@ -54,7 +54,7 @@ Aşağıda `GET` metodu ile site yapılandırma bilgilerini çeken örnek bir AP
 ```javascript
 // Örnek: Site yapılandırma bilgilerini çekme isteği
 const websiteId = process.env.NEXT_PUBLIC_WEBSITE_ID;
-const websiteUrl = '[https://sitenizinadresi.com](https://sitenizinadresi.com)'; // Kendi site adresiniz
+const websiteUrl = 'https://sitenizinadresi.com'; // Kendi site adresiniz
 
 fetch(`https://api.crafter.net.tr/website/get`, {
   method: 'GET',

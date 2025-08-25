@@ -35,26 +35,30 @@ _<center>Yukarıdaki görseli kendi panel ekran görüntünüzle güncelleyebili
 
 ---
 
+### Fiyatlandırma
+
+<Card
+  title="Fiyatlandırma"
+  icon="coin"
+  href="https://crafter.net.tr/pricing"
+>
+  Fiyatlarımızı inceleyin, en uygun ve en hızlı oyun sunucusu CMS çözümü Crafter!
+</Card>
+
 ### 3. Projenizi Yerel Ortamda Kurun
 
 Web sitenizi başarıyla oluşturduğunuza göre, şimdi projenizi kendi bilgisayarınızda kurma zamanı.
 
 <AccordionGroup>
   <Accordion icon="github" title="Proje Dosyalarını İndirin">
-    Crafter'ın varsayılan temasını (Crafter Default Theme) GitHub üzerinden bilgisayarınıza klonlayın veya ZIP olarak indirin.
-    ```bash
-    git clone https://github.com/EfeSorogluu/Crafter-Default-Theme.git
-    ```
+    Crafter'ın varsayılan temasını (Crafter Default Theme) GitHub üzerinden
+    bilgisayarınıza klonlayın veya ZIP olarak indirin.<br/>
+     <CodeBlock language="bash">git clone https://github.com/EfeSorogluu/Crafter-Default-Theme.git</CodeBlock>
   </Accordion>
   <Accordion icon="rectangle-terminal" title="Gerekli Paketleri Yükleyin">
-    Proje klasörüne girdikten sonra, gerekli olan tüm Node.js paketlerini yüklemek için aşağıdaki komutu çalıştırın:
-    ```bash
-    npm install
-    ```
-    Veya `yarn` kullanıyorsanız:
-    ```bash
-    yarn install
-    ```
+    Proje klasörüne girdikten sonra, gerekli olan tüm Node.js paketlerini
+    yüklemek için aşağıdaki komutu çalıştırın: <CodeBlock language="bash">npm install</CodeBlock> Veya
+    <CodeBlock language="bash">yarn install</CodeBlock>
   </Accordion>
 </AccordionGroup>
 
@@ -86,73 +90,60 @@ NEXT_PUBLIC_BASE_URL="https://demo.crafter.net.tr"
 
 ---
 
-### 5. Projeyi Başlatın
+### 5. Projeyi build edin
+Tamamen hazır olmadan önce son adım! Websitenizi build ederek başlatmak için hazırlayın.
+
+<CodeBlock language="bash">npm run build</CodeBlock>
+
+
+### 6. Projeyi Başlatın
 
 Tüm kurulum ve yapılandırma adımları tamamlandığında, geliştirme sunucusunu başlatmak için aşağıdaki komutu kullanın.
 
 <Tabs>
   <Tab title="Windows için" label="Windows">
-    <CodeBlock language="powershell">
-@echo off
-title Crafter Başlatıcı
-set PORT=80
+    ```powershell
+    @echo off
+    title Crafter Başlatıcı
+    set PORT=80
 
-echo ============================
-echo Crafter Başlatıcı
-echo ============================
+    echo ============================
+    echo Crafter Başlatıcı
+    echo ============================
 
-npm run start
-if %errorlevel% neq 0 (
-  echo.
-  echo Hata oluştu! Çıkmak istiyor musunuz? (E/H)
-  set /p cevap=
-  if /I "%cevap%"=="E" exit /b
-  goto :eof
-)
-pause
-</CodeBlock>
+    npm run start
+    if %errorlevel% neq 0 (
+      echo.
+      echo Hata oluştu! Çıkmak istiyor musunuz? (E/H)
+      set /p cevap=
+      if /I "%cevap%"=="E" exit /b
+        goto :eof
+    )
+    pause
+```
+<Info> Eğer Windows üzerinde çalışıyorsanız, package.json dosyası içerisinde bulunan "start" komutunu "next start -H 0.0.0.0" ile güncelleyin. </Info>
 
   </Tab>
   <Tab title="Linux için" label="Linux">
-    <CodeBlock language="bash">
-#!/bin/bash
-echo "============================"
-echo "     Crafter Başlatıcı"
-echo "============================"
-export PORT=80
+    ```bash
+    #!/bin/bash
+    echo "============================"
+    echo "     Crafter Başlatıcı"
+    echo "============================"
+    export PORT=80
 
-npm run start
-if [ $? -ne 0 ]; then
-  echo
-  read -p "Hata oluştu! Çıkmak istiyor musunuz? (E/H): " cevap
-  if [[ "$cevap" == "E" || "$cevap" == "e" ]]; then
-    exit 1
-  fi
-fi
-</CodeBlock>
+    npm run start
+    if [ $? -ne 0 ]; then
+      echo
+      read -p "Hata oluştu! Çıkmak istiyor musunuz? (E/H): " cevap
+      if [["$cevap" == "E" || "$cevap" == "e"]]; then
+        exit 1
+      fi
+    fi
+    ```
 <Info>
 Linux dosyasını çalıştırmadan önce <code>chmod +x start-crafter.sh</code> ile çalıştırılabilir yapmalısın.
 </Info>
-
   </Tab>
 </Tabs>
-
 ---
-
-### **İçeriğinizi Görselleştirin**
-
-Dokümantasyonunuza görsellik katmak için bu alana kendi ekran görüntülerinizi veya bilgilendirici resimlerinizi ekleyebilirsiniz.
-
-**Örnek Resim Alanları:**
-![Kayıt Aşaması Görseli](/images/dashboard-step1.png)
-_<center>Website Oluşturma 1. Aşama</center>_
-
----
-
-![Panel Aşaması Görseli](/images/dashboard-step2.png)
-_<center>Website Oluşturma 2. Aşama</center>_
-
----
-
-![Yerel Kurulum Görseli](/images/dashboard-step3.png)
-_<center>Website Oluşturma 3. Aşama</center>_

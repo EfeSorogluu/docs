@@ -25,7 +25,17 @@
             "group": "Entegrasyonlar",
             "pages": [
               "integrations/authme",
-              "integrations/virtual-pos",
+              "integrations/limboauth",
+              {
+                "group": "Ödeme Entegrasyonları",
+                "pages": [
+                  "integrations/payment/Iyzico",
+                  "integrations/payment/PayTR",
+                  "integrations/payment/Shopier",
+                  "integrations/payment/Stripe",
+                  "integrations/payment/XSolla"
+                ]
+              },
               "integrations/google-analytics",
               "integrations/cloudflare-turnstile"
             ]
