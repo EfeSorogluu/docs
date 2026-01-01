@@ -1,0 +1,113 @@
+---
+title: 'Cloudflare Turnstile'
+description: 'This guide shows step by step how to integrate Cloudflare Turnstile verification into your website managed on Crafter CMS. With this integration, you can protect your forms against bots and abuse.'
+---
+
+## Setup Steps
+
+### 1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com/)
+
+### 2. Navigate to Turnstile Menu
+
+### 3. Add New Widget
+
+### 4. Enter Widget Information
+- Write `Crafter CMS Widget` in the **Widget name** field.
+- In the **Add hostnames** section, use the **Add a custom hostname** option to add first `crafter.net.tr`, then your own domain (e.g., `yourdomain.com`).
+
+### 5. Save the settings by clicking the **Create** button.
+
+### 6. Copy the **Site Key** and **Secret Key** provided for the created widget.
+
+### 7. Log in to [Crafter Control Panel](https://crafter.net.tr/dashboard).
+
+### 8. Log in to the CMS Panel and select the **Security** tab from the left menu.
+
+### 9. Find the **Cloudflare Turnstile** section on the page that opens. Check the **Enable Cloudflare Turnstile** option.
+
+### 10. Enter the **Site Key** and **Secret Key** values you received in the relevant fields and save the changes.
+
+---
+
+<Info>
+**Success!** Your forms are now more secure with Cloudflare Turnstile integration!
+</Info>
+
+## What is Cloudflare Turnstile?
+
+Cloudflare Turnstile is a modern, user-friendly CAPTCHA alternative that protects your website from bots and automated attacks without frustrating legitimate users.
+
+### Key Benefits
+
+<CardGroup cols={2}>
+  <Card title="User-Friendly" icon="smile">
+    No more clicking on traffic lights or solving complex puzzles. Turnstile works invisibly in the background.
+  </Card>
+  <Card title="Privacy-First" icon="shield">
+    Respects user privacy while maintaining strong security.
+  </Card>
+  <Card title="High Performance" icon="bolt">
+    Lightweight and fast, with minimal impact on page load times.
+  </Card>
+  <Card title="Easy Integration" icon="plug">
+    Simple setup process with Crafter CMS.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Widget Not Showing" icon="eye-slash">
+    If the Turnstile widget is not appearing on your forms:
+    - Verify that you've entered the correct Site Key in the Crafter Control Panel
+    - Check that your domain is added to the allowed hostnames in Cloudflare Dashboard
+    - Clear your browser cache and reload the page
+  </Accordion>
+  
+  <Accordion title="Validation Errors" icon="triangle-exclamation">
+    If users are experiencing validation errors:
+    - Ensure the Secret Key is correctly entered in the Crafter Control Panel
+    - Verify that your server can communicate with Cloudflare's API
+    - Check the error logs in your Crafter dashboard for specific error messages
+  </Accordion>
+  
+  <Accordion title="Domain Not Working" icon="globe">
+    If Turnstile works on one domain but not another:
+    - Make sure all your domains are added to the widget's hostname list in Cloudflare
+    - Remember to add both `www` and non-`www` versions if applicable
+    - Wait a few minutes after adding new domains for changes to propagate
+  </Accordion>
+</AccordionGroup>
+
+## Advanced Configuration
+
+### Testing in Development
+
+For local development, you can add `localhost` or your local IP address to the allowed hostnames:
+
+1. Go to your Turnstile widget settings in Cloudflare Dashboard
+2. Add `localhost` and/or `127.0.0.1` to the hostname list
+3. Save changes
+
+### Multiple Widgets
+
+If you need different Turnstile configurations for different parts of your site, you can create multiple widgets in Cloudflare Dashboard and configure them separately in Crafter CMS.
+
+## Additional Resources
+
+<CardGroup cols={2}>
+  <Card
+    title="Cloudflare Turnstile Docs"
+    icon="book"
+    href="https://developers.cloudflare.com/turnstile/"
+  >
+    Official Cloudflare Turnstile documentation
+  </Card>
+  <Card
+    title="Get Support"
+    icon="life-ring"
+    href="https://discord.crafter.net.tr"
+  >
+    Need help? Join our Discord community
+  </Card>
+</CardGroup>

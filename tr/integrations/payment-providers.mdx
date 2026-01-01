@@ -1,0 +1,162 @@
+---
+title: 'Ödeme Sağlayıcıları'
+description: 'Crafter CMS ile kullanabileceğiniz tüm ödeme sağlayıcıları ve entegrasyon adımları'
+---
+
+Crafter CMS, birçok popüler ödeme sağlayıcısını destekler. Aşağıda desteklenen ödeme sağlayıcılarının entegrasyon adımlarını bulabilirsiniz.
+
+## Desteklenen Ödeme Sağlayıcıları
+
+<CardGroup cols={3}>
+  <Card title="İyzico" icon="credit-card">
+    Türkiye'nin önde gelen ödeme sağlayıcısı
+  </Card>
+  <Card title="PayTR" icon="turkish-lira-sign">
+    Yerli ödeme altyapısı
+  </Card>
+  <Card title="Shopier" icon="shop">
+    E-ticaret ödeme çözümleri
+  </Card>
+  <Card title="Stripe" icon="stripe">
+    Uluslararası ödeme platformu
+  </Card>
+  <Card title="XSolla" icon="gamepad">
+    Oyun endüstrisi ödeme çözümleri
+  </Card>
+</CardGroup>
+
+---
+
+## Kurulum Adımları
+
+<AccordionGroup>
+  <Accordion title="İyzico" icon="credit-card">
+    <img src="/images/payment/select-payment.png" alt="İyzico Entegrasyonu" />
+    
+    <Steps>
+      <Step title="Yönetim Paneline Giriş">
+        [Crafter Kontrol Paneli](https://crafter.net.tr/dashboard)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+      </Step>
+      
+      <Step title="Ödeme Sağlayıcı Ayarları">
+        Ödeme sağlayıcısı ayarlarına geçiş yapın ve "Sağlayıcı ekle" butonuna tıklayın.
+        <img src="/images/payment/click-to-add.png" alt="Sağlayıcı Ekle" />
+      </Step>
+      
+      <Step title="İyzico Bilgilerini Girin">
+        Gelen formda *Ödeme Sağlayıcı* olarak **İyzico** seçin ve bilgileri İyzico üye işyeri hesabınıza göre düzenleyin.
+        <img src="/images/payment/information.png" alt="İyzico Bilgileri" />
+      </Step>
+    </Steps>
+
+    <Info>
+    **Webhook Adresi:** İyzico bir webhook adresi talep etmeyebilir. Talep ederse: `https://api.crafter.net.tr/website/payment/callback/iyzico`
+    </Info>
+  </Accordion>
+
+  <Accordion title="PayTR" icon="turkish-lira-sign">
+    <Steps>
+      <Step title="Yönetim Paneline Giriş">
+        [Crafter Kontrol Paneli](https://crafter.net.tr/dashboard)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+      </Step>
+      
+      <Step title="Ödeme Sağlayıcı Ayarları">
+        Ödeme sağlayıcısı ayarlarına geçiş yapın ve "Sağlayıcı ekle" butonuna tıklayın.
+      </Step>
+      
+      <Step title="PayTR Bilgilerini Girin">
+        Gelen formda *Ödeme Sağlayıcı* olarak **PayTR** seçin ve bilgileri PayTR üye işyeri hesabınıza göre düzenleyin.
+      </Step>
+    </Steps>
+
+    <Warning>
+    **Callback URL:** `https://api.crafter.net.tr/website/payment/callback/paytr`
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Shopier" icon="shop">
+    <Steps>
+      <Step title="Yönetim Paneline Giriş">
+        [Crafter Kontrol Paneli](https://crafter.net.tr/dashboard)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+      </Step>
+      
+      <Step title="Ödeme Sağlayıcı Ayarları">
+        Ödeme sağlayıcısı ayarlarına geçiş yapın ve "Sağlayıcı ekle" butonuna tıklayın.
+      </Step>
+      
+      <Step title="Shopier Bilgilerini Girin">
+        Gelen formda *Ödeme Sağlayıcı* olarak **Shopier** seçin ve bilgileri Shopier üye işyeri hesabınıza göre düzenleyin.
+      </Step>
+    </Steps>
+
+    <Warning>
+    **Callback URL:** `https://api.crafter.net.tr/website/payment/callback/shopier`
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Stripe" icon="stripe">
+    <Steps>
+      <Step title="Yönetim Paneline Giriş">
+        [Crafter Kontrol Paneli](https://crafter.net.tr/dashboard)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+      </Step>
+      
+      <Step title="Ödeme Sağlayıcı Ayarları">
+        Ödeme sağlayıcısı ayarlarına geçiş yapın ve "Sağlayıcı ekle" butonuna tıklayın.
+      </Step>
+      
+      <Step title="Stripe Bilgilerini Girin">
+        Gelen formda *Ödeme Sağlayıcı* olarak **Stripe** seçin ve bilgileri Stripe üye işyeri hesabınıza göre düzenleyin.
+      </Step>
+    </Steps>
+
+    <Warning>
+    **Webhook URL:** `https://api.crafter.net.tr/website/payment/callback/stripe`
+    </Warning>
+  </Accordion>
+
+  <Accordion title="XSolla" icon="gamepad">
+    <Steps>
+      <Step title="Yönetim Paneline Giriş">
+        [Crafter Kontrol Paneli](https://crafter.net.tr/dashboard)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+      </Step>
+      
+      <Step title="Ödeme Sağlayıcı Ayarları">
+        Ödeme sağlayıcısı ayarlarına geçiş yapın ve "Sağlayıcı ekle" butonuna tıklayın.
+      </Step>
+      
+      <Step title="XSolla Bilgilerini Girin">
+        Gelen formda *Ödeme Sağlayıcı* olarak **XSolla** seçin ve bilgileri XSolla üye işyeri hesabınıza göre düzenleyin.
+      </Step>
+    </Steps>
+
+    <Warning>
+    **Webhook URL:** `https://api.crafter.net.tr/website/payment/callback/xsolla`
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Genel Bilgiler
+
+<AccordionGroup>
+  <Accordion title="Birden fazla ödeme sağlayıcısı kullanabilir miyim?">
+    Evet! Crafter CMS, birden fazla ödeme sağlayıcısını aynı anda destekler. Kullanıcılarınız ödeme yaparken tercih ettikleri yöntemi seçebilirler.
+  </Accordion>
+  
+  <Accordion title="Test ortamı var mı?">
+    Tüm ödeme sağlayıcıları test (sandbox) modunu destekler. API anahtarlarınızı girerek test ortamında işlem yapabilirsiniz.
+  </Accordion>
+  
+  <Accordion title="Komisyon oranları nedir?">
+    Komisyon oranları ödeme sağlayıcısına göre değişir. Her sağlayıcının kendi ücretlendirme politikası bulunmaktadır. Detaylı bilgi için ilgili sağlayıcının web sitesini ziyaret edin.
+  </Accordion>
+  
+  <Accordion title="Webhook adresleri neden önemli?">
+    Webhook adresleri, ödeme sağlayıcısının işlem sonuçlarını Crafter CMS'e bildirmesi için kullanılır. Doğru webhook adresi olmadan ödemeler takip edilemez.
+  </Accordion>
+</AccordionGroup>
+
+<Card title="Destek Alın" icon="headset" href="https://discord.crafter.net.tr">
+  Ödeme yöntemleri konusunda yardıma mı ihtiyacınız var? Discord sunucumuza katılın!
+</Card>

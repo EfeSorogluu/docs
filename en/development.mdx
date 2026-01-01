@@ -1,0 +1,215 @@
+---
+title: 'Development'
+description: 'Preview changes locally and integrate with the API.'
+---
+
+<Info>
+  **Prerequisite**: Please ensure you have an up-to-date version of Node.js (v18 or higher) installed before proceeding.
+</Info>
+
+Follow these steps to run and develop your Crafter project on your local machine.
+
+**Step 1**: Navigate to your project folder (where the `.env.local` file is located) and run the following command:
+
+```bash
+npm run dev
+```
+
+Once the local development server is started, a preview of your website will be accessible at `http://localhost:3000`.
+
+### Using a Custom Port
+
+By default, Next.js uses port 3000. You can use a different port by adding the `--port` flag. For example, to run the project on port 3333, use this command:
+
+```bash
+npm run dev -- --port 3333
+```
+
+If the port you specify is in use, the system will automatically try the next available port.
+
+## API Integration and Development
+
+Crafter offers a powerful API for managing your server data and creating custom integrations. You can explore all API endpoints and models through the Swagger interface.
+
+<Card
+  title="Detailed API Documentation"
+  icon="code"
+  href="https://dev.crafter.net.tr"
+>
+  Visit the Swagger interface to see all API endpoints, required parameters, and response models.
+</Card>
+
+### Important: Origin Header Requirement
+
+For security reasons, the `Origin` header **must** be present in all requests sent to the Crafter API. The value of this header should be the address of the website making the request. Otherwise, your request will be rejected by the API.
+
+<Warning>
+  When sending requests to the API, don't forget to include your `website_url` value registered in the [Crafter Admin Panel](https://crafter.net.tr) in the `Origin` header.
+</Warning>
+
+### Example 1: Fetching Site Information
+
+Below is an example API request using the `GET` method to fetch site configuration information:
+
+```javascript
+// Example: Request to fetch site configuration information
+const websiteId = process.env.NEXT_PUBLIC_WEBSITE_ID;
+const websiteUrl = 'https://yoursiteaddress.com'; // Your own site address
+
+fetch(`https://api.crafter.net.tr/website/get`, {
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/json',
+    'Origin': websiteUrl 
+  },
+  body: JSON.stringify({
+    id: websiteId
+  })
+})
+.then(response => response.json())
+.then(data => {
+  console.log('Site Information:', data);
+})
+.catch(error => {
+  console.error('API Error:', error);
+});
+```
+
+### Example 2: License Key Validation
+
+Below is an example API request using the `POST` method to check the validity of a license key. As seen in `swagger`, this endpoint verifies the correctness of the submitted key.
+
+```javascript
+// Example: Request to validate license key
+const licenceKey = process.env.NEXT_PUBLIC_LICENCE_KEY;
+const websiteUrl = 'https://yoursiteaddress.com'; // Your own site address
+
+fetch('https://api.crafter.net.tr/v1/website/key/verify', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Origin': websiteUrl
+  },
+  body: JSON.stringify({
+    key: licenceKey
+  })
+})
+.then(response => response.json())
+.then(data => {
+  if (data.success) {
+    console.log('License key successfully validated.');
+  } else {
+    console.error('License key is invalid.');
+  }
+})
+.catch(error => {
+  console.error('API Error:', error);
+});
+```
+
+### Example 3: User Authentication
+
+Here's an example of authenticating a user with the API:
+
+```javascript
+// Example: User login request
+const websiteUrl = 'https://yoursiteaddress.com';
+
+fetch('https://api.crafter.net.tr/auth/login', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Origin': websiteUrl
+  },
+  body: JSON.stringify({
+    email: 'user@example.com',
+    password: 'userpassword'
+  })
+})
+.then(response => response.json())
+.then(data => {
+  if (data.token) {
+    console.log('Login successful! Token:', data.token);
+    // Store token for future requests
+    localStorage.setItem('auth_token', data.token);
+  }
+})
+.catch(error => {
+  console.error('Authentication Error:', error);
+});
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Error Handling" icon="triangle-exclamation">
+    Always implement proper error handling in your API calls. Check for HTTP status codes and handle edge cases appropriately.
+    
+    ```javascript
+    fetch(url, options)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .catch(error => {
+        console.error('Request failed:', error);
+      });
+    ```
+  </Accordion>
+  
+  <Accordion title="Rate Limiting" icon="gauge-high">
+    Be mindful of API rate limits. Implement caching strategies and avoid making excessive requests in short periods.
+  </Accordion>
+  
+  <Accordion title="Security" icon="shield-halved">
+    - Never expose your API keys or license keys in client-side code
+    - Always use environment variables
+    - Implement proper CORS policies
+    - Use HTTPS for all API communications
+  </Accordion>
+</AccordionGroup>
+
+## API Reference
+
+<CardGroup cols={2}>
+  <Card
+    title="Authentication API"
+    icon="key"
+    href="https://dev.crafter.net.tr#/auth"
+  >
+    User authentication and authorization endpoints
+  </Card>
+  <Card
+    title="Payment API"
+    icon="credit-card"
+    href="https://dev.crafter.net.tr#/payment"
+  >
+    Payment processing and transaction management
+  </Card>
+  <Card
+    title="Store API"
+    icon="shop"
+    href="https://dev.crafter.net.tr#/store"
+  >
+    Product management and store operations
+  </Card>
+  <Card
+    title="Player API"
+    icon="users"
+    href="https://dev.crafter.net.tr#/player"
+  >
+    Player data and server integration
+  </Card>
+</CardGroup>
+
+## Need Help?
+
+<Card
+  title="Join Our Developer Community"
+  icon="discord"
+  href="https://discord.crafter.net.tr"
+>
+  Get technical support and discuss API integration with other developers.
+</Card>

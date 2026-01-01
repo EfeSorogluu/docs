@@ -1,0 +1,41 @@
+---
+title: 'Minecraft'
+description: 'Bu rehber, Minecraft sunucunuzda LimboAuth eklentisini Crafter CMS ile entegre etmek için gerekli adımları detaylıca açıklar.'
+---
+
+import { Steps, Callout } from 'nextra/components'
+
+## Adım 1: LimboAuth Crafter Fork Eklentisini Yükleyin
+
+GitHub üzerinden [LimboAuth](https://github.com/Crafter-CMS/LimboAuth/releases/tag/Release) eklentisinin son sürümünü indirin ve eklentiyi VeloCity sunucunuzun çalıştığı dizine kopyalayın.
+
+## Adım 2: API Secret oluşturun
+
+Yönetim Paneli'nde <b>Güvenlik</b> sekmesine girin.
+<img src="/images/select-security.png" alt="LimboAuth Entegrasyonu Aşama 1" />
+<b>Crafter Connect Plugin Aktif</b> seçeneğini aktif edin ve kaydedin. Daha sonrasında oluşan Plugin Secret Key'i tamamen kopyaladığınızdan emin olun.
+<img src="/images/limboauth/api-secret.png" alt="LimboAuth Entegrasyonu Aşama 2" />
+
+## Adım 2: LimboAuth Yapılandırmasını Düzenleyin
+
+```yaml
+# Database settings
+database:
+  # Database type: mariadb, mysql, postgresql, sqlite, h2, or crafter.
+  storage-type: CRAFTER # Bu alan CRAFTER olmalı.
+  # Settings for Network-based database (like MySQL, PostgreSQL): 
+  hostname: "127.0.0.1:3306"
+  user: "user"
+  password: "password"
+  database: "limboauth"
+  connection-parameters: "?autoReconnect=true&initialTimeout=1&useSSL=false"
+  # Settings for Crafter CMS: 
+  api-url: "https://api.crafter.net.tr" # Bu alanı değiştirmeyin
+  license-key: "ornek-lisans-anahtarı" # Crafter CMS üzerinden aldığınız license anahtarınızı girin.
+  api-secret: "crafter_secretkeyblabla123" # Crafter CMS üzerinden aldığınız API secret'ı girin.
+
+```
+
+---
+
+Kurulum tamamlanmıştır! Artık VeloCity sunucunuzdaki LimboAuth verileri Crafter CMS ile entegre şekilde çalışacaktır.

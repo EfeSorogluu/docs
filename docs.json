@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "willow",
   "name": "Crafter Dökümantasyonu",
   "colors": {
     "primary": "#17B87A", 
@@ -8,56 +8,86 @@
     "dark": "#0F7A55" 
   },
   "favicon": "/favicon.ico",
+  "tabs": [
+    {
+      "name": "🇹🇷 Türkçe",
+      "url": "tr"
+    },
+    {
+      "name": "🇬🇧 English",
+      "url": "en"
+    }
+  ],
   "navigation": {
     "tabs": [
       {
-        "tab": "Dökümantasyon",
+        "tab": " Türkçe",
         "groups": [
           {
             "group": "Giriş",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
+              "tr/index",
+              "tr/quickstart",
+              "tr/development"
             ]
           },
           {
             "group": "Entegrasyonlar",
             "pages": [
-              "integrations/authme",
-              "integrations/limboauth",
-              {
-                "group": "Ödeme Entegrasyonları",
-                "pages": [
-                  "integrations/payment/Iyzico",
-                  "integrations/payment/PayTR",
-                  "integrations/payment/Shopier",
-                  "integrations/payment/Stripe",
-                  "integrations/payment/XSolla"
-                ]
-              },
-              "integrations/google-analytics",
-              "integrations/cloudflare-turnstile"
+              "tr/integrations/payment-providers",
+              "tr/integrations/google-analytics",
+              "tr/integrations/cloudflare-turnstile",
+              "tr/integrations/virtual-pos"
             ]
           },
           {
-            "group": "Crafter'ın Kullanımı",
-            "pages": []
+            "group": "Oyun Sunucuları",
+            "pages": [
+              "tr/game-servers/minecraft",
+              "tr/game-servers/fivem",
+              "tr/game-servers/rust",
+              "tr/game-servers/cs2",
+              "tr/game-servers/custom-request"
+            ]
           }
         ]
       },
       {
-        "tab": "Geliştiriciler İçin",
-        "href": "https://dev.crafter.net.tr"
+        "tab": "English",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "en/index",
+              "en/quickstart",
+              "en/development"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "en/integrations/cloudflare-turnstile"
+            ]
+          },
+          {
+            "group": "Game Servers",
+            "pages": [
+              "en/game-servers/minecraft",
+              "en/game-servers/fivem",
+              "en/game-servers/rust",
+              "en/game-servers/cs2",
+              "en/game-servers/custom-request"
+            ]
+          }
+        ]
       }
-    ],
-    "global": {
-      "anchors": []
-    }
+    ]
   },
   "logo": {
     "light": "/logo/light.png",
-    "dark": "/logo/dark.png"
+    "dark": "/logo/dark.png",
+    "width": 64,
+    "height": 64
   },
   "navbar": {
     "links": [
