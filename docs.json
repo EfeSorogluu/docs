@@ -28,8 +28,8 @@
             "pages": [
               "tr/index",
               "tr/quickstart",
-              "tr/development",
-              "tr/dnssetup"
+              "tr/dnssetup",
+              "tr/development"
             ]
           },
           {
