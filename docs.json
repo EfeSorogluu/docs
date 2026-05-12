@@ -60,6 +60,21 @@
             ]
           },
           {
+            "group": "Destek Yönetim",
+            "pages": [
+              "tr/web-features/support/view",
+              "tr/web-features/support/category-management",
+              "tr/web-features/support/template-management",
+              "tr/web-features/support/reports-management"
+            ]
+          },
+          {
+            "group": "Yetkili Başvuru Yönetim",
+            "pages": [
+              "tr/web-features/support/form-manage"
+            ]
+          },
+          {
             "group": "Oyun Sunucuları",
             "pages": [
               "tr/game-servers/minecraft",
