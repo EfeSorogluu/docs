@@ -46,7 +46,6 @@
               "tr/game-servers/minecraft",
               "tr/game-servers/fivem",
               "tr/game-servers/rust",
-              "tr/game-servers/cs2",
               "tr/game-servers/custom-request"
             ]
           }
