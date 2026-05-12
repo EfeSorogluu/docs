@@ -54,9 +54,9 @@
           {
             "group": "Kullanıcı Yönetim",
             "pages": [
-              "tr/web-features/players/player-manage",
-              "tr/web-features/players/role-management",
-              "tr/web-features/players/alert-Management"
+              "tr/web-features/player/player-manage",
+              "tr/web-features/player/role-management",
+              "tr/web-features/player/alert-Management"
             ]
           },
           {
