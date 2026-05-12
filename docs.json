@@ -50,6 +50,24 @@
               "tr/game-servers/cs2",
               "tr/game-servers/custom-request"
             ]
+          },
+          {
+            "group": "Mağaza Yönetim",
+            "pages": [
+              "tr/web-features/server/server-manage",
+              "tr/web-features/server/product-management",
+              "tr/web-features/server/category-management",
+              "tr/web-features/server/coupon-management",
+              "tr/web-features/server/store-settings"
+            ]
+          },
+          {
+            "group": "Kullanıcı Yönetim",
+            "pages": [
+              "tr/web-features/players/player-manage",
+              "tr/web-features/players/role-management",
+              "tr/web-features/players/alert-Management"
+            ]
           }
         ]
       },
