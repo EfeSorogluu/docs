@@ -85,9 +85,9 @@
           {
             "group": "Ayarlar",
             "pages": [
-              "tr/web-features/settings/general-settings.mdx",
-              "tr/web-features/settings/smtp-settings.mdx",
-              "tr/web-features/settings/discord-settings.mdx",
+              "tr/web-features/settings/general-settings",
+              "tr/web-features/settings/smtp-settings",
+              "tr/web-features/settings/discord-settings",
               "tr/web-features/settings/legal-page"
             ]
           },
