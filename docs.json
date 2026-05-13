@@ -69,6 +69,29 @@
             ]
           },
           {
+            "group": "Yardım Merkezi Yönetim",
+            "pages": [
+              "tr/web-features/help-center/category",
+              "tr/web-features/help-center/object",
+              "tr/web-features/help-center/soru"
+            ]
+          },
+          {
+            "group": "Loglar",
+            "pages": [
+              "tr/web-features/logs/view"
+            ]
+          },
+          {
+            "group": "Ayarlar",
+            "pages": [
+              "tr/web-features/settings/general-settings.mdx",
+              "tr/web-features/settings/smtp-settings.mdx",
+              "tr/web-features/settings/discord-settings.mdx",
+              "tr/web-features/settings/dolandrc-sayfa-ayarlar.mdx"
+            ]
+          },
+          {
             "group": "Yetkili Başvuru Yönetim",
             "pages": [
               "tr/web-features/form/form-manage"
