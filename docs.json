@@ -28,7 +28,6 @@
             "pages": [
               "tr/index",
               "tr/quickstart",
-              "tr/dnssetup",
               "tr/development"
             ]
           },
