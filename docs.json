@@ -73,7 +73,7 @@
             "pages": [
               "tr/web-features/help-center/category",
               "tr/web-features/help-center/object",
-              "tr/web-features/help-center/soru"
+              "tr/web-features/help-center/question"
             ]
           },
           {
@@ -88,7 +88,7 @@
               "tr/web-features/settings/general-settings.mdx",
               "tr/web-features/settings/smtp-settings.mdx",
               "tr/web-features/settings/discord-settings.mdx",
-              "tr/web-features/settings/dolandrc-sayfa-ayarlar.mdx"
+              "tr/web-features/settings/legal-page"
             ]
           },
           {
