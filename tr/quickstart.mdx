@@ -12,16 +12,71 @@ Crafter'ı kullanmaya başlamak ve kendi sunucu web sitenizi yönetmek için aş
 Herhangi bir alan adı servis sağlayıcısı üzerinden bir alan adı satın alın.\
 Örnek: [crafter.net.tr](http://crafter.net.tr/)
 
-> Eğer bir alan adınız varsa bu adımı atlayın.
+<Note>
+  Eğer bir alan adınız varsa bu adımı atlayın.
+</Note>
 
-## Adım 2: Alan adınızı Cloudflare'a ekleyin
+## Adım 2: Cloudflare'a giriş yapın
 
 Bunun için [cloudflare.com](https://www.cloudflare.com/) adresine giderek sağ üstten "**Login**" butonuna tıklayın.
 
-> Eğer bir Cloudflare hesabınız yoksa "**Start building**" butonuna tıklayın ve bir hesap oluşturun.
+<Note>
+  Eğer bir Cloudflare hesabınız yoksa "**Start building**" butonuna tıklayın ve bir hesap oluşturun.
+</Note>
 
-Hesabınıza giriş yaptıktan sonra sol tarafta bulunan "**Domains**" butonuna tıklayın ve hemen ardından gelen "**Overview**" butonuna tıklayın.
+<Frame>
+  ![Quickstart1](/images/quickstart1.png)
+</Frame>
 
-Açılan sayfada sağ tarafta bulunan "**Add domain**" butonuna tıklayın ve hemen ardından gelen sayfada yer alan "**Connect a domain**" butonuna tıklayarak alan adınızı girin ve "**Continue**" butonuna tıklayarak alan adınızı Cloudflare'a ekleyin.
+## Adım 3: Alan adınızı Crafter'a bağlayın
 
-## Adım 3: Alan adınızı Cloudflare'a bağlayın
+Cloudflare'a giriş yaptıktan sonra sol taraftan "**Domains**' butonuna tıklayın ve hemen ardından "**Overview**" butonna tıklayın.
+
+<Note>
+  Eğer alan adınız Cloudflare'a bağlı değilse alan adınızı Cloudflare'a bağlayın.
+</Note>
+
+<Frame>
+  ![Quickstart2](/images/quickstart2.png)
+</Frame>
+
+Crafter'da aktif olan lisansınıza bağlı olan alan adınızı seçiniz.
+
+<Frame>
+  ![Quickstart3](/images/quickstart3.png)
+</Frame>
+
+Sol taraftan "**DNS**" butonuna tıklayın ve hemen ardından "**Records**" butonuna tıklayın.
+
+Daha sonra açılan sayfada "**Add record**" butonuna tıklayın ve seçenekleri doldurun.
+
+> Type: CNAME
+>
+> Name (requried):
+>
+> - @ = example.com
+> - www = www.example.com
+>
+> Target (requried): cname.crafterdns.tech
+>
+> Proxy status: Açık
+>
+> TTL: Auto
+
+<Frame>
+  ![Iquickstart4](/images/iquickstart4.png)
+</Frame>
+
+Ayarları yaptıktan sonra "**Save**" butonuna tıklayın.
+
+<Note>
+  Eğer bir "A" kaydınız varsa ve "Name (requried)" kısmı "@" ise "A" kaydı ile çakışır ve bir hata meydana gelir.
+</Note>
+
+Daha sonra sol taraftan "**SSL/TLS**" butonuna tıklayın ve hemen ardından "**Overview**" butonuna tıklayın.
+
+<Frame>
+  ![Quickstart5](/images/quickstart5.png)
+</Frame>
+
+Daha sonra "**Configure**" butonuna tıklayın ve açılan sayfadaki seçeneklerde yer alan "**Fixable**" seçeneğini seçerek "**Save**" butonuna tıklayın ve kurulumu başarıyla sonlandırın.
