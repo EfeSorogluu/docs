@@ -139,12 +139,7 @@
       }
     ]
   },
-  "logo": {
-    "light": "/logo/light.png",
-    "dark": "/logo/dark.png",
-    "width": 64,
-    "height": 64
-  },
+  "logo": "/logo/light.png",
   "navbar": {
     "links": [
       {
