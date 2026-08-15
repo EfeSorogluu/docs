@@ -1,6 +1,6 @@
 ---
-title: 'Geliştirme'
-description: 'Değişiklikleri yerel ortamda önizleyin ve API ile entegrasyon sağlayın.'
+title: "Geliştirme"
+description: "Değişiklikleri yerel ortamda önizleyin ve API ile entegrasyon sağlayın."
 ---
 
 <Info>
@@ -31,11 +31,7 @@ Eğer belirlediğiniz port kullanımda ise, sistem otomatik olarak bir sonraki u
 
 Crafter, sunucu verilerinizi yönetmek ve özel entegrasyonlar oluşturmak için güçlü bir API sunar. Tüm API endpoint'lerini ve modellerini Swagger arayüzü üzerinden inceleyebilirsiniz.
 
-<Card
-  title="Detaylı API Dokümantasyonu"
-  icon="code"
-  href="https://dev.crafter.net.tr"
->
+<Card title="Detaylı API Dokümantasyonu" icon="code" href="https://dev.crafter.net.tr">
   Tüm API endpoint'lerini, gerekli parametreleri ve yanıt modellerini görmek için Swagger arayüzünü ziyaret edin.
 </Card>
 
@@ -112,14 +108,16 @@ fetch('https://api.crafter.net.tr/v1/website/key/verify', {
 <AccordionGroup>
   <Accordion title="`npm run dev` komutu çalışmıyor veya hata veriyor">
     Bu durum genellikle eksik veya eski paketlerden kaynaklanır. Aşağıdaki adımları deneyin:
+
     1. `node_modules` klasörünü ve `package-lock.json` dosyasını silin.
-    2. Node.js sürümünüzün güncel olduğundan emin olun (v18+).
+    2. Node.js sürümünüzün güncel olduğundan emin olun (v18\+).
     3. Paketleri yeniden yükleyin: `npm install`
     4. Projeyi tekrar başlatın: `npm run dev`
   </Accordion>
 
   <Accordion title="API'den 'Origin not allowed' hatası alıyorum">
     Bu hata, isteğinizdeki `Origin` başlığının eksik veya yanlış olduğunu gösterir.
+
     - İsteğinizin `headers` bölümünde `Origin` başlığının bulunduğundan emin olun.
     - `Origin` başlığının değerinin, Crafter panelinde kayıtlı olan site adresinizle birebir aynı olduğunu kontrol edin.
   </Accordion>

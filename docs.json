@@ -32,68 +32,13 @@
             ]
           },
           {
-            "group": "Entegrasyonlar",
-            "pages": [
-              "tr/integrations/payment-providers",
-              "tr/integrations/google-analytics",
-              "tr/integrations/cloudflare-turnstile",
-              "tr/integrations/virtual-pos"
-            ]
-          },
-          {
-            "group": "Mağaza Yönetim",
-            "pages": [
-              "tr/web-features/server/server-manage",
-              "tr/web-features/server/product-management",
-              "tr/web-features/server/category-management",
-              "tr/web-features/server/coupon-management",
-              "tr/web-features/server/store-settings"
-            ]
-          },
-          {
             "group": "Kullanıcı Yönetim",
             "pages": [
               "tr/web-features/player/player-manage",
               "tr/web-features/player/role-management",
-              "tr/web-features/player/alert-Management"
-            ]
-          },
-          {
-            "group": "Destek Yönetim",
-            "pages": [
-              "tr/web-features/support/view",
-              "tr/web-features/support/category-management",
-              "tr/web-features/support/template-management",
-              "tr/web-features/support/reports-management"
-            ]
-          },
-          {
-            "group": "Yardım Merkezi Yönetim",
-            "pages": [
-              "tr/web-features/help-center/category",
-              "tr/web-features/help-center/object",
-              "tr/web-features/help-center/question"
-            ]
-          },
-          {
-            "group": "Loglar",
-            "pages": [
-              "tr/web-features/logs/view"
-            ]
-          },
-          {
-            "group": "Ayarlar",
-            "pages": [
-              "tr/web-features/settings/general-settings",
-              "tr/web-features/settings/smtp-settings",
-              "tr/web-features/settings/discord-settings",
-              "tr/web-features/settings/legal-page"
-            ]
-          },
-          {
-            "group": "Yetkili Başvuru Yönetim",
-            "pages": [
-              "tr/web-features/form/form-manage"
+              "tr/web-features/player/alert-Management",
+              "untitled-page",
+              "untitled-page-2"
             ]
           },
           {
