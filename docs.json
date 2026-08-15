@@ -109,33 +109,7 @@
         ]
       },
       {
-        "tab": "English",
-        "groups": [
-          {
-            "group": "Getting Started",
-            "pages": [
-              "en/index",
-              "en/quickstart",
-              "en/development"
-            ]
-          },
-          {
-            "group": "Integrations",
-            "pages": [
-              "en/integrations/cloudflare-turnstile"
-            ]
-          },
-          {
-            "group": "Game Servers",
-            "pages": [
-              "en/game-servers/minecraft",
-              "en/game-servers/fivem",
-              "en/game-servers/rust",
-              "en/game-servers/cs2",
-              "en/game-servers/custom-request"
-            ]
-          }
-        ]
+        "tab": "English"
       }
     ]
   },
