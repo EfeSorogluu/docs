@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
-  "name": "Crafter Dökümantasyonu",
+  "name": "Crafter Dökümantasyon",
   "colors": {
     "primary": "#17B87A", 
     "light": "#50E3C2", 
