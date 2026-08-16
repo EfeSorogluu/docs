@@ -1,124 +1,78 @@
 ---
-title: "Geliştirme"
-description: "Değişiklikleri yerel ortamda önizleyin ve API ile entegrasyon sağlayın."
+title: "Marketplace"
+description: "Merketplace sistemi ile kendi temanı geliştir, yayınla ve kazan."
 ---
 
-<Info>
-  **Ön Koşul**: Lütfen devam etmeden önce Node.js'in güncel bir sürümünün (v18 veya üstü) yüklü olduğundan emin olun.
-</Info>
+## 1. Genel Bakış
 
-Crafter projenizi yerel makinenizde çalıştırmak ve geliştirmek için bu adımları izleyin.
+Crafter CMS temaları geliştirilip mağazada yayınlanarak binlerce mağazanın kullanımına sunulabilir. Geliştirme ve test süreçlerinin tamamı, bilgisayara ek bir kurulum gerektirmeden doğrudan `npx` üzerinden çalışan CLI aracı ile yönetilmektedir.
 
-**Adım 1**: Proje klasörünüze gidin (`.env.local` dosyasının bulunduğu yer) ve aşağıdaki komutu çalıştırın:
+## 2. Şablon Motoru (Liquid)
+
+Crafter CMS temaları tamamen **Liquid** mimarisi üzerine kuruludur:
+
+- **Dinamik Veri Entegrasyonu:** HTML, CSS ve JS yapısı korunurken; Liquid etiketleri ile mağazanın dinamik verileri (ürünler, sepet, kullanıcılar vb.) anında sayfalara aktarılabilir.
+- **Özellikler:** Güvenli, esnek ve yüksek performanslı bir yapı sunar.
+
+### Örnek Kullanımlar
+
+```liquid
+<!-- Mağaza adını yazdırma -->
+<h1>{{ shop.name }}</h1>
+
+<!-- Varlık (asset) dosyasını çağırma -->
+{{ 'style.css' | asset_url }}
+```
+
+## 3. Geliştirme Adımları
+
+Sıfırdan bir tema projesine başlandığında CLI aracı, Liquid temelleriyle donatılmış hazır bir taslak altyapı (boilerplate) sağlar.
+
+### 3.1. Platforma Giriş (Login)
+
+Geliştirme işlemlerine başlamadan önce terminal üzerinden platformda oturum açılmalıdır:
 
 ```bash
-npm run dev
+npx @crafter-cms/cli@latest login
 ```
 
-Yerel geliştirme sunucusu başlatıldığında, web sitenizin bir önizlemesi `http://localhost:3000` adresinde erişilebilir olacaktır.
+### 3.2. Tema Projesi Oluşturma (Init)
 
-### Özel Port Kullanımı
-
-Varsayılan olarak, Next.js 3000 portunu kullanır. Farklı bir port kullanmak için `--port` bayrağını ekleyebilirsiniz. Örneğin, projeyi 3333 portunda çalıştırmak için şu komutu kullanın:
+Yeni bir tema projesi başlatmak ve taslak Liquid dosyalarını oluşturmak için aşağıdaki komut çalıştırılır:
 
 ```bash
-npm run dev -- --port 3333
+npx @crafter-cms/cli@latest init
 ```
 
-Eğer belirlediğiniz port kullanımda ise, sistem otomatik olarak bir sonraki uygun portu deneyecektir.
+### 3.3. Canlı Geliştirme Modu (Dev Mode)
 
-## API Entegrasyonu ve Geliştirme
+Geliştirme esnasında yapılan değişiklikleri anlık olarak görüntüleyebilmek için proje klasörü dizinindeyken geliştirme modu başlatılır:
 
-Crafter, sunucu verilerinizi yönetmek ve özel entegrasyonlar oluşturmak için güçlü bir API sunar. Tüm API endpoint'lerini ve modellerini Swagger arayüzü üzerinden inceleyebilirsiniz.
-
-<Card title="Detaylı API Dokümantasyonu" icon="code" href="https://dev.crafter.net.tr">
-  Tüm API endpoint'lerini, gerekli parametreleri ve yanıt modellerini görmek için Swagger arayüzünü ziyaret edin.
-</Card>
-
-### Önemli: Origin Header Zorunluluğu
-
-Güvenlik nedeniyle, Crafter API'sine gönderilen tüm isteklerde `Origin` başlığının (header) bulunması **zorunludur**. Bu başlığın değeri, isteği yapan web sitesinin adresi olmalıdır. Aksi takdirde, isteğiniz API tarafından reddedilecektir.
-
-<Warning>
-  API'ye istek gönderirken `Origin` başlığına, [Crafter Yönetim Paneli](https://crafter.net.tr)'nde kayıtlı olan `website_url` değerinizi eklemeyi unutmayın.
-</Warning>
-
-### Örnek 1: Site Bilgilerini Çekme
-
-Aşağıda `GET` metodu ile site yapılandırma bilgilerini çeken örnek bir API isteği görebilirsiniz:
-
-```javascript
-// Örnek: Site yapılandırma bilgilerini çekme isteği
-const websiteId = process.env.NEXT_PUBLIC_WEBSITE_ID;
-const websiteUrl = 'https://sitenizinadresi.com'; // Kendi site adresiniz
-
-fetch(`https://api.crafter.net.tr/website/get`, {
-  method: 'GET',
-  headers: {
-    'Content-Type': 'application/json',
-    'Origin': websiteUrl 
-  },
-  body: JSON.stringify({
-    id: websiteId
-  })
-})
-.then(response => response.json())
-.then(data => {
-  console.log('Site Bilgileri:', data);
-})
-.catch(error => {
-  console.error('API Hatası:', error);
-});
+```bash
+npx @crafter-cms/cli@latest dev
 ```
 
-### Örnek 2: Lisans Anahtarı Doğrulama
+**Geliştirme Modunun İşlevleri:**
 
-Aşağıda `POST` metodu ile lisans anahtarının geçerliliğini kontrol eden örnek bir API isteği görebilirsiniz. Bu endpoint, `swagger` üzerinden de görüldüğü gibi, gönderilen anahtarın doğruluğunu teyit eder.
+- Güvenlik dosyalarını (`crafter-manifest.json`) arka planda otomatik olarak üretir ve yönetir.
+- Kodlar düzenlenip kaydedildikçe, değişiklikleri anında izole bir geliştirme (dev) ortamına senkronize eder.
+- Liquid kodlarının doğrudan mağaza üzerinde anlık ve canlı olarak test edilmesini sağlar.
 
-```javascript
-// Örnek: Lisans anahtarını doğrulama isteği
-const licenceKey = process.env.NEXT_PUBLIC_LICENCE_KEY;
-const websiteUrl = 'https://sitenizinadresi.com'; // Kendi site adresiniz
+### 3.4. Sürüm Yayınlama (Publish)
 
-fetch('https://api.crafter.net.tr/v1/website/key/verify', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Origin': websiteUrl
-  },
-  body: JSON.stringify({
-    key: licenceKey
-  })
-})
-.then(response => response.json())
-.then(data => {
-  if (data.success) {
-    console.log('Lisans anahtarı başarıyla doğrulandı.');
-  } else {
-    console.log('Lisans doğrulama hatası:', data.message);
-  }
-})
-.catch(error => {
-  console.error('API Hatası:', error);
-});
+Tema geliştirme süreci bittiğinde veya yeni bir güncelleme hazır olduğunda markete gönderim işlemi şu komutla yapılır:
+
+```bash
+npx @crafter-cms/cli@latest publish
 ```
 
-## Sorun Giderme
+**Yayınlama Adımında İstenen Bilgiler:**
 
-<AccordionGroup>
-  <Accordion title="`npm run dev` komutu çalışmıyor veya hata veriyor">
-    Bu durum genellikle eksik veya eski paketlerden kaynaklanır. Aşağıdaki adımları deneyin:
+1. **Sürüm Numarası:** Yeni versiyon tanımı (Örn: `1.0.0` veya `1.0.1`)
+2. **Sürüm Notları:** Yapılan değişikliklerin kısa özeti
 
-    1. `node_modules` klasörünü ve `package-lock.json` dosyasını silin.
-    2. Node.js sürümünüzün güncel olduğundan emin olun (v18\+).
-    3. Paketleri yeniden yükleyin: `npm install`
-    4. Projeyi tekrar başlatın: `npm run dev`
-  </Accordion>
+**Yayın Süreci İşleyişi:** Komut çalıştırıldıktan sonra CLI aracı, geliştirme ortamındaki kodları resmi bir paket haline dönüştürür ve markette yayınlanması amacıyla otomatik olarak onay sürecine iletir.
 
-  <Accordion title="API'den 'Origin not allowed' hatası alıyorum">
-    Bu hata, isteğinizdeki `Origin` başlığının eksik veya yanlış olduğunu gösterir.
+## 4. Destek ve İletişim
 
-    - İsteğinizin `headers` bölümünde `Origin` başlığının bulunduğundan emin olun.
-    - `Origin` başlığının değerinin, Crafter panelinde kayıtlı olan site adresinizle birebir aynı olduğunu kontrol edin.
-  </Accordion>
-</AccordionGroup>
+Geliştirme süreçleriyle ilgili tüm sorular ve geri bildirimler için [Discord](https://discord.crafter.net.tr/) sunucumuz üzerinden iletişime geçebilirsiniz.
