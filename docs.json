@@ -38,7 +38,7 @@
               "tr/web-features/user-management/untitled-page-34",
               "tr/web-features/user-management/untitled-page-35",
               "tr/web-features/user-management/untitled-page",
-              "untitled-page-2"
+              "tr/web-features/configuration/modules/untitled-page-2"
             ]
           },
           {
@@ -94,26 +94,27 @@
               {
                 "group": "Ayarlar",
                 "pages": [
-                  "untitled-page-20",
-                  "untitled-page-21",
-                  "untitled-page-22",
-                  "untitled-page-23",
-                  "untitled-page-24",
-                  "untitled-page-25",
-                  "untitled-page-26",
-                  "untitled-page-27",
-                  "untitled-page-28",
-                  "untitled-page-29"
+                  "tr/web-features/configuration/settings/untitled-page-20",
+                  "tr/web-features/configuration/settings/untitled-page-21",
+                  "tr/web-features/configuration/settings/untitled-page-22",
+                  "tr/web-features/configuration/settings/untitled-page-23",
+                  "tr/web-features/configuration/settings/untitled-page-24",
+                  "tr/web-features/configuration/settings/untitled-page-25",
+                  "tr/web-features/configuration/settings/untitled-page-26",
+                  "tr/web-features/configuration/settings/untitled-page-27",
+                  "tr/web-features/configuration/settings/untitled-page-28",
+                  "tr/web-features/configuration/settings/untitled-page",
+                  "tr/web-features/configuration/settings/untitled-page-29"
                 ]
               },
               {
                 "group": "Modüller",
                 "pages": [
                   "tr/web-features/user-management/untitled-page-30",
-                  "untitled-page-31"
+                  "tr/web-features/configuration/modules/untitled-page-31"
                 ]
               },
-              "untitled-page-32"
+              "tr/web-features/configuration/untitled-page-32"
             ]
           },
           {
