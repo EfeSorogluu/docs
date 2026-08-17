@@ -34,10 +34,10 @@
           {
             "group": "Kullanıcı Yönetim",
             "pages": [
-              "untitled-page-34",
-              "untitled-page-33",
-              "untitled-page-35",
-              "untitled-page",
+              "tr/web-features/user-management/untitled-page-34",
+              "tr/web-features/user-management/untitled-page-33",
+              "tr/web-features/user-management/untitled-page-35",
+              "tr/web-features/user-management/untitled-page",
               "untitled-page-2"
             ]
           },
@@ -109,7 +109,7 @@
               {
                 "group": "Modüller",
                 "pages": [
-                  "untitled-page-30",
+                  "tr/web-features/user-management/untitled-page-30",
                   "untitled-page-31"
                 ]
               },
