@@ -45,7 +45,7 @@
             "group": "Mağaza",
             "pages": [
               "tr/web-features/store/untitled-page-3",
-              "untitled-page-4",
+              "tr/web-features/store/untitled-page-4",
               "tr/web-features/store/untitled-page-5",
               "tr/web-features/store/untitled-page-6",
               "tr/web-features/store/untitled-page-7",
@@ -82,8 +82,8 @@
               {
                 "group": "Destek Talepleri",
                 "pages": [
-                  "untitled-page-18",
-                  "untitled-page-19"
+                  "tr/web-features/communication/support-requests/untitled-page-18",
+                  "tr/web-features/communication/support-requests/untitled-page-19"
                 ]
               }
             ]
