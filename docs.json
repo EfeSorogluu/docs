@@ -34,9 +34,6 @@
           {
             "group": "Kullanıcı Yönetim",
             "pages": [
-              "tr/web-features/player/player-manage",
-              "tr/web-features/player/role-management",
-              "tr/web-features/player/alert-Management",
               "untitled-page",
               "untitled-page-2"
             ]
