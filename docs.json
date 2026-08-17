@@ -22,10 +22,15 @@
     "tabs": [
       {
         "tab": "Türkçe",
-        "pages": [
-          "tr/index",
-          "tr/quickstart",
-          "tr/development",
+        "groups": [
+          {
+            "group": "Giriş",
+            "pages": [
+              "tr/index",
+              "tr/quickstart",
+              "tr/development"
+            ]
+          },
           {
             "group": "Kullanıcı Yönetim",
             "pages": [
