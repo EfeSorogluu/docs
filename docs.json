@@ -45,7 +45,7 @@
             "group": "Mağaza",
             "pages": [
               "tr/web-features/store/untitled-page-3",
-              "tr/web-features/store/untitled-page-4",
+              "tr/web-features/content/untitled-page-4",
               "tr/web-features/store/untitled-page-5",
               "tr/web-features/store/untitled-page-6",
               "tr/web-features/store/untitled-page-7",
@@ -55,9 +55,9 @@
           {
             "group": "İçerik",
             "pages": [
-              "untitled-page-9",
-              "untitled-page-10",
-              "untitled-page-11",
+              "tr/web-features/content/untitled-page-9",
+              "tr/web-features/content/untitled-page-10",
+              "tr/web-features/content/untitled-page-11",
               {
                 "group": "Forum",
                 "pages": [
