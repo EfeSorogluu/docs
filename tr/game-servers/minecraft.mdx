@@ -1,41 +1,115 @@
 ---
-title: 'Minecraft'
-description: 'Bu rehber, Minecraft sunucunuzda LimboAuth eklentisini Crafter CMS ile entegre etmek için gerekli adımları detaylıca açıklar.'
+title: "Minecraft"
+description: "Bu rehber, Minecraft sunucunuz ile Crafter entegrasyonunuzu ve otomatik mağaza teslimatlarınızı gerçekleştirmeniz için gerekli adımları detaylıca açıklar"
 ---
 
-import { Steps, Callout } from 'nextra/components'
+Crafter CMS, sunucunuz ile web siteniz arasındaki komut iletimi ve veri senkronizasyonunu sağlamak için birden fazla bağlantı protokolünü destekler.
 
-## Adım 1: LimboAuth Crafter Fork Eklentisini Yükleyin
+<Tabs>
+  <Tab title="CrafterConnect (Önerilen)">
+    <Tip>
+      **En Kararlı ve Güvenli Seçenek:** Velocity ve Spigot/Paper tabanlı sunucular için özel olarak geliştirilmiş resmi `CrafterConnect` eklentisi, gecikmesiz senkronizasyon ve gelişmiş güvenlik sağlar.
+    </Tip>
 
-GitHub üzerinden [LimboAuth](https://github.com/Crafter-CMS/LimboAuth/releases/tag/Release) eklentisinin son sürümünü indirin ve eklentiyi VeloCity sunucunuzun çalıştığı dizine kopyalayın.
+    <Steps>
+      <Step title="Eklentiyi İndirin">
+        [GitHub Releases](https://github.com/Crafter-CMS/CrafterConnect/releases/latest) sayfası üzerinden güncel `CrafterConnect.jar` dosyasını indirin ve sunucunuzun `plugins/` dizinine yerleştirin.
+      </Step>
+      <Step title="Website ve Server ID Bilgilerini Alın">
+        1. [Dashboard \> Sunucular](https://app.crafter.net.tr/tr/dashboard/settings/servers) sayfasına gidin.
+        2. Yeni bir sunucu oluşturun ya da mevcut sunucunuzun **Düzenle** butonuna tıklayın.
+        3. Açılan sayfada yer alan **Website ID** ve **Server ID** değerlerini kopyalayın.
 
-## Adım 2: API Secret oluşturun
+        <Frame caption="Sunucu ayarları ekranından Website ID ve Server ID değerlerini kopyalayın">
+          ![Görsel 2026 08 19 224904288](/images/görsel_2026-08-19_224904288.png "Görsel 2026 08 19 224904288")
+        </Frame>
 
-Yönetim Paneli'nde <b>Güvenlik</b> sekmesine girin.
-<img src="/images/select-security.png" alt="LimboAuth Entegrasyonu Aşama 1" />
-<b>Crafter Connect Plugin Aktif</b> seçeneğini aktif edin ve kaydedin. Daha sonrasında oluşan Plugin Secret Key'i tamamen kopyaladığınızdan emin olun.
-<img src="/images/limboauth/api-secret.png" alt="LimboAuth Entegrasyonu Aşama 2" />
+        <Note>
+          Yeni sunucu eklerken `Server ID` hemen görünmez; sunucuyu kaydedip tekrar düzenleme ekranına girdiğinizde ID oluşmuş olacaktır.
+        </Note>
+      </Step>
+      <Step title="Plugin Secret Key Oluşturun">
+        1. [Dashboard \> Güvenlik](https://app.crafter.net.tr/tr/dashboard/settings/security) sekmesine geçin.
+        2. **Eklenti Senkronizasyonunu Etkinleştir** seçeneğini aktif edip ayarları kaydedin.
+        3. Oluşan `Plugin Secret Key` anahtarını kopyalayın.
 
-## Adım 2: LimboAuth Yapılandırmasını Düzenleyin
+        <Frame caption="Güvenlik sayfasından eklenti senkronizasyonunu aktif edin ve Secret Key'i alın">
+          ![Görsel 2026 08 19 224954528](/images/görsel_2026-08-19_224954528.png "Görsel 2026 08 19 224954528")
+        </Frame>
+      </Step>
+      <Step title="config.yml Dosyasını Yapılandırın">
+        Sunucunuzu bir kez başlatıp kapattıktan sonra oluşan `plugins/CrafterConnect/config.yml` dosyasını açarak değerleri yapıştırın:
 
-```yaml
-# Database settings
-database:
-  # Database type: mariadb, mysql, postgresql, sqlite, h2, or crafter.
-  storage-type: CRAFTER # Bu alan CRAFTER olmalı.
-  # Settings for Network-based database (like MySQL, PostgreSQL): 
-  hostname: "127.0.0.1:3306"
-  user: "user"
-  password: "password"
-  database: "limboauth"
-  connection-parameters: "?autoReconnect=true&initialTimeout=1&useSSL=false"
-  # Settings for Crafter CMS: 
-  api-url: "https://api.crafter.net.tr" # Bu alanı değiştirmeyin
-  license-key: "ornek-lisans-anahtarı" # Crafter CMS üzerinden aldığınız license anahtarınızı girin.
-  api-secret: "crafter_secretkeyblabla123" # Crafter CMS üzerinden aldığınız API secret'ı girin.
+        ```yaml config.yml
+        # CrafterConnect Yapılandırma Dosyası
+        
+        # API Ayarları
+        # Website ID ve Secret'ı crafter.net.tr dashboard'undan alabilirsiniz.
+        api-url: "api.crafter.net.tr"
+        website-id: "BURAYA_WEBSITE_ID_GIRIN"
+        plugin-secret: "BURAYA_PLUGIN_SECRET_GIRIN"
+        
+        # Sunucu ID'si (Bu sunucunun dashboard'daki ID'si ile aynı olmalıdır)
+        server-id: "BURAYA_SERVER_ID_GIRIN"
+        
+        # Dil Ayarı (tr, en gibi lang/ klasöründeki dosya ismi)
+        language: "tr"
+        
+        # Gelişmiş Ayarlar
+        reconnect-delay-seconds: 5
+        ping-interval-seconds: 30
+        debug-mode: false
+        use-ssl: true
+        ```
 
-```
+        Sunucunuzu yeniden başlattığınızda ve sunucular bölümünde test komutunu gönderince başarı durumuyla ilgili mesaj konsola iletilecektir. 
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="RCON">
+    Sunucunuzda harici bir eklenti çalıştırmadan, doğrudan Minecraft'ın yerel uzak yönetim protokolü üzerinden komut göndermek isterseniz RCON yöntemini kullanabilirsiniz.
 
----
+    <Steps>
+      <Step title="server.properties Ayarlarını Düzenleyin">
+        Minecraft sunucu kök dizinindeki `server.properties` dosyasında şu parametreleri aktif edin:
 
-Kurulum tamamlanmıştır! Artık VeloCity sunucunuzdaki LimboAuth verileri Crafter CMS ile entegre şekilde çalışacaktır.
+        ```properties server.properties
+        enable-rcon=true
+        rcon.port=25575
+        rcon.password=GucluBirSifre123!
+        ```
+      </Step>
+      <Step title="Sunucuyu Crafter Paneline Ekleyin">
+        [Dashboard \> Sunucular](https://app.crafter.net.tr/tr/dashboard/settings/servers) sayfasına gidin, protokol türünü **RCON** olarak seçin ve bilgileri girin:
+
+        - **IP Adresi:** Sunucunuzun dışa açık IP adresi
+        - **Port:** `server.properties` dosyasındaki `rcon.port` değeri (Varsayılan: `25575`)
+        - **Şifre:** Belirlediğiniz `rcon.password` şifresi
+
+        <Frame caption="RCON bağlantı protokolü yapılandırma ekranı">
+          ![Görsel 2026 08 19 225119308](/images/görsel_2026-08-19_225119308.png "Görsel 2026 08 19 225119308")
+        </Frame>
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Websender">
+    Mevcut altyapınızda Websender eklentisini kullanmaya devam etmek istiyorsanız bu seçeneği tercih edebilirsiniz.
+
+    <Steps>
+      <Step title="Websender Bilgilerini Hazırlayın">
+        Sunucunuzdaki Websender eklentisinin yapılandırma dosyasında (`config.yml`) yer alan port ve şifre bilgilerini not edin.
+      </Step>
+      <Step title="Crafter Paneline Tanımlayın">
+        [Dashboard \> Sunucular](https://app.crafter.net.tr/tr/dashboard/settings/servers) sayfasına gidin, protokol türünü **Websender** olarak seçin:
+
+        - **IP Adresi:** Sunucunuzun IP adresi
+        - **Port:** Websender portu
+        - **Şifre:** Websender yapılandırma şifresi
+
+        <Frame caption="Websend bağlantı protokolü yapılandırma ekranı">
+          ![Görsel 2026 08 19 225159242](/images/görsel_2026-08-19_225159242.png "Görsel 2026 08 19 225159242")
+        </Frame>
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>

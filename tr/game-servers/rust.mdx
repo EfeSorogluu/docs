@@ -1,4 +1,77 @@
 ---
 title: "Rust"
-description: "Bu rehber, Rust sunucunuzda CrafterConnect eklentisini Crafter CMS ile entegre etmek için gerekli adımları detaylıca açıklar."
 ---
+
+Crafter CMS altyapısı geniş oyun kütüphanesi desteğiyle büyümeye devam ediyor. Minecraft entegrasyonuna ek olarak, listelenen tüm oyunlar için resmi köprü eklentileri, RCON ve API bağlantıları aktif geliştirme aşamasındadır.
+
+<CardGroup cols={3}>
+  <Card title="Rust" color="#ea580c" icon="fire">
+    Oxide/uMod & RCON entegrasyonu
+  </Card>
+
+  <Card title="FiveM" color="#f59e0b" icon="car">
+    QBCore, ESX & Standalone Lua scriptleri
+  </Card>
+
+  <Card title="MTA:SA" color="#10b981" icon="gamepad">
+    Lua tabanlı web SDK ve komut iletimi
+  </Card>
+
+  <Card title="Unturned" color="#16a34a" icon="biohazard">
+    OpenMod & RocketMod eklenti köprüleri
+  </Card>
+
+  <Card title="SA-MP / open.mp" color="#06b6d4" icon="city">
+    Pawn soket ve HTTP API bağlantısı
+  </Card>
+
+  <Card title="ARK: Survival Evolved / Ascended" color="#0ea5e9" icon="dragon">
+    RCON & ArkViewer API entegrasyonu
+  </Card>
+
+  <Card title="Valheim" color="#8b5cf6" icon="hammer">
+    BepInEx modülleri ve RCON desteği
+  </Card>
+
+  <Card title="DayZ" color="#ef4444" icon="skull">
+    DayZ Server RCON ve admin araçları
+  </Card>
+
+  <Card title="Empyrion: Galactic Survival" color="#6366f1" icon="rocket">
+    Telnet & Mod API bağlantı protokolü
+  </Card>
+
+  <Card title="Sons of the Forest / The Forest" color="#84cc16" icon="tree">
+    Dedicated sunucu komut ve yetki senkronizasyonu
+  </Card>
+</CardGroup>
+
+---
+
+## Geliştirme Durumu & Yol Haritası
+
+<Info>
+  **Geliştirme Aşamasında:** Belirtilen oyunlar için resmi CrafterConnect modülleri ve webhook entegrasyonları sırayla yayına alınacaktır. Her oyun yayınlandığında kurulum rehberleri ve hazır konfigürasyon şablonları bu alanda yer alacaktır.
+</Info>
+
+<Steps>
+  <Step title="1. Aşama: Çekirdek Protokoller">
+    RCON, Telnet, Webhook ve REST API üzerinden komut/veri iletim standartlarının çekirdeğe dahil edilmesi.
+  </Step>
+  <Step title="2. Aşama: Resmi Eklentiler & Scriptler">
+    İlgili oyun motorlarına (Oxide, RocketMod, Lua, BepInEx vb.) özel yerel CrafterConnect eklentilerinin kodlanması.
+  </Step>
+  <Step title="3. Aşama: Kapalı Beta & Dokümantasyon">
+    Topluluk sunucularıyla test aşamasının tamamlanması, mağaza/yetki teslimat testleri ve detaylı dokümanların yayınlanması.
+  </Step>
+</Steps>
+
+---
+
+## Kapalı Beta & Geri Bildirim
+
+Geliştirilmekte olan oyun entegrasyonlarını erkenden test etmek veya desteklenmesini istediğiniz özel sistemleri iletmek için topluluğumuza katılabilirsiniz:
+
+<Card title="Crafter Discord Topluluğu" icon="discord" href="https://discord.gg/K4QhF9VwJG">
+  Geliştirme güncellemelerini anlık takip edin ve kapalı beta test süreçlerine katılın.
+</Card>

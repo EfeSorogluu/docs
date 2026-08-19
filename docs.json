@@ -34,10 +34,10 @@
           {
             "group": "Kullanıcı Yönetimi",
             "pages": [
-              "tr/web-features/user-management",
+              "tr/web-features/user-management/users",
               "tr/web-features/user-management/untitled-page-34",
-              "tr/web-features/user-management/untitled-page-35",
-              "tr/web-features/user-management/untitled-page",
+              "tr/web-features/user-management/reports",
+              "tr/web-features/user-management/applications",
               "tr/web-features/user-management/untitled-page-2"
             ]
           },
