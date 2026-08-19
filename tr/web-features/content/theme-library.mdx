@@ -1,3 +1,84 @@
 ---
-title: "Tema Kütüphanesi"
+title: "Tema Kütüphanesi ve Düzenleyici"
+description: "Marketplace üzerinden tema yükleme, canlı görsel özelleştirme ve Liquid tabanlı kod düzenleyici."
 ---
+
+Crafter CMS Tema Kütüphanesi; web sitenizin tasarımını tek tıkla değiştirmenize, canlı görsel özelleştirici ile marka kimliğinize uyarlamanıza ve Liquid motoru ile doğrudan kaynak kodları düzenlemenize olanak tanır.
+
+[Yönetim Paneli \> İçerik \> Tema Kütüphanesi](https://app.crafter.net.tr/tr/dashboard/store/themes) sayfasına giderek yüklü temalarınızı yönetebilir veya yeni temalar ekleyebilirsiniz.
+
+<Frame caption="Tema Kütüphanesi Yönetim Ekranı">
+  ![26f2bfbc Eb48 4d87 9809 76db53ed1add](/images/26f2bfbc-eb48-4d87-9809-76db53ed1add.png "26f2bfbc Eb48 4d87 9809 76db53ed1add")
+</Frame>
+
+---
+
+## Yeni Tema Yükleme
+
+Web sitenize yeni bir tema eklemek için iki yöntem bulunur:
+
+<Tabs>
+  <Tab title="Marketplace Üzerinden Yükleme (Önerilen)">
+    Crafter resmi tema mağazasındaki modern ve responsive tasarımları tek tıkla sitenize entegre edebilirsiniz.
+
+    <Steps>
+      <Step title="Marketplace'e Gidin">
+        [Crafter Marketplace](https://crafter.net.tr/marketplace) sayfasına gidin.
+      </Step>
+      <Step title="Temayı Seçin ve Bağlayın">
+        Beğendiğiniz temayı seçerek **Siteme Ekle** butonuna tıklayın. Tema otomatik olarak panelinizdeki kütüphaneye aktarılacaktır.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Özel Tema Yükleme (ZIP)">
+    Kendi hazırladığınız veya harici olarak edindiğiniz özel temaları manuel yükleyebilirsiniz.
+
+    <Steps>
+      <Step title="Yükleme Panelini Açın">
+        Tema Kütüphanesi sayfasında sağ üstteki **Özel Tema Yükle** butonuna tıklayın.
+      </Step>
+      <Step title="Arşiv Dosyasını Seçin">
+        Temaya ait `.zip` arşivini seçerek yüklemeyi tamamlayın.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+---
+
+## Tema Özelleştirme ve Düzenleme
+
+Aktif temanızın üzerinde yer alan **Özelleştir** butonuna tıklayarak kapsamlı tema stüdyosuna giriş yapabilirsiniz. Editör iki farklı çalışma modu sunar:
+
+<Tabs>
+  <Tab title="Görsel Tasarım Editörü">
+    Kodlama bilgisine ihtiyaç duymadan sitenizin tüm arayüz ayarlarını canlı önizleme eşliğinde değiştirebilirsiniz.
+
+    <Frame caption="Canlı Görsel Tema Özelleştirici">
+      ![8554beea 557f 4702 8046 6030a2db9a8c](/images/8554beea-557f-4702-8046-6030a2db9a8c.jpeg "8554beea 557f 4702 8046 6030a2db9a8c")
+    </Frame>
+
+    - **Dinamik Tema Parametreleri:** Sol panelde yer alan ayarlar, aktif temanın şemasına (`settings_schema`) göre otomatik olarak şekillenir (Logo boyutları, renk paletleri, tipografi, afiş düzenleri, efektler vb.).
+    - **Canlı Önizleme:** Yapılan tüm değişiklikleri kaydetmeden önce sağdaki etkileşimli ekranda anlık olarak görüntüleyin.
+    - **Cihaz Simülasyonu:** Üst menüden **Masaüstü** ve **Mobil** görünümlerine tek tıkla geçiş yaparak tasarımın farklı ekran boyutlarındaki responsive uyumunu test edin.
+  </Tab>
+  <Tab title="Liquid Kod Düzenleyici">
+    Geliştiriciler için tam kapsamlı dahili IDE ve şablon motoru sunulur.
+
+    <Frame caption="Liquid Kod Editörü ve Dosya Ağacı">
+      ![58c29a23 680d 4d09 96de E34e5e4d38a4](/images/58c29a23-680d-4d09-96de-e34e5e4d38a4.png "58c29a23 680d 4d09 96de E34e5e4d38a4")
+    </Frame>
+
+    - **Dosya Ağacı:** Mağaza (`store.liquid`), sandık (`chest.liquid`), forum (`forum/`), cezalar (`punishments.liquid`) gibi tüm sayfa şablonlarına anında erişim.
+    - **Liquid Şablon Motoru:** Dinamik veri bağlama, şart blokları (`{% if %}`, `{% for %}`) ve filtrelerle tam özelleştirme özgürlüğü.
+    - **Anında Kayıt & Sıfırlama:** Değişiklikleri anında derleyip kaydedebilir veya **Varsayılana Sıfırla** butonuyla orijinal sürüme dönebilirsiniz.
+  </Tab>
+</Tabs>
+
+---
+
+## Tema Yönetim Seçenekleri
+
+- **Özelleştir:** Görsel arayüz veya kod editörünü açar.
+- **Mağazayı Gör:** Canlı sitede temanın son halini yeni sekmede önizler.
+- **Çoğalt:** Temanın yedeğini alarak testler için kopyasını oluşturur.

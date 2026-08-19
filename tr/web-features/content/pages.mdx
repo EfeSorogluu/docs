@@ -1,3 +1,63 @@
 ---
-title: "Sayfalar"
+title: "Özel Sayfalar ve Şablon Yönetimi"
+description: "Web siteniz için özel statik sayfalar oluşturma, HTML/Liquid içerik girişi ve Theme Template Suffix kullanımı."
 ---
+
+Crafter CMS Sayfalar modülü; kurallar, hakkımızda, iletişim, sunucu rehberleri veya özel tanıtımlar gibi statik web sayfalarını kolayca oluşturup yönetmenizi sağlar.
+
+[Yönetim Paneli \> İçerik \> Sayfalar](https://app.crafter.net.tr/tr/dashboard/content/pages) bağlantısı üzerinden mevcut sayfalarınızı listeleyebilir, durumlarını güncelleyebilir veya yeni sayfalar yayınlayabilirsiniz.
+
+<Frame caption="Sayfalar Yönetim Listesi">
+  ![96d4dc61 45f9 448a B18f 7ffd593bf2bd](/images/96d4dc61-45f9-448a-b18f-7ffd593bf2bd.png "96d4dc61 45f9 448a B18f 7ffd593bf2bd")
+</Frame>
+
+---
+
+## Yeni Sayfa Oluşturma
+
+Sitenize özel bir sayfa eklemek için aşağıdaki adımları izleyin:
+
+<Steps>
+  <Step title="Oluşturma Panelini Açın">
+    Sayfalar ekranının sağ üst köşesinde bulunan **\+ Yeni Sayfa** butonuna tıklayın.
+  </Step>
+  <Step title="Başlık ve URL Yapısını Belirleyin">
+    - **Sayfa Başlığı:** Sayfanın adı (Örn: _Sunucu Kuralları_, _İletişim_).
+    - **URL Uzantısı (Slug):** Sayfanın web adresindeki yolu (Örn: `siteniz.com/kurallar`).
+    - **Published:** Sayfanın yayında olup olmayacağını belirleyen anahtar (toggle).
+  </Step>
+  <Step title="Theme Template Suffix (Opsiyonel)">
+    Oluşturduğunuz sayfaya standart sayfa düzeni dışında özel bir tasarım uygulamak istiyorsanız tema şablon uzantısını (suffix) belirtin.
+  </Step>
+  <Step title="HTML / İçerik Kodunu Girin">
+    Dahili kod editörüne sayfanın gövdesinde gösterilecek HTML, CSS veya metin içeriklerini ekleyin.
+  </Step>
+  <Step title="SEO Ayarlarını Yapılandırın ve Kaydedin">
+    Arama motorları için **Meta Title**, **Meta Description** ve indeksleme ayarlarını tamamladıktan sonra **Oluştur** butonuna basarak sayfayı yayınlayın.
+  </Step>
+</Steps>
+
+<Frame caption="Sayfa Oluşturma ve Şablon Belirleme Paneli">
+  ![540d52d5 3c22 41cb B341 4fb08c6c7e97](/images/540d52d5-3c22-41cb-b341-4fb08c6c7e97.png "540d52d5 3c22 41cb B341 4fb08c6c7e97")
+</Frame>
+
+---
+
+## Theme Template Suffix Nedir? Nasıl Çalışır?
+
+Crafter CMS, sayfalarınızı render ederken varsayılan olarak temanızın `templates/page.liquid` dosyasını baz alır. Ancak belirli bir sayfaya tamamen farklı bir sayfa düzeni (layout) giydirmek isterseniz **Theme Template Suffix** özelliğini kullanabilirsiniz.
+
+<Info>
+  **Çalışma Mantığı:**
+
+  - Alanı **boş bırakırsanız** sistem `templates/page.liquid` şablonunu kullanır.
+  - Bu alana örneğin `contact` yazarsanız sistem varsayılan şablon yerine temanızdaki `templates/page.contact.liquid` dosyasını derler.
+  - `rules` yazarsanız `templates/page.rules.liquid` dosyası devreye girer.
+</Info>
+
+### Kullanım Örneği
+
+1. [Tema Kütüphanesi \> Kod Düzenleyici](https://app.crafter.net.tr/tr/dashboard/content/themes) alanına giderek `templates/` altında `page.rehber.liquid` isimli özel bir şablon dosyası oluşturun.
+2. [Sayfalar](https://app.crafter.net.tr/tr/dashboard/content/pages) bölümünden yeni sayfa açıp başlığını _Rehber_ yapın.
+3. **Theme Template Suffix** kutusuna sadece `rehber` yazın.
+4. Kaydettiğinizde sayfanız otomatik olarak bu özel Liquid şablonuyla yayına alınacaktır.

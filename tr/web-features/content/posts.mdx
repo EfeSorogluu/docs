@@ -1,3 +1,69 @@
 ---
-title: "Gönderiler"
+title: "Gönderiler ve Haber Yönetimi"
+description: "Web sitenizde duyuru, haber ve güncelleme notları yayınlama, zengin metin düzenleme ve SEO ayarları."
 ---
+
+Crafter CMS Gönderiler modülü; sunucunuzdaki yenilikleri, güncelleme notlarını, etkinlik duyurularını veya topluluk haberlerini web sitenizde profesyonel bir blog düzeninde yayınlamanızı sağlar.
+
+[Yönetim Paneli \> İçerik \> Gönderiler](https://app.crafter.net.tr/tr/dashboard/content/posts) sayfasına giderek mevcut gönderileri yönetebilir, istatistiklerini inceleyebilir veya yeni yazılar paylaşabilirsiniz.
+
+<Frame caption="Gönderiler Yönetim Listesi">
+  ![96a08cfd 77b4 4d76 Bd19 2730e44dce46](/images/96a08cfd-77b4-4d76-bd19-2730e44dce46.png "96a08cfd 77b4 4d76 Bd19 2730e44dce46")
+</Frame>
+
+---
+
+## Yeni Gönderi Oluşturma
+
+Sitenizde yeni bir haber veya duyuru yayınlamak için aşağıdaki adımları takip edin:
+
+<Steps>
+  <Step title="Oluşturma Panelini Açın">
+    Gönderiler sayfasının sağ üst köşesindeki **\+ Yeni Gönderi** butonuna tıklayın.
+  </Step>
+  <Step title="Temel Bilgileri ve Türü Belirleyin">
+    - **Gönderi Başlığı:** Yayının sitenizde görünecek ana başlığı. Sistem bu başlıktan otomatik olarak SEO uyumlu URL uzantısı (`/crafter-demo-gonderisi`) üretir.
+    - **Tür:** İçeriğin kategorisi (Örn: _Haber_, _Duyuru_, _Güncelleme_).
+    - **Durum:** İçeriğin yayın durumu (_Yayında_, _Taslak_).
+    - **Etiketler:** Virgülle ayırarak konuya uygun etiketler ekleyin (Örn: `vip, haber, guncelleme`).
+  </Step>
+  <Step title="Öne Çıkan Görseli Seçin">
+    **Görsel Seç** butonuna tıklayarak Crafter Medya Kütüphanesi'nden bir kapak görseli seçin veya bilgisayarınızdan yükleyin.
+  </Step>
+  <Step title="İçeriği Hazırlayın">
+    Dahili zengin metin editörünü kullanarak başlıklar, listeler, kalın/italik biçimlendirmeler ve bağlantılar ile yazınızı oluşturun.
+  </Step>
+  <Step title="Gelişmiş ve SEO Ayarlarını Yapılandırın">
+    Sayfanın altındaki ek parametreleri isteğinize göre yapılandırın:
+
+    - **Sabit:** Gönderiyi ana sayfada ve liste başlarında her zaman en üstte sabitler.
+    - **Popüler Yap:** Gönderiyi öne çıkan/trend içerikler arasına taşır.
+    - **Anonim:** Yazar bilgisini gizleyerek kurumsal bir duyuru görünümü sağlar.
+    - **Meta Description:** Arama motorları için özel sayfa özeti.
+    - **Robots:** İndeksleme kuralları (Örn: `index, follow`).
+    - **Açık Grafik (OG) Görseli:** Sosyal medya paylaşımlarında (Discord, X vb.) görünecek önizleme afişi.
+  </Step>
+  <Step title="Yayınlayın">
+    Tüm ayarları tamamladıktan sonra **Kaydet** butonuna basarak gönderiyi yayına alın.
+  </Step>
+</Steps>
+
+<Frame caption="Yeni Gönderi Oluşturma ve SEO Paneli">
+  ![37510d92 3bff 4ffc B93e 0e35790af4bf](/images/37510d92-3bff-4ffc-b93e-0e35790af4bf.png "37510d92 3bff 4ffc B93e 0e35790af4bf")
+</Frame>
+
+---
+
+## Gönderi Listesi ve Metrikler
+
+Yayınlanan tüm içerikler tabloda şu detaylarla takip edilir:
+
+- **Gönderi Başlığı & URL:** Yayının adı ve web sitesindeki doğrudan bağlantı yolu.
+- **Tür:** İçerik türü etiketi (_Haber_, _Duyuru_ vb.).
+- **Durum:** Gönderinin güncel durumu (_Yayında_, _Taslak_).
+- **İstatistikler:** Gönderinin aldığı toplam görüntülenme (👁) ve beğeni/kalp (❤️) sayıları.
+- **Oluşturulma Tarihi:** Yazının sisteme girildiği tarih ve saat bilgisi.
+
+<Tip>
+  Personellerinizin gönderi oluşturabilmesi veya düzenleyebilmesi için [Roller ve İzinler](https://app.crafter.net.tr/tr/dashboard/roles) sayfasından `manage_posts` yetkisinin tanımlanmış olması gerekir.
+</Tip>
