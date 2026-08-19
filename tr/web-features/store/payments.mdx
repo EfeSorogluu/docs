@@ -1,0 +1,39 @@
+---
+title: "Ödemeler"
+description: "Web sitesi üzerinden gerçekleştirilen bakiye yüklemeleri, ödeme geçmişi ve finansal istatistiklerin takibi."
+---
+
+Crafter CMS Ödemeler modülü; oyuncuların web siteniz üzerinden yaptığı tüm bakiye/kredi yükleme işlemlerini anlık olarak kaydeder, ödeme başarı oranlarını ölçümler ve toplam gelirinizi tek bir panelden takip etmenizi sağlar.
+
+[Yönetim Paneli \> Mağaza \> Ödemeler](https://app.crafter.net.tr/tr/dashboard/store/payments) sayfasına giderek finansal işlemlerinizi inceleyebilirsiniz.
+
+<Frame caption="Ödemeler ve Finansal İstatistikler Genel Bakış">
+  ![D88ee965 Bb5b 4496 B12b 11bf06103dcb](/images/d88ee965-bb5b-4496-b12b-11bf06103dcb.png "D88ee965 Bb5b 4496 B12b 11bf06103dcb")
+</Frame>
+
+---
+
+## Finansal Göstergeler (Metrikler)
+
+Sayfanın üst kısmında mağazanızın anlık performansını gösteren özet kartlar yer alır:
+
+- **Toplam Gelir:** Tamamlanan tüm bakiye yükleme işlemlerinden elde edilen toplam kazanç tutarı.
+- **Tamamlandı:** Başarıyla sonuçlanan ödeme işlemlerinin toplam adedi.
+- **Success Rate (Başarı Oranı):** Başlatılan ödeme denemeleri ile başarıyla tamamlanan işlemler arasındaki yüzde oranı.
+
+---
+
+## Ödeme İşlem Tablosu
+
+Oyuncuların yaptığı her ödeme denemesi detaylı parametrelerle tabloda listelenir:
+
+- **Ödeme ID:** İşleme ait benzersiz takip kodu.
+- **Kullanıcı:** Yükleme yapan oyuncunun hesap adı.
+- **Tutar:** Yüklenen bakiye veya ödenen toplam tutar.
+- **Durum:** Ödemenin mevcut durumu (_Tamamlandı_, _Beklemede_, _Başarısız_ vb.).
+- **Yöntem:** Kullanılan ödeme yöntemi/sağlayıcısı (Örn: Kredi Kartı, Mobil Ödeme, Havale/EFT).
+- **Tarih:** Ödeme işleminin gerçekleştirildiği gün ve saat bilgisi.
+
+<Tip>
+  Personellerinizin ödeme geçmişini ve gelir metriklerini görüntüleyebilmesi için [Roller ve İzinler](https://app.crafter.net.tr/tr/dashboard/roles) sayfasından ilgili yetki grubuna finans/ödeme görüntüleme izninin verilmesi gerekir.
+</Tip>

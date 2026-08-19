@@ -1,0 +1,63 @@
+---
+title: "İndirimler ve Kupon Yönetimi"
+description: "Mağaza için indirim kuponları oluşturma, indirim türleri, sepet tutarı kısıtlamaları ve kullanım limitleri."
+---
+
+Crafter CMS İndirimler modülü; oyuncularınız için özel promosyon kodları, dönemsel sepet indirimleri veya ücretsiz ürün kuponları oluşturarak satışlarınızı ve oyuncu bağlılığını artırmanızı sağlar.
+
+[Yönetim Paneli \> Mağaza \> İndirimler](https://app.crafter.net.tr/tr/dashboard/store/discounts) sayfasına giderek mevcut kuponları yönetebilir veya yeni promosyonlar tanımlayabilirsiniz.
+
+<Frame caption="İndirimler ve Kupon Yönetimi Genel Bakış">
+  ![Bba4e160 7faa 41a4 B01b 6f75e4c9cccc](/images/bba4e160-7faa-41a4-b01b-6f75e4c9cccc.png "Bba4e160 7faa 41a4 B01b 6f75e4c9cccc")
+</Frame>
+
+---
+
+## Yeni İndirim Kuponu Oluşturma
+
+Mağazanızda geçerli yeni bir indirim kodu tanımlamak için aşağıdaki adımları izleyin:
+
+<Steps>
+  <Step title="Oluşturma Panelini Açın">
+    İndirimler sayfasında sağ üst köşede bulunan **\+ Oluştur** butonuna tıklayın.
+  </Step>
+  <Step title="Kupon Kodunu Belirleyin">
+    - **Kod:** Oyuncuların ödeme/sepet ekranında gireceği promosyon kodu (Örn: `YAZ2026`, `VIP10`, `TEST`).
+  </Step>
+  <Step title="İndirim Türünü Seçin">
+    İndirimin uygulanma modelini belirleyin:
+
+    - **Sepet İndirimi:** Sepetteki toplam tutara sabit veya yüzdesel indirim uygular.
+    - **Ürün İndirimi:** Yalnızca seçili ürün veya kategorilere özel indirim sağlar.
+    - **Ücretsiz Ürün:** Kupon girildiğinde belirlenen ürünün sepete 0 TL olarak eklenmesini sağlar.
+  </Step>
+  <Step title="Kısıtlamaları ve Limitleri Tanımlayın">
+    - **Min. Sepet Tutarı:** Kuponun geçerli olabilmesi için gereken minimum sepet tutarı (Örn: 100 TL üzeri alışverişlerde geçerli). Boş bırakılırsa alt limit uygulanmaz.
+    - **Kullanım Sınırı:** Kuponun toplam kaç kez kullanılabileceği (Örn: İlk 50 kişi). Boş bırakılırsa sınırsız (`∞`) olur.
+  </Step>
+  <Step title="Kuponu Oluşturun">
+    Tüm alanları yapılandırdıktan sonra **Oluştur** butonuna tıklayarak indirimi anında aktif edin.
+  </Step>
+</Steps>
+
+<Frame caption="İndirim Kuponu Oluşturma Paneli">
+  ![980cabec 9565 450a Ad74 34e0c2fbc134](/images/980cabec-9565-450a-ad74-34e0c2fbc134.png "980cabec 9565 450a Ad74 34e0c2fbc134")
+</Frame>
+
+---
+
+## İndirim Listesi ve Takip Parametreleri
+
+Oluşturulan tüm promosyon kodları tablo üzerinde şu detaylarla listelenir:
+
+- **Kod:** Tanımlanan promosyon anahtarı.
+- **Tür:** İndirimin kategorisi (_Sepet İndirimi_, _Ürün İndirimi_, _Ücretsiz Ürün_).
+- **İndirim:** Uygulanan indirim miktarı veya oranı (Örn: `₺5.00` veya `%15`).
+- **Kullanım:** Kuponun mevcut kullanım adedi ve maksimum limiti (Örn: `0 / ∞` veya `12 / 50`).
+- **Min. Sepet:** Kuponun tetiklenmesi için gerekli alt sepet harcama tutarı.
+- **Durum:** Kuponun aktiflik durumu (_Aktif_, _Pasif_, _Süresi Doldu_).
+- **Oluşturulma Tarihi:** Kuponun sisteme tanımlandığı gün ve saat.
+
+<Tip>
+  Üst kısımda yer alan **Tür** ve **Durum** filtreleme butonlarını kullanarak yalnızca aktif olan veya belirli tipteki kuponları hızlıca listeleyebilirsiniz.
+</Tip>

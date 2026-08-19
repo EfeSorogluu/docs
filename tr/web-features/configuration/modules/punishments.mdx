@@ -1,0 +1,93 @@
+---
+title: "Cezalar"
+description: "Sunucu içi ban, mute ve ceza kayıtlarını web sitenizde ve yönetim panelinde canlı olarak listeleyin."
+---
+
+Crafter CMS Cezalar Modülü; Minecraft sunucunuzdaki popüler ceza eklentileriyle (`AdvancedBan`, `LiteBans`) doğrudan veritabanı köprüsü kurarak verilen tüm yasaklama, susturma ve uyarı işlemlerini hem yönetim panelinde hem de web sitenizde şeffaf bir şekilde listeler.
+
+- **Yönetim Paneli Ceza Listesi:** [Dashboard \> Cezalar](https://app.crafter.net.tr/tr/dashboard/punishments)
+- **Web Sitesi Sayfası:** `siteniz.com/punishments`
+
+---
+
+## Modül Kurulumu ve Yapılandırma
+
+Cezalar modülünü aktif etmek ve veritabanı bağlantısını sağlamak için aşağıdaki adımları izleyin.
+
+<Steps>
+  <Step title="Modülü Aktif Edin ve Eklentiyi Seçin">
+    1. [Dashboard \> Modüller \> Cezalar](https://app.crafter.net.tr/tr/dashboard/modules/punishments) sayfasına gidin.
+    2. Sağ üst köşede yer alan anahtarı (toggle) aktif konuma getirin.
+    3. **Eklenti Türü** açılır menüsünden sunucunuzda kullandığınız ceza eklentisini (`AdvancedBan` veya `LiteBans`) seçin.
+
+    <Frame caption="Cezalar Modülü Yapılandırma Ekranı">
+      ![1c18e01e 6ff1 4212 A275 8d0edfafcc4c](/images/1c18e01e-6ff1-4212-a275-8d0edfafcc4c.png "1c18e01e 6ff1 4212 A275 8d0edfafcc4c")
+    </Frame>
+  </Step>
+  <Step title="Veritabanı Bilgilerini Kopyalayın">
+    Modülü aktif ettiğinizde sistem size özel otomatik bir MySQL veritabanı alanı tahsis eder. Ekranda yer alan şu bilgileri not edin:
+
+    - **Sunucu (Host):** Veritabanı IP adresi
+    - **Port:** Veritabanı port numarası
+    - **Veritabanı:** Veritabanı adı (`cw_...`)
+    - **Kullanıcı Adı:** MySQL kullanıcı adınız (`u_...`)
+    - **Şifre:** Veritabanı erişim şifresi
+  </Step>
+  <Step title="Minecraft Eklenti Yapılandırmasını Düzenleyin">
+    Sunucunuzdaki ilgili ceza eklentisinin `config.yml` dosyasını açarak Storage/MySQL ayarlarını paneldeki bilgilerle eşleştirin.
+
+    <Tabs>
+      <Tab title="AdvancedBan">
+        `plugins/AdvancedBan/config.yml` dosyasında MySQL bölümünü düzenleyin:
+
+        ```yaml config.yml
+        MySQL:
+          Custom: true
+          IP: "PANELDEKI_HOST_IP"
+          Port: 12783 # Paneldeki port
+          Database: "cw_veritabani_adiniz"
+          User: "u_kullanici_adiniz"
+          Password: "GucluSifreniz"
+        ```
+      </Tab>
+      <Tab title="LiteBans">
+        `plugins/LiteBans/config.yml` dosyasında veritabanı alanlarını güncelleyin:
+
+        ```yaml config.yml
+        driver: "MySQL"
+        address: "PANELDEKI_HOST_IP:PORT"
+        database: "cw_veritabani_adiniz"
+        username: "u_kullanici_adiniz"
+        password: "GucluSifreniz"
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step title="Ayarları Kaydedin ve Yeniden Başlatın">
+    1. Paneldeki **Kaydet** butonuna basarak ceza yapılandırmasını tamamlayın.
+    2. Minecraft sunucunuzda eklentiyi yeniden yükleyin (`/litebans reload` veya `/advancedban reload`).
+  </Step>
+</Steps>
+
+---
+
+## Veritabanı Yönetimi (phpMyAdmin)
+
+Tahsis edilen veritabanı tablolarını doğrudan incelemek, veri aktarımı yapmak veya manuel sorgular çalıştırmak için sağ üstteki **phpMyAdmin** butonunu kullanabilir veya doğrudan erişebilirsiniz:
+
+<Card title="Crafter phpMyAdmin Paneli" icon="database" href="https://pma.crafter.net.tr">
+  `pma.crafter.net.tr` adresine giderek cezalar modülü sayfasında verilen **Kullanıcı Adı** ve **Şifre** ile giriş yapabilirsiniz.
+</Card>
+
+---
+
+## Ceza Kayıtlarını Görüntüleme
+
+Entegrasyon tamamlandıktan sonra oyuncuların ceza kayıtları iki ayrı alanda listelenir:
+
+<Frame caption="Yönetim Paneli Cezalar Sayfası">
+  ![Ekran Görüntüsü 2026 08 19 230223](/images/Ekran-görüntüsü-2026-08-19-230223.png "Ekran Görüntüsü 2026 08 19 230223")
+</Frame>
+
+- **Yönetim Paneli:** [Cezalar Listesi](https://app.crafter.net.tr/tr/dashboard/punishments) üzerinden tüm aktif ve geçmiş cezaları, uygulayan yetkiliyi, ceza sebebini ve bitiş süresini detaylıca filtreleyebilirsiniz.
+- **Kullanıcı Arayüzü:** Ziyaretçileriniz `siteniz.com/punishments` adresinden sunucu içi adaleti ve ceza geçmişini anlık olarak görüntüleyebilir.

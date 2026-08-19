@@ -44,34 +44,34 @@
           {
             "group": "Mağaza",
             "pages": [
-              "tr/web-features/store/untitled-page-3",
-              "tr/web-features/store/untitled-page-4",
-              "tr/web-features/store/untitled-page-5",
-              "tr/web-features/store/untitled-page-6",
-              "tr/web-features/store/untitled-page-7",
-              "tr/web-features/store/untitled-page-8"
+              "tr/web-features/store/products",
+              "tr/web-features/store/categories",
+              "tr/web-features/store/discounts",
+              "tr/web-features/store/redeem-codes",
+              "tr/web-features/store/payments",
+              "tr/web-features/store/chests"
             ]
           },
           {
             "group": "İçerik",
             "pages": [
-              "tr/web-features/content/untitled-page-9",
-              "tr/web-features/content/untitled-page-10",
-              "tr/web-features/content/untitled-page-11",
+              "tr/web-features/content/theme-library",
+              "tr/web-features/content/posts",
+              "tr/web-features/content/pages",
               {
                 "group": "Forum",
                 "pages": [
-                  "tr/web-features/content/forum/untitled-page-12",
-                  "tr/web-features/content/forum/untitled-page-13",
-                  "tr/web-features/content/forum/untitled-page-14"
+                  "tr/web-features/content/forum/categories",
+                  "tr/web-features/content/forum/topics",
+                  "tr/web-features/content/forum/moderation"
                 ]
               },
               {
                 "group": "Yardım Merkezi",
                 "pages": [
-                  "tr/web-features/content/hekp-center/untitled-page-15",
-                  "tr/web-features/content/hekp-center/untitled-page-16",
-                  "tr/web-features/content/hekp-center/untitled-page-17"
+                  "tr/web-features/content/help-center/categories",
+                  "tr/web-features/content/help-center/articles",
+                  "tr/web-features/content/help-center/faq"
                 ]
               }
             ]
@@ -82,8 +82,8 @@
               {
                 "group": "Destek Talepleri",
                 "pages": [
-                  "tr/web-features/communication/support-requests/untitled-page-18",
-                  "tr/web-features/communication/support-requests/untitled-page-19"
+                  "tr/web-features/communication/tickets/list",
+                  "tr/web-features/communication/tickets/templates"
                 ]
               }
             ]
@@ -110,8 +110,8 @@
               {
                 "group": "Modüller",
                 "pages": [
-                  "tr/web-features/configuration/modules/untitled-page-30",
-                  "tr/web-features/configuration/modules/untitled-page-31"
+                  "tr/web-features/configuration/modules/punishments",
+                  "tr/web-features/configuration/modules/authme"
                 ]
               },
               "tr/web-features/configuration/untitled-page-32"

@@ -1,0 +1,85 @@
+---
+title: "Kod Kullanımı (Redeem Code)"
+description: "Kullanım kodları tanımlama, tekli ve toplu kod üretimi, bakiye ve ürün ödül yapılandırması."
+---
+
+Crafter CMS Kod Kullanımı modülü; etkinliklerde, çekilişlerde veya sosyal medya dağıtımlarında oyuncularınıza ücretsiz bakiye, VIP paketleri veya sandık eşyaları kazandıran promosyon kodları üretmenizi sağlar.
+
+[Yönetim Paneli \> Mağaza \> Kod Kullanımı](https://app.crafter.net.tr/tr/dashboard/store/redeem-codes) sayfasına giderek mevcut kodları listeleyebilir ve yeni promosyon anahtarları oluşturabilirsiniz.
+
+<Frame caption="Kod Kullanımı Yönetim Listesi">
+  ![3edfcd88 8b33 4762 B154 Ba81f4cbf1a9](/images/3edfcd88-8b33-4762-b154-ba81f4cbf1a9.png "3edfcd88 8b33 4762 B154 Ba81f4cbf1a9")
+</Frame>
+
+---
+
+## Yeni Kod Oluşturma Yöntemleri
+
+Kod oluştururken ihtiyacınıza göre **Tekli** veya **Toplu (Toplu Kod Üretici)** modlarını seçebilirsiniz.
+
+<Tabs>
+  <Tab title="Tekli Kod Oluşturma">
+    Özel bir kelime veya standart bir anahtar belirlemek istediğinizde kullanılır.
+
+    <Steps>
+      <Step title="Oluşturma Panelini Açın">
+        Sayfanın sağ üst köşesindeki **\+ Oluştur** butonuna tıklayın ve sekmeden **Tekli** modunu seçin.
+      </Step>
+      <Step title="Ödül Türünü Belirleyin">
+        - **Tür:** Kodun vereceği ödül tipini seçin (_Bakiye_, _Ürün_ veya _Her İkisi_).
+        - **Kod:** Oyuncuların site üzerinden gireceği anahtar kelime (Örn: `HOSGELDIN2026`).
+        - **Ödül:** Tanımlanacak bakiye tutarı (Örn: `5`).
+        - **Ürünler:** Bakiye dışında oyuncunun sandığına aktarılacak mağaza ürünleri (Örn: `VIP`).
+      </Step>
+      <Step title="Kullanım Limitini Ayarlayın">
+        - **Kullanım Limiti:** Kodun toplam kaç farklı kullanıcı tarafından kullanılabileceğini girin. Sınırsız yapmak için `0` yazabilirsiniz.
+      </Step>
+      <Step title="Kodu Yayınlayın">
+        **Oluştur** butonuna tıklayarak kodu hemen aktif edin.
+      </Step>
+    </Steps>
+
+    <Frame caption="Tekli Kod Oluşturma Ekranı">
+      ![C8abb3fe E2af 4dd3 9904 B05eb2821aa9](/images/c8abb3fe-e2af-4dd3-9904-b05eb2821aa9.png "C8abb3fe E2af 4dd3 9904 B05eb2821aa9")
+    </Frame>
+  </Tab>
+  <Tab title="Toplu Kod Oluşturma">
+    Discord, YouTube veya canlı yayın çekilişlerinde dağıtmak üzere tek seferde çok sayıda rastgele kod üretmek için kullanılır.
+
+    <Steps>
+      <Step title="Toplu Sekmesine Geçin">
+        Sağ üstteki **\+ Oluştur** penceresinde üst alandan **Toplu** seçeneğini işaretleyin.
+      </Step>
+      <Step title="Üretim Adedini ve Kuralları Belirleyin">
+        - **Miktar:** Üretilecek toplam rastgele kod sayısı (Maksimum 100 adet).
+        - **Tek Kullanımlık:** Her bir üretilen kodun sadece bir kişi tarafından kullanılıp otomatik pasife alınmasını istiyorsanız kutucuğu işaretleyin.
+      </Step>
+      <Step title="Ödül ve Limitleri Tanımlayın">
+        Tüm üretilecek kodlar için geçerli olacak ödül tipini (_Tür_, _Ödül Miktarı_, _Ürünler_) ve _Kullanım Limitini_ belirleyin.
+      </Step>
+      <Step title="Toplu Kodları Üretin">
+        **Oluştur** butonuna basarak rastgele kod dizilerini tek tıkla sisteme aktarın.
+      </Step>
+    </Steps>
+
+    <Frame caption="Toplu Kod Üretme Paneli">
+      ![Daceb474 2631 41af B693 C60c85200353](/images/daceb474-2631-41af-b693-c60c85200353.png "Daceb474 2631 41af B693 C60c85200353")
+    </Frame>
+  </Tab>
+</Tabs>
+
+---
+
+## Kod Listesi ve Takip Parametreleri
+
+Oluşturulan tüm kodlar ana tabloda şu detaylarla listelenir:
+
+- **Kod:** Tanımlanan veya rastgele üretilen kullanım anahtarı.
+- **Ödül:** Kod kullanıldığında verilecek bakiye (`+5 Bakiye`) ve sandığa tanımlanacak ürün bilgisi.
+- **Kullanım:** Kodun toplam kaç kez kullanıldığı ve limiti (Örn: `0 / ∞` veya `1 / 1`).
+- **Durum:** Kodun güncel kullanım durumu (_Aktif_, _Tükendi_, _Pasif_).
+- **Son Kullanma:** Varsa kodun geçerlilik son tarihi.
+
+<Tip>
+  Oyuncular kazandıkları kodları web sitenizde `siteniz.com/profile/redeem` (veya profil altındaki kod kullan alanı) üzerinden girerek bakiye veya ürünlerini anında teslim alabilirler.
+</Tip>

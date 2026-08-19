@@ -1,0 +1,80 @@
+---
+title: "Ürünler"
+description: "Mağaza ürünleri oluşturma, komut teslimat değişkenleri, stok ve görsel yönetimi."
+---
+
+Crafter CMS Mağaza sistemi; VIP paketleri, oyun içi paralar, kasalar veya yetkileri doğrudan web siteniz üzerinden satışa sunmanızı ve satın alım anında oyun sunucunuza otomatik komut iletmenizi sağlar.
+
+[Yönetim Paneli \> Mağaza \> Ürünler](https://app.crafter.net.tr/tr/dashboard/store/products) sayfasına giderek mevcut ürünlerinizi listeleyebilir, düzenleyebilir veya yeni ürünler ekleyebilirsiniz.
+
+<Frame caption="Mağaza Ürünleri Yönetim Listesi">
+  ![Aff2899a F95e 451b A838 F2418c597559](/images/aff2899a-f95e-451b-a838-f2418c597559.png "Aff2899a F95e 451b A838 F2418c597559")
+</Frame>
+
+---
+
+## Yeni Ürün Oluşturma
+
+Bir ürünü satışa açmak ve oyun içi otomatik teslimatını yapılandırmak için aşağıdaki adımları izleyin.
+
+<Steps>
+  <Step title="Oluşturma Panelini Açın">
+    Ürünler sayfasında sağ üst köşede bulunan **\+ Oluştur** butonuna tıklayın.
+  </Step>
+  <Step title="Temel Bilgileri ve Fiyatı Belirleyin">
+    - **İsim:** Ürünün mağazada görünecek başlığı (Örn: VIP\+, Bronz Kutu).
+    - **Fiyat:** Ürünün satış fiyatı (Kredi/TL).
+    - **Kategori:** Ürünün ait olduğu mağaza kategorisi (Örn: Üyelikler, Kasalar).
+    - **Sunucu:** Satın alım sonrası komutların çalıştırılacağı hedef sunucu.
+    - **Etiketler:** Ürüne özel etiketler (Örn: `vip`, `kutu`).
+    - **Stok:** Sınırsız stok seçeneğini açabilir veya sınırlı adet belirleyebilirsiniz.
+  </Step>
+  <Step title="Ürün Görselini Ekleyin">
+    **Görsel Seç** butonuna tıklayarak Crafter Medya Kütüphanesi'nde yer alan hazır görsellerden seçim yapabilir veya bilgisayarınızdan yeni bir görsel yükleyebilirsiniz.
+  </Step>
+  <Step title="Açıklama ve Detayları Girin">
+    Zengin metin editörünü kullanarak ürün içeriğini, avantajlarını ve kullanım koşullarını açıklayın.
+  </Step>
+  <Step title="Teslimat Komutlarını Tanımlayın">
+    Ürün satın alındığında sunucu konsolunda çalışacak komutları girin.
+
+    <Warning>
+      **Komut Formatı:** Komutları girerken başına eğik çizgi (`/`) **eklemeyiniz**. Komutlar doğrudan sunucu konsolu üzerinden çalıştırılır (Örn: `lp user %username% parent add vip`).
+    </Warning>
+  </Step>
+</Steps>
+
+<Frame caption="Ürün Oluşturma ve Yapılandırma Paneli">
+  ![A3449927 5fd9 41e1 Bfcc 1bc24bb1bd8a](/images/a3449927-5fd9-41e1-bfcc-1bc24bb1bd8a.png "A3449927 5fd9 41e1 Bfcc 1bc24bb1bd8a")
+</Frame>
+
+---
+
+## Desteklenen Komut Değişkenleri
+
+Oyun içine gönderilecek teslimat komutlarında alıcı oyuncunun dinamik bilgilerini iletmek için aşağıdaki değişkenleri (placeholder) kullanabilirsiniz:
+
+| Değişken | Açıklama | Örnek Kullanım |
+| :-- | :-- | :-- |
+| `%username%` | Satın alan oyuncunun kullanıcı adı | `lp user %username% parent add vip` |
+| `%uuid%` | Satın alan oyuncunun benzersiz UUID kimliği | `crate give key %uuid% gold 1` |
+| `%ip%` | Satın alan oyuncunun IP adresi | `security log %username% %ip%` |
+
+---
+
+## Örnek Komut Senaryoları
+
+<Tabs>
+  <Tab title="Yetki / VIP Teslimatı (LuckPerms)">
+    ```text
+    lp user %username% parent addtemp vip 30d
+    broadcast &a%username% &fadlı oyuncu web sitemizden &630 Günlük VIP &fsatın aldı!
+    ```
+  </Tab>
+  <Tab title="Kasa Anahtarı / Eşya Teslimatı">
+    ```text
+    crate givekey %username% destansi 3
+    eco give %username% 50000
+    ```
+  </Tab>
+</Tabs>
