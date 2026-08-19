@@ -1,3 +1,75 @@
 ---
 title: "Yetkili Başvuruları"
+description: "Dinamik başvuru formları oluşturma, alan türlerini yapılandırma ve gelen başvuruları yönetme."
 ---
+
+Crafter CMS Yetkili Başvuruları modülü; sunucunuz için rehber, mimar, moderatör veya geliştirici gibi farklı pozisyonlara özel dinamik formlar oluşturmanızı ve oyuncuların web siteniz üzerinden yaptığı başvuruları tek merkezden incelemenizi sağlar.
+
+- **Yönetim Paneli:** [Dashboard \> Yetkili Başvuruları](https://app.crafter.net.tr/tr/dashboard/applications)
+- **Kullanıcı Başvuru Sayfası:** `siteniz.com/applications/form`
+
+<Frame caption="Yetkili Başvuruları Yönetim ve Form Listesi Ekranı">
+  ![Ekran Görüntüsü 2026 08 19 230554](/images/Ekran-görüntüsü-2026-08-19-230554.png "Ekran Görüntüsü 2026 08 19 230554")
+</Frame>
+
+---
+
+## Yeni Başvuru Formu Oluşturma
+
+İhtiyacınıza göre özel soru tipleri ve dinamik alanlar ekleyerek dakikalar içinde yeni bir form tasarlayabilirsiniz.
+
+<Steps>
+  <Step title="Form Oluşturma Panelini Açın">
+    [Yönetim Paneli \> Yetkili Başvuruları](https://app.crafter.net.tr/tr/dashboard/applications) sayfasında sağ üstteki **Yeni Form** butonuna tıklayın.
+  </Step>
+  <Step title="Temel Bilgileri Doldurun">
+    - **Form Başlığı:** Formun web sitesinde görünecek ismi (Örn: Rehber Alımları, Moderatör Başvuru Formu).
+    - **Form Açıklaması:** Başvuru yapacak adayların dikkat etmesi gereken şartlar veya açıklamalar.
+  </Step>
+  <Step title="Dinamik Form Alanlarını Ekleyin">
+    **\+ Alan Ekle** butonuna tıklayarak adaylara sormak istediğiniz soruları ekleyin. Her alan için soru başlığını girip veri türünü seçebilirsiniz.
+
+    <Frame caption="Yeni Form Oluşturma ve Alan Türü Seçim Paneli">
+      ![2a043f15 34d1 445f B1ee 1ad66d21bbe4](/images/2a043f15-34d1-445f-b1ee-1ad66d21bbe4.png "2a043f15 34d1 445f B1ee 1ad66d21bbe4")
+    </Frame>
+  </Step>
+  <Step title="Formu Yayınlayın">
+    Tüm alanları belirledikten sonra **Oluştur** butonuna tıklayarak formu aktif hale getirin.
+  </Step>
+</Steps>
+
+---
+
+## Desteklenen Alan Türleri
+
+Form oluştururken adaylardan toplamak istediğiniz veri tipine göre aşağıdaki alan türlerini kullanabilirsiniz:
+
+- **Text:** Kısa veya uzun serbest metin yanıtları (Örn: Kendinizi tanıtın, Neden biz?).
+- **Number:** Sayısal veri girişleri (Örn: Yaş, günlük aktiflik saati).
+- **Email:** E-posta adresi doğrulama formatı.
+- **Phone:** Telefon numarası giriş alanı.
+- **Date/Time:** Doğum tarihi veya uygunluk zamanı için tarih/saat seçici.
+- **Checkbox:** Onay kutusu (Örn: Kuralları okudum, kabul ediyorum).
+- **Select:** Açılır liste üzerinden tekli seçenek belirleme (Örn: Başvurulan sunucu/oyun modu).
+
+---
+
+## Başvuruları İnceleme ve Değerlendirme
+
+Oyuncular `siteniz.com/applications/form` adresinden formu doldurup gönderdiklerinde bildirim panelinize düşer.
+
+<Steps>
+  <Step title="Başvuru Listesini Görüntüleyin">
+    Panel üzerinden form başlığına göre filtrelenmiş gelen başvuruları açın.
+  </Step>
+  <Step title="Aday Yanıtlarını Değerlendirin">
+    Başvuru detayında adayın girdiği tüm alan verilerini ve kullanıcı profilini inceleyin.
+  </Step>
+  <Step title="Durumu Güncelleyin">
+    Başvuruyu **Onaylandı**, **Reddedildi** veya **İnceleniyor** olarak işaretleyerek süreci sonuçlandırın.
+  </Step>
+</Steps>
+
+<Frame caption="Gelen Başvuru Detay ve İnceleme Ekranı">
+  ![Ekran Görüntüsü 2026 08 19 230718](/images/Ekran-görüntüsü-2026-08-19-230718.png "Ekran Görüntüsü 2026 08 19 230718")
+</Frame>

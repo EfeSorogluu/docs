@@ -1,3 +1,46 @@
 ---
 title: "Raporlar"
+description: "Web sitesi üzerinden oyuncuların ilettiği kural ihlali ve şikayet bildirimlerinin yönetimi."
 ---
+
+Crafter CMS Raporlar modülü; oyuncuların web sitesi üzerinden hile kullanımı, uygunsuz sohbet, dolandırıcılık veya oyun içi kural ihlallerini yetkili ekibine bildirmesini sağlar.
+
+Yetkililer, iletilen tüm bildirimleri tek bir merkezden inceleyebilir, durumunu güncelleyebilir ve gerekli cezai işlemleri başlatabilir.
+
+[Yönetim Paneli \> Kullanıcı Yönetimi \> Raporlar](https://app.crafter.net.tr/tr/dashboard/reports) sayfasına giderek gelen tüm şikayet bildirimlerine ulaşabilirsiniz.
+
+<Frame caption="Raporlar Yönetim Listesi">
+  ![E5825f89 F1c2 4ffd A2ef 4f45f6b09599](/images/e5825f89-f1c2-4ffd-a2ef-4f45f6b09599.png "E5825f89 F1c2 4ffd A2ef 4f45f6b09599")
+</Frame>
+
+---
+
+## Rapor Tablosu ve Detaylar
+
+Gelen her şikayet bildirimi için şu veriler listelenir:
+
+- **Raporlayan:** Şikayeti ileten oyuncunun kullanıcı hesabı.
+- **Raporlanan Kullanıcı:** Hakkında kural ihlali bildirimi yapılan hedef oyuncu.
+- **Neden:** Şikayetin gerekçesi ve oyuncunun girdiği açıklama (Örn: Küfür, Hile kullanımı vb.).
+- **Durum:** Raporun işlem süreci (İnceleniyor, Onaylandı, Reddedildi, Beklemede).
+- **Tarih:** Bildirimin web sitesi üzerinden gönderildiği tarih ve saat.
+
+---
+
+## Rapor Süreci Nasıl İşler?
+
+<Steps>
+  <Step title="Oyuncu Raporu İletir">
+    Oyuncular web siteniz üzerindeki profil, gönderi veya özel raporlama arayüzleri üzerinden hedef kullanıcıyı ve ihlal nedenini seçerek bildirim oluşturur.
+  </Step>
+  <Step title="Yetkili Bildirimi İnceler">
+    [Yönetim Paneli \> Raporlar](https://app.crafter.net.tr/tr/dashboard/reports) sayfasına düşen şikayet kaydını yetkili personel açarak kanıtları ve açıklamayı değerlendirir.
+  </Step>
+  <Step title="Aksiyon Alınır ve Durum Güncellenir">
+    İhlal doğrulandığında hedef kullanıcıya [Cezalar Modülü](https://app.crafter.net.tr/tr/dashboard/modules/punishments) veya oyun içi komutlarla gerekli yaptırım uygulanır ve rapor durumu sonuçlandırılır.
+  </Step>
+</Steps>
+
+<Tip>
+  Personellerinizin bu sayfaya erişebilmesi ve işlem yapabilmesi için [Roller ve İzinler](https://app.crafter.net.tr/tr/dashboard/roles) sayfasından ilgili yetki grubuna rapor yönetim izninin tanımlanmış olması gerekir.
+</Tip>

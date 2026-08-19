@@ -1,3 +1,76 @@
 ---
 title: "Roller ve İzinler"
+description: "Crafter CMS üzerindeki yetki hiyerarşisi, özel rol oluşturma ve izin matrisi yönetimi."
 ---
+
+Crafter CMS, platformunuza erişen personellerin ve oyuncuların yetkilerini en ince ayrıntısına kadar yapılandırabileceğiniz gelişmiş bir **Rol Tabanlı Erişim Kontrolü (RBAC)** sistemi sunar.
+
+[Yönetim Paneli \> Kullanıcı Yönetimi \> Roller ve İzinler](https://app.crafter.net.tr/tr/dashboard/roles) sayfasına giderek mevcut rolleri yönetebilir veya yeni roller tanımlayabilirsiniz.
+
+<Frame caption="Roller ve İzinler Yönetim Ekranı">
+  ![787ab9a0 526a 4360 B8c3 E107af1932fd](/images/787ab9a0-526a-4360-b8c3-e107af1932fd.png "787ab9a0 526a 4360 B8c3 E107af1932fd")
+</Frame>
+
+---
+
+## Sistem Rolleri ve Kısıtlamaları
+
+Sistem kararlılığını ve güvenliğini korumak amacıyla bazı roller önceden tanımlanmış olarak gelir:
+
+- **Kurucu:** En üst düzey sistem rolüdür. Tüm modüllere, ayarlara ve loglara tam erişim hakkına sahiptir. Silinemez.
+- **Yönetici:** Platform genelinde operasyonel süreçleri yöneten üst düzey yetkili rolüdür. Silinemez.
+- **Moderatör:** Destek talepleri, kullanıcı raporları ve ceza yönetimi gibi operasyonel görevleri yürütür.
+- **Oyuncu (Varsayılan):** Sisteme yeni kayıt olan tüm kullanıcılara otomatik olarak atanan temel kullanıcı rolüdür. Panel yetkileri bulunmaz ve silinemez.
+
+<Warning>
+  **Sistem Rolü Koruması:** `Kurucu`, `Yönetici` ve `Oyuncu` gibi sistem rolleri silinemez; sistem mimarisini bozmamak adına izin yapılandırmaları ve temel yetkileri kısıtlı/kilitlidir.
+</Warning>
+
+---
+
+## Yeni Rol Oluşturma
+
+Personel ekibiniz için özel bir yetki seviyesi oluşturmak istediğinizde özel roller tanımlayabilirsiniz.
+
+<Steps>
+  <Step title="Oluşturma Penceresini Açın">
+    Roller ve İzinler sayfasında yer alan **Yeni Rol Ekle** kartına tıklayın.
+  </Step>
+  <Step title="Genel Bilgileri Tanımlayın">
+    Açılan yan çekmece (drawer) panelinde temel rol detaylarını belirleyin:
+
+    - **Rol Adı:** Oluşturulacak rolün ismi (Örn: Destek Ekibi, Rehber, Stajyer vb.)
+    - **Renk:** Rolün panellerde ve kullanıcı profillerinde görüneceği HEX renk kodu (Örn: `#3B82F6`).
+    - **Varsayılan Yap:** Sisteme yeni kayıt olan kullanıcılara doğrudan bu rolün verilmesini istiyorsanız aktif edin.
+  </Step>
+  <Step title="İzinleri Seçin ve Kaydedin">
+    Yetki kategorilerini genişleterek bu role tanımlamak istediğiniz izinlerin kutucuklarını işaretleyin. Tüm seçimleri tamamladıktan sonra **Kaydet** butonuna basarak rolü oluşturun.
+  </Step>
+</Steps>
+
+<Frame caption="Yeni Rol Oluşturma Paneli">
+  ![4db4553a Cf05 4c5d B169 1560cf2226d8](/images/4db4553a-cf05-4c5d-b169-1560cf2226d8.png "4db4553a Cf05 4c5d B169 1560cf2226d8")
+</Frame>
+
+---
+
+## Rol Düzenleme ve İzin Matrisi
+
+Mevcut bir rolün izinlerini, adını veya rengini güncellemek için rol kartının altındaki **Düzenle** butonuna tıklayabilirsiniz.
+
+<Frame caption="Rol İzinlerini Düzenleme Ekranı">
+  ![4e7df4df 8266 41ac 9050 27307cba06a4](/images/4e7df4df-8266-41ac-9050-27307cba06a4.png "4e7df4df 8266 41ac 9050 27307cba06a4")
+</Frame>
+
+### İzin Grupları
+
+İzinler yönetim paneli modüllerine göre kategorize edilmiştir:
+
+- **Sistem Yetkileri:** Genel ayarlar (`manage_settings`), güvenlik ayarları (`manage_security_config`), SEO yapılandırması ve log yönetimi (`view_logs`, `export_logs`).
+- **Kullanıcı & Ceza Yönetimi:** Kullanıcı hesaplarını düzenleme, ceza verme/kaldırma ve yetki başvurularını yanıtlama.
+- **Mağaza & Finans:** Ürün, kategori, indirim kuponu oluşturma ve sipariş/ödeme geçmişini inceleme.
+- **İçerik & Tema:** Blog gönderileri, forum modülü, yardım merkezi içerikleri ve tema şablonlarını yönetme.
+
+<Tip>
+  İzin listesinin üst kısmında yer alan **İzinlerde ara** kutusunu kullanarak (`ödeme`, `tema`, `ticket` gibi) ilgili izne anında filtreleme yapabilirsiniz.
+</Tip>
