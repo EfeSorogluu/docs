@@ -1,3 +1,73 @@
 ---
 title: "AuthMe"
+description: "Minecraft sunucunuzdaki AuthMe eklentisi ile web sitesi üyeliklerini ve şifreleme algoritmalarını bağlama."
 ---
+
+Crafter CMS AuthMe Modülü; oyun içi kayıt/giriş sistemi olan **AuthMeReloaded** eklentisi ile web sitenizin kullanıcı veritabanını çift yönlü senkronize eder. Böylece oyuncular web sitesinde oluşturdukları hesap bilgileriyle sunucuya doğrudan giriş yapabilir veya sunucuda kayıt oldukları şifreyle web sitesine erişebilirler.
+
+[Yönetim Paneli \> Modüller \> AuthMe Senkronizasyonu](https://app.crafter.net.tr/tr/dashboard/modules/authme) sayfasına giderek modülü aktif edebilir ve bağlantı ayarlarını yapılandırabilirsiniz.
+
+<Frame caption="AuthMe Modülü Yapılandırma Ekranı">
+  ![240764e6 83ca 4adf 953a 53a1d514cce9](/images/240764e6-83ca-4adf-953a-53a1d514cce9.png "240764e6 83ca 4adf 953a 53a1d514cce9")
+</Frame>
+
+---
+
+## Kurulum ve Yapılandırma Adımları
+
+<Steps>
+  <Step title="Modülü Aktif Edin">
+    Sayfanın sağ üst köşesinde yer alan anahtarı (toggle) aktif konuma getirin.
+  </Step>
+  <Step title="Şifreleme Algoritmasını ve Tablo Adını Belirleyin">
+    - **Tablo İsmi:** AuthMe eklentisinin verileri kaydedeceği tablo adı (Varsayılan: `authme`).
+    - **Şifreleme:** Şifre hashleme algoritması.
+
+    <Tip>
+      **Önerilen Ayar:** Güvenlik ve modern hashleme standartları gereği şifreleme algoritmasının **BCRYPT (Default)** olarak bırakılması şiddetle önerilir. Eklentinizde eski bir algoritma kullanılıyorsa `SHA256`, `MD5` veya `PBKDF2` seçenekleri de tercih edilebilir.
+    </Tip>
+  </Step>
+  <Step title="Veritabanı Bilgilerini AuthMe Yapılandırmasına Ekleyin">
+    Panelde gösterilen statik veritabanı sunucu bilgilerini not edin:
+
+    - **Sunucu (Host):** `77.90.53.110`
+    - **Port:** `12783`
+    - **Veritabanı Adı:** Panelde yer alan `cw_...` formatındaki adınız
+    - **Kullanıcı Adı:** Panelde yer alan `u_...` formatındaki kullanıcı adınız
+    - **Şifre:** Veritabanı şifreniz
+
+    Sunucunuzun `plugins/AuthMe/config.yml` dosyasını açarak `DataSource` (MySQL) bölümünü bu bilgilerle güncelleyin:
+
+    ```yaml config.yml
+    DataSource:
+      backend: 'MYSQL'
+      mySQLHost: '77.90.53.110'
+      mySQLPort: '12783'
+      mySQLDatabase: 'cw_veritabani_adiniz'
+      mySQLUsername: 'u_kullanici_adiniz'
+      mySQLPassword: 'GucluSifreniz'
+      mySQLTableName: 'authme'
+      mySQLColumnId: 'id'
+      mySQLColumnUser: 'username'
+      mySQLColumnPassword: 'password'
+      mySQLColumnEmail: 'email'
+    
+    security:
+      passwordHash: 'BCRYPT' # Paneldeki şifreleme türüyle aynı olmalıdır
+    ```
+  </Step>
+  <Step title="Kaydedin ve Yeniden Yükleyin">
+    1. Yönetim panelinde sağ alttaki **Kaydet** butonuna basın.
+    2. Minecraft sunucu konsolunuzdan `/authme reload` komutunu çalıştırarak eklentiyi yeniden başlatın.
+  </Step>
+</Steps>
+
+---
+
+## Veritabanı Yönetimi (phpMyAdmin)
+
+Kayıtlı oyuncu tablolarını doğrudan görüntülemek veya manuel düzenlemeler gerçekleştirmek için sağ üstte bulunan **phpMyAdmin** butonuna tıklayabilir ya da doğrudan erişebilirsiniz:
+
+<Card title="Crafter phpMyAdmin Paneli" icon="database" href="https://pma.crafter.net.tr">
+  `pma.crafter.net.tr` adresine giderek AuthMe modülü sayfasında verilen **Kullanıcı Adı** ve **Şifre** ile veritabanınıza giriş yapabilirsiniz.
+</Card>
