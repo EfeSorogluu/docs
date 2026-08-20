@@ -1,0 +1,84 @@
+Cloudflare Turnstile is a modern, privacy-first CAPTCHA alternative that protects your forms and website from automated attacks without frustrating users with puzzles or image selections.
+
+<CardGroup cols={3}>
+  <Card title="User-Friendly" color="#16a34a" icon="user-check">
+    Seamless background verification with zero frustrating puzzles for real users.
+  </Card>
+
+  <Card title="Privacy-First" color="#3b82f6" icon="shield-halved">
+    Guarantees robust bot protection while respecting visitor data privacy.
+  </Card>
+
+  <Card title="High Performance" color="#f59e0b" icon="bolt">
+    Lightweight design ensures no impact on page load times.
+  </Card>
+</CardGroup>
+
+---
+
+## Setup & Configuration
+
+<Steps>
+  <Step title="Navigate to Turnstile Menu">
+    Log in to your [Cloudflare Dashboard](https://dash.cloudflare.com/) and select **Turnstile** from the sidebar menu.
+  </Step>
+  <Step title="Create a New Widget">
+    Click **Add Widget** and fill in the required fields:
+
+    - **Widget Name:** Enter `Crafter CMS Widget`.
+    - **Domains (Hostnames):** Use the `Add a custom hostname` option to add `crafter.net.tr` first, followed by your own domain (e.g., `yourdomain.com` and `www.yourdomain.com`).
+  </Step>
+  <Step title="Copy API Keys">
+    Click **Create** to save. Copy the generated **Site Key** and **Secret Key**.
+
+    <Frame caption="Cloudflare Turnstile Widget API Keys Screen">
+      ![Cloudflare Turnstile Site Key and Secret Key](/images/turnstile-keys-overview.png)
+    </Frame>
+  </Step>
+  <Step title="Configure in Crafter CMS">
+    1. Go to [Dashboard \> Settings \> Security](https://app.crafter.net.tr/en/dashboard/settings/security).
+    2. Toggle on the **Enable Cloudflare Turnstile** option.
+    3. Paste your **Site Key** and **Secret Key** into the respective fields and save changes.
+
+    <Frame caption="Crafter CMS Security and Turnstile Settings">
+      ![Crafter CMS Turnstile Configuration Screen](/images/crafter-turnstile-settings.png)
+    </Frame>
+  </Step>
+</Steps>
+
+---
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Widget Not Showing">
+    - Verify that you have entered the correct **Site Key** in the Crafter Control Panel.
+    - Check that your domain name is added to the allowed hostnames list in Cloudflare Dashboard.
+    - Clear your browser cache and refresh the page.
+  </Accordion>
+
+  <Accordion title="Validation Errors">
+    - Ensure the **Secret Key** is correctly entered without missing characters.
+    - Verify that your server can establish outbound connections to Cloudflare APIs.
+    - Inspect the logs in your Crafter Dashboard for detailed error payloads.
+  </Accordion>
+
+  <Accordion title="Domain Not Working">
+    - Ensure all domains and subdomains (`www` and apex domains) are explicitly listed in the widget's hostname settings.
+    - Allow a few minutes for new hostnames to propagate across Cloudflare's network.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Resources & Support
+
+<CardGroup cols={2}>
+  <Card title="Cloudflare Docs" icon="book-open" href="https://developers.cloudflare.com/turnstile/">
+    Explore the official Cloudflare Turnstile developer documentation.
+  </Card>
+
+  <Card title="Discord Community" icon="discord" href="https://discord.gg/K4QhF9VwJG">
+    Join our Discord server to get help from the Crafter support team.
+  </Card>
+</CardGroup>

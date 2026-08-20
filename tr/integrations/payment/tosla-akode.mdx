@@ -1,0 +1,28 @@
+---
+title: "Tosla (AKÖde) Ödeme Entegrasyonu"
+description: "Bu rehber, Crafter CMS ile XSolla ödeme entegrasyonunu yapmak için gerekli adımları detaylıca açıklar."
+---
+
+import { Steps, Callout } from 'nextra/components'
+
+## Adım 1: Crafter CMS Yönetim Paneline Giriş
+
+[Crafter Kontrol Paneli](https://crafter.net.tr/dashboard)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+
+## Adım 2: Ödeme Sağlayıcı Ayarlarını Yapılandırın
+
+Ödeme sağlayıcısı ayarlarına geçiş yapın.
+
+![XSolla Entegrasyonu Aşama 1](/images/payment/select-payment.png)
+
+Sağlayıcı ekle butonuna tıklayın.
+
+![XSolla Entegrasyonu Aşama 2](/images/payment/click-to-add.png)
+
+Gelen formda _Ödeme Sağlayıcı_ olarak _XSolla_ seçin ve bilgileri XSolla üye işyeri hesabınıza göre düzenleyin.
+
+![XSolla Entegrasyonu Aşama 3](/images/payment/information.png)
+
+## Adım 3: Webhook Adresi
+
+XSolla Webhook URL'si: [https://api.crafter.net.tr/website/payment/callback/tosla](https://api.crafter.net.tr/website/payment/callback/tosla) olmalıdır.

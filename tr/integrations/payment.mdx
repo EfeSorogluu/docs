@@ -1,0 +1,60 @@
+Crafter CMS; oyuncularınızın web siteniz üzerinden kredi kartı, banka kartı, havale/EFT veya mobil cüzdanlarla güvenli bakiye yüklemesi yapabilmesi için Türkiye ve dünya çapında popüler ödeme sağlayıcılarını destekler.
+
+---
+
+## Desteklenen Ödeme Sağlayıcıları
+
+Kullanmak istediğiniz sanal POS altyapısına tıklayarak detaylı kurulum ve yapılandırma rehberine ulaşabilirsiniz:
+
+<CardGroup cols={3}>
+  <Card title="İyzico" icon="credit-card" href="/integrations/payment/iyzico">
+    Bireysel ve kurumsal hesaplar için gelişmiş 3D Secure ödeme altyapısı.
+  </Card>
+
+  <Card title="PayTR" icon="shield-check" href="/integrations/payment/paytr">
+    Türkiye'nin popüler sanal POS ve iFrame API ödeme çözümü.
+  </Card>
+
+  <Card title="Shopier" icon="bag-shopping" href="/integrations/payment/shopier">
+    Şirket kurulumu gerektirmeyen hızlı ve pratik pazar yeri ödeme sistemi.
+  </Card>
+
+  <Card title="Stripe" icon="stripe" href="/integrations/payment/stripe">
+    Global oyuncularınızdan uluslararası kartlarla döviz bazlı ödeme alma.
+  </Card>
+
+  <Card title="Tosla (AKÖde)" icon="wallet" href="/integrations/payment/tosla">
+    Akbank iştiraki AKÖde altyapısı ile komisyonsuz cüzdan ve kart ödemeleri.
+  </Card>
+
+  <Card title="XSolla" icon="gamepad" href="/integrations/payment/xsolla">
+    Oyun projeleri için 700'den fazla küresel ödeme yöntemini tek çatı altında sunan sistem.
+  </Card>
+</CardGroup>
+
+---
+
+## Genel Entegrasyon Süreci
+
+Her sağlayıcının API yapılandırma parametreleri farklılık gösterse de temel entegrasyon adımları şu şekildedir:
+
+<Steps>
+  <Step title="Sağlayıcı Panelinden API Bilgilerini Alın">
+    İlgili ödeme firmasının iş yeri panelinden **API Key**, **Secret Key**, **Merchant ID** ve bildirim/webhook anahtarlarınızı oluşturup not edin.
+  </Step>
+  <Step title="Webhook / Callback URL Adresini Tanımlayın">
+    Ödeme firmasının paneline bakiye onaylarının anında iletilmesi için Crafter callback adresini (`api.crafter.net.tr/website/payment/callback/...`) girin.
+  </Step>
+  <Step title="Crafter Yönetim Paneline Ekleyin">
+    1. [Dashboard \> Ayarlar \> Ödeme Sağlayıcıları](https://app.crafter.net.tr/tr/dashboard/settings/payment-providers) menüsüne gidin.
+    2. Sağ üstteki **\+ Sağlayıcı Ekle** butonuna tıklayın.
+    3. Kullanacağınız ödeme firmasını seçerek API anahtarlarınızı ilgili alanlara yapıştırın.
+  </Step>
+  <Step title="Test Edin ve Canlıya Alın">
+    1 TL veya sembolik bir tutarla test ödemesi gerçekleştirin. Bakiye hesabınıza anında tanımlandığında sistem canlı ödemeler için hazır demektir.
+  </Step>
+</Steps>
+
+<Tip>
+  Ödeme sağlayıcıları üzerinden gerçekleşen tüm başarılı/başarısız bakiye yüklemelerini ve ciro grafiklerini [Mağaza \> Ödemeler](https://app.crafter.net.tr/tr/dashboard/store/payments) sayfasından anlık olarak takip edebilirsiniz.
+</Tip>
