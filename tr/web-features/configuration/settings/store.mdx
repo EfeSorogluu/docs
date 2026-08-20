@@ -1,3 +1,47 @@
 ---
-title: "Mağaza"
+title: "Mağaza Ayarları ve Toplu İndirimler"
+description: "Mağaza görünürlüğü, para birimi standardı ve site geneli toplu indirim kurallarının yapılandırılması."
 ---
+
+Crafter CMS Mağaza Ayarları modülü; mağazanızın genel durumunu yönetmenizi, işlem yapılacak para birimi kodunu belirlemenizi ve tüm mağazada veya seçili ürünlerde geçerli dönemsel toplu indirim kampanyaları tanımlamanızı sağlar.
+
+[Yönetim Paneli \> Yapılandırma \> Ayarlar \> Mağaza](https://app.crafter.net.tr/tr/dashboard/settings/store) sayfasına giderek mağaza yapılandırmanızı düzenleyebilirsiniz.
+
+<Frame caption="Mağaza Ayarları ve Toplu İndirim Yönetim Ekranı">
+  ![81f59153 A43c 45b1 Be37 A38cf850ff1d](/images/81f59153-a43c-45b1-be37-a38cf850ff1d.png "81f59153 A43c 45b1 Be37 A38cf850ff1d")
+</Frame>
+
+---
+
+## 1. Temel Mağaza Yapılandırması
+
+- **Mağaza Durumu (Toggle):** Sağ üstteki anahtar ile mağazanızı aktif edebilir veya bakım/güncelleme durumlarında geçici olarak devre dışı bırakabilirsiniz.
+- **Mağaza Para Birimi:** Mağaza işlemlerinde geçerli ISO para birimi kodu (Örn: `TRY`, `USD`, `EUR`).
+
+---
+
+## 2. Toplu İndirim Kuralları
+
+Kupon koduna gerek kalmadan doğrudan ürün fiyatlarına yansıyan mağaza geneli indirim kampanyaları oluşturabilirsiniz:
+
+<Steps>
+  <Step title="İndirim Türünü Seçin">
+    Uygulanacak indirim modelini belirleyin:
+
+    - **Yüzdelik (%):** Belirlenen yüzde oranında fiyat düşüşü uygular (Örn: %20 İndirim).
+    - **Sabit Tutar:** Ürün fiyatından sabit bir miktar düşer (Örn: 50 TL İndirim).
+  </Step>
+  <Step title="İndirim Miktarını Girin">
+    Seçtiğiniz türe göre indirim değerini yazın (Örn: `20` veya `50`).
+  </Step>
+  <Step title="Geçerlilik Tarihini Belirleyin">
+    - **Son Kullanma Tarihi:** Kampanyanın otomatik olarak sona ereceği günü takvimden seçin.
+  </Step>
+  <Step title="Kapsamı Belirleyin ve Kaydedin">
+    Varsayılan olarak indirim **Tüm Mağaza** genelindeki ürünlerde geçerli olur. Ürün seçimi yapılmadığı takdirde tüm vitrin fiyatları otomatik olarak indirimli fiyata çekilir. Sağ alttaki **Kaydet** butonuna tıklayarak kampanyayı anında başlatabilirsiniz.
+  </Step>
+</Steps>
+
+<Tip>
+  Belirli bir kupon kodu girilerek sepette uygulanan indirimler için [Mağaza \> İndirimler](https://app.crafter.net.tr/tr/dashboard/store/discounts) sayfasını kullanabilirsiniz.
+</Tip>

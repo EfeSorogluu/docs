@@ -1,3 +1,48 @@
 ---
-title: "Güvenlik"
+title: "Güvenlik Ayarları"
+description: "Kayıt erişim kontrolleri, IP başına hesap limitleri, CrafterConnect eklenti güvenliği ve Cloudflare Turnstile yapılandırması."
 ---
+
+Crafter CMS Güvenlik Ayarları modülü; web sitenizdeki üyelik kayıt kurallarını belirlemenizi, spam/bot hesaplara karşı koruma sağlamanızı ve Minecraft sunucunuzda çalışan `CrafterConnect` ve diğer resmî Crafter eklentileriyle güvenli veri senkronizasyonu kurmanızı sağlar.
+
+[Yönetim Paneli \> Yapılandırma \> Ayarlar \> Güvenlik](https://app.crafter.net.tr/tr/dashboard/settings/security) bağlantısından güvenlik politikalarınızı yönetebilirsiniz.
+
+<Frame caption="Güvenlik Ayarları Yönetim Paneli">
+  ![B7e7f6de De0c 46c7 A07c 8afd1b001b99 1](/images/b7e7f6de-de0c-46c7-a07c-8afd1b001b99-1.png "B7e7f6de De0c 46c7 A07c 8afd1b001b99 1")
+</Frame>
+
+---
+
+## 1. Erişim Kontrolü (Kayıt Güvenliği)
+
+Web sitenize üye olacak oyuncuların kayıt süreçlerini ve limitlerini yönetin:
+
+- **Kayıt Olmaya İzin Ver (Toggle):** Web siteniz üzerinden yeni kullanıcı kayıtlarını tek tıkla açıp kapatabilirsiniz.
+- **E-Posta Doğrulaması Zorunlu (Toggle):** Aktif edildiğinde oyuncular hesaplarına giriş yapabilmek için kayıt sırasında e-posta adreslerine gönderilen 6 haneli doğrulama kodunu onaylamak zorunda kalırlar.
+- **IP Başına Maksimum Kayıt:** Tek bir IP adresi üzerinden açılabilecek maksimum hesap sayısını sınırlandırır (Örn: `1` veya `2`). Sınırsız yapmak için `0` bırakabilirsiniz.
+
+---
+
+## 2. Eklenti Güvenliği (CrafterConnect & Crafter Plugins)
+
+Minecraft sunucunuz ile Crafter CMS web siteniz arasında çalışan eklentilerin haberleşme güvenliğini kontrol eder.
+
+- **Eklenti Senkronizasyonunu Etkinleştir (Toggle):** `CrafterConnect` ve diğer Crafter eklentilerinin web sitesiyle çift yönlü veri ve komut senkronizasyonu yapabilmesi için bu seçeneğin **aktif** olması gerekir.
+- Kapatıldığında sunucu eklentilerinden gelen tüm API istekleri ve komut yürütme talepleri güvenlik gerekçesiyle engellenir.
+
+<Tip>
+  `CrafterConnect` kurulumu, token üretimi ve sunucu tarafı yapılandırması hakkında detaylı rehber için [**Minecraft Sunucu Kurulum Rehberi**](/tr/game-servers/minecraft) sayfamıza göz atabilirsiniz.
+</Tip>
+
+---
+
+## 3. Cloudflare Turnstile (Bot Koruması)
+
+Formlarınızı (Kayıt, Giriş, Başvuru vb.) otomatik spam botlarına karşı kullanıcı dostu ve görünmez bir CAPTCHA kalkanıyla korur.
+
+- **Cloudflare Turnstile (Toggle):** Bot korumasını aktif/pasif hale getirir.
+- Aktif edildiğinde açılan alanlara Cloudflare panelinizden aldığınız **Site Key** ve **Secret Key** değerlerini girerek entegrasyonu tamamlayabilirsiniz.
+
+<Card title="Cloudflare Turnstile Entegrasyon Rehberi" icon="shield-halved" href="/integrations/security/cloudflare-turnstile">
+  Cloudflare paneli üzerinden Turnstile widget'ı oluşturma ve anahtarları alma adımları için detaylı rehberi inceleyin.
+</Card>

@@ -1,3 +1,217 @@
 ---
-title: "Discord"
+title: "Discord Entegrasyonu ve Webhook Bildirimleri"
+description: "Discord sunucu senkronizasyonu, olay bildirimleri (eventler), dinamik değişkenler ve zengin embed yapılandırması."
 ---
+
+Crafter CMS Discord modülü; web sitenizdeki mağaza satışları, bakiye yüklemeleri, yeni üyelikler, destek talepleri veya forum hareketleri gibi tüm sistem olaylarını Discord sunucunuzdaki kanallara otomatik ve şık embed mesajlar halinde iletmenizi sağlar.
+
+[Yönetim Paneli \> Yapılandırma \> Ayarlar \> Discord](https://app.crafter.net.tr/tr/dashboard/settings/discord) sayfasına giderek sunucu kimliğinizi bağlayabilir ve webhook tetikleyicilerini yönetebilirsiniz.
+
+<Frame caption="Discord Ayarları ve Webhook Yönetim Paneli">
+  ![1a1e8bb1 D77f 4466 Bcbe D7df911e0b5c](/images/1a1e8bb1-d77f-4466-bcbe-d7df911e0b5c.png "1a1e8bb1 D77f 4466 Bcbe D7df911e0b5c")
+</Frame>
+
+---
+
+## 1. Discord Sunucu Ayarları
+
+Web sitenizdeki online üye sayaçları ve widget senkronizasyonu için sunucu kimliğinizi (Guild ID) tanımlayın:
+
+<Steps>
+  <Step title="Sunucu Kimliğini (Guild ID) Alın">
+    Discord uygulamasında sunucu adınıza sağ tıklayıp **Sunucu Ayarları \> Widget** bölümüne gidin veya Discord Geliştirici Modu açıkken sunucu simgesine sağ tıklayarak **Sunucu Kimliğini Kopyala** seçeneğini kullanın.
+  </Step>
+  <Step title="Paneli Kaydedin">
+    Aldığınız sayısal kimliği **Sunucu ID** kutusuna yapıştırıp **Kaydet** butonuna basın.
+  </Step>
+</Steps>
+
+---
+
+## 2. Yeni Webhook Bildirimi Ekleme
+
+Sistem olaylarını Discord kanalınıza yönlendirmek için aşağıdaki adımları izleyin:
+
+<Steps>
+  <Step title="Ekleme Panelini Açın">
+    Webhooklar kartının sağ üst köşesindeki **\+ Webhook Ekle** butonuna tıklayın.
+  </Step>
+  <Step title="Temel Bilgileri ve Olayı (Event) Seçin">
+    - **Webhook İsmi:** Panel içi takip adı (Örn: `Market Satışları`, `Yeni Destek Talebi`).
+    - **Webhook URL:** Discord kanal ayarlarından (_Entegrasyonlar \> Webhook'lar_) kopyaladığınız bağlantı adresi.
+    - **Olay (Event):** Bu webhook'un tetikleneceği işlem (Örn: `purchase_product`, `balance_load_success`, `create_ticket` vb.).
+    - **Durum:** Bildirimi aktif/pasif hale getiren anahtar (toggle).
+  </Step>
+  <Step title="Bot Kimliğini Özelleştirin">
+    - **Bot İsmi:** Mesajı atan botun adı (Örn: `{website_name} Bot`).
+    - **Profil Resmi (URL):** Bot avatarı için görsel bağlantısı girin veya kütüphaneden seçin.
+  </Step>
+</Steps>
+
+<Frame caption="Webhook Tanımlama ve Bot Özelleştirme Ekranı">
+  ![F75828be 7501 4e00 Adaf 05117a8d02c9](/images/f75828be-7501-4e00-adaf-05117a8d02c9.png "F75828be 7501 4e00 Adaf 05117a8d02c9")
+</Frame>
+
+---
+
+## 3. Dinamik Değişkenler (Placeholders)
+
+Webhook mesaj içeriğinde, bot isminde veya embed alanlarında olaya ait anlık verileri dinamik olarak yazdırmak için süslü parantez `{değişken}` formatını kullanabilirsiniz.
+
+### Genel Değişkenler (Tüm Olaylarda Geçerli)
+
+| Değişken | Açıklama | Örnek Çıktı |
+| :-- | :-- | :-- |
+| `{username}` | İşlemi gerçekleştiren oyuncunun kullanıcı adı | `MertEfe` |
+| `{website_name}` | Web sitenizin adı | `Crafter Network` |
+| `{website_url}` | Web sitenizin doğrudan erişim adresi | `https://demo.crafter.net.tr` |
+
+### Olaylara Özel Değişkenler
+
+| Değişken | Açıklama | Geçerli Olduğu Olaylar |
+| :-- | :-- | :-- |
+| `{product_name}` / `{product}` | Satın alınan veya işlem gören ürün adı | Mağaza, Kredi & Sandık olayları |
+| `{price}` / `{amount}` | İşlem tutarı / ürünün satış fiyatı | Mağaza ve Ödeme olayları |
+| `{credit}` / `{credit_amount}` | Yüklenen veya transfer edilen kredi miktarı | Kredi yükleme & bakiye olayları |
+| `{currency}` | Sitede tanımlı para birimi sembolü (`₺`, `$`, `€`) | Tüm Mağaza & Ödeme olayları |
+| `{ticket_title}` | Açılan/yanıtlanan destek talebinin başlığı | Destek talebi (Ticket) olayları |
+| `{ticket_id}` | Destek talebinin benzersiz ID numarası | Destek talebi (Ticket) olayları |
+| `{ticket_url}` | Destek talebine doğrudan giden panel/site linki | Destek talebi (Ticket) olayları |
+| `{assigned_username}` | Destek talebine atanan yetkilinin adı | `assign_ticket` |
+| `{thread_title}` | Forum konu başlığı | Forum olayları |
+| `{thread_url}` | Forum konusuna doğrudan yönlendiren link | Forum olayları |
+| `{forum_name}` | Forum kategori başlığı | Forum olayları |
+| `{post_title}` | Haber / Blog gönderisi başlığı | Gönderi (Post) olayları |
+| `{post_url}` | Haber / Blog gönderisinin web bağlantısı | Gönderi (Post) olayları |
+| `{form_name}` | Doldurulan yetkili başvuru formunun adı | Yetkili başvuru formu olayları |
+| `{item_name}` | Sandıktan kullanılan veya çarktan çıkan eşya adı | Sandık ve çark olayları |
+| `{code}` | Kullanılan kupon veya hediye kodu | Kupon ve hediye kodu olayları |
+
+---
+
+## 4. Webhook Olay Türleri (Events)
+
+Sisteme tanımlayabileceğiniz ve Discord bildirimlerini tetikleyebilecek tüm olay türleri:
+
+<AccordionGroup>
+  <Accordion title="🛒 Mağaza ve Ürün Olayları">
+    - `purchase_product`: Bir oyuncu mağazadan ürün satın aldığında.
+    - `store.purchase.product`: Mağaza içi doğrudan ürün alımı gerçekleştiğinde.
+    - `store.purchase.credit`: Mağaza içi krediyle satın alım tamamlandığında.
+    - `create_product`: Yönetici yeni bir ürün eklediğinde.
+    - `update_product`: Ürün fiyatı, stoğu veya açıklaması güncellendiğinde.
+    - `delete_product`: Bir ürün mağazadan silindiğinde.
+    - `product_apply_discount`: Bir ürüne özel indirim uygulandığında.
+    - `product_apply_bulk_discount`: Mağaza geneli toplu indirim başlatıldığında.
+    - `create_category`: Yeni mağaza kategorisi oluşturulduğunda.
+    - `update_category` / `delete_category`: Mağaza kategorisi güncellendiğinde veya silindiğinde.
+  </Accordion>
+
+  <Accordion title="💳 Ödeme ve Kredi Olayları">
+    - `balance_load_success`: Oyuncunun kredi/bakiye yüklemesi başarıyla onaylandığında.
+    - `initiate_payment_event`: Yeni bir ödeme işlemi başlatıldığında.
+    - `check_payment_event`: Ödeme durumu sorgulandığında.
+    - `payment_callback`: Ödeme sağlayıcısından (Shopier, PayTR vb.) geri bildirim geldiğinde.
+    - `create_payment_provider`: Yeni bir sanal POS sağlayıcısı eklendiğinde.
+    - `update_payment_provider` / `delete_payment_provider`: Sağlayıcı ayarları güncellendiğinde veya silindiğinde.
+    - `toggle_payment_provider`: Bir ödeme yöntemi aktif/pasif yapıldığında.
+    - `update_priority_payment_provider`: Ödeme yöntemlerinin sıralaması değiştirildiğinde.
+  </Accordion>
+
+  <Accordion title="🎁 Sandık (Chest) ve Hediye Olayları">
+    - `use_chest_item`: Oyuncu web sandığındaki eşyayı oyuna aktardığında.
+    - `add_chest_item`: Sandığa yeni bir eşya eklendiğinde.
+    - `remove_chest_item`: Sandıktan bir eşya silindiğinde.
+    - `gift_chest_item`: Sandıktaki bir eşya başka bir oyuncuya hediye edildiğinde.
+  </Accordion>
+
+  <Accordion title="🎫 Destek Sistemi (Ticket) Olayları">
+    - `create_ticket`: Yeni bir destek talebi açıldığında.
+    - `reply_ticket`: Destek talebine kullanıcı veya yetkili yanıt verdiğinde.
+    - `close_ticket`: Destek talebi kapatıldığında / çözüldüğünde.
+    - `assign_ticket`: Destek talebi belirli bir yetkiliye atandığında.
+    - `update_ticket` / `delete_ticket`: Destek talebi güncellendiğinde veya silindiğinde.
+    - `create_ticket_category` / `update_ticket_category` / `delete_ticket_category`: Destek kategorileri yönetildiğinde.
+  </Accordion>
+
+  <Accordion title="👤 Kullanıcı ve Hesap Olayları">
+    - `sign_up`: Yeni bir kullanıcı kayıt olduğunda.
+    - `sign_in`: Kullanıcı web sitesine giriş yaptığında.
+    - `cms_auth`: Bir yetkili Crafter CMS paneline giriş yaptığında.
+    - `forgot_password`: Şifre sıfırlama talebinde bulunulduğunda.
+    - `reset_password`: Şifre başarıyla yenilendiğinde.
+    - `ban_user` / `unban_user`: Kullanıcı yasaklandığında veya yasağı kaldırıldığında.
+    - `transfer_balance`: İki kullanıcı arasında kredi/bakiye transferi yapıldığında.
+    - `update_user_role`: Kullanıcının yetki/rol grubu değiştirildiğinde.
+    - `create_user` / `update_user` / `delete_user`: Kullanıcı hesapları yönetildiğinde.
+  </Accordion>
+
+  <Accordion title="📰 Haber, Blog ve Forum Olayları">
+    - `create_post` / `publish_post`: Yeni haber/duyuru oluşturulduğunda veya yayına alındığında.
+    - `update_post` / `delete_post`: Haber içeriği düzenlendiğinde veya silindiğinde.
+    - `pin_post` / `unpin_post`: Haber sabitlendiğinde veya sabitlemesi kaldırıldığında.
+    - `mark_post_hot`: Gönderi popüler/öne çıkan olarak işaretlendiğinde.
+    - `like_post` / `unlike_post`: Gönderi beğenildiğinde.
+    - `create_forum_topic` / `update_forum_topic` / `delete_forum_topic`: Forum konusu açıldığında, düzenlendiğinde veya silindiğinde.
+    - `create_forum_reply` / `update_forum_reply` / `delete_forum_reply`: Forum yanıtı verildiğinde veya düzenlendiğinde.
+    - `like_forum_topic`: Forum konusu beğenildiğinde.
+    - `create_forum_category` / `update_forum_category` / `delete_forum_category`: Forum kategorileri yönetildiğinde.
+  </Accordion>
+
+  <Accordion title="🎟️ Kupon, Hediye Kodu ve Başvuru Olayları">
+    - `use_coupon` / `create_coupon` / `delete_coupon`: İndirim kuponu kullanıldığında veya yönetildiğinde.
+    - `use_redeem_code` / `create_redeem_code` / `delete_redeem_code`: Hediye kodu bozdurulduğunda veya oluşturulduğunda.
+    - `create_staff_form` / `update_staff_form` / `delete_staff_form`: Yetkili başvuru formu oluşturulduğunda veya düzenlendiğinde.
+    - `view_staff_form`: Yetkili başvuru formu görüntülendiğinde.
+    - `vote_success` / `vote_failed`: Oyuncu sunucuya oy verdiğinde (başarılı/başarısız).
+  </Accordion>
+
+  <Accordion title="⚙️ Sunucu ve Yapılandırma Olayları">
+    - `create_server` / `update_server` / `delete_server`: Oyun sunucusu eklendiğinde, güncellendiğinde veya silindiğinde.
+    - `update_website_config`: Genel site ayarları değiştirildiğinde.
+    - `update_discord_config`: Discord modül ayarları güncellendiğinde.
+    - `update_security_config`: Güvenlik ve Turnstile ayarları yapılandırıldığında.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## 5. Mesaj İçeriği ve Embed Tasarımı (Embed Builder)
+
+Bildirim mesajınızı sade metin olarak gönderebilir veya 10 adede kadar görsel **Discord Embed** kartı ekleyebilirsiniz:
+
+<Tabs>
+  <Tab title="Görsel Embed Editörü">
+    - **Mesaj İçeriği:** Embed kartının hemen üzerinde yer alan ana bildirim metni (Örn: `@everyone` veya duyuru metni).
+    - **Embed Rengi:** Kartın sol kenar çizgisinde görünecek HEX renk kodu (Örn: `#000000`, `#5865F2`).
+    - **Yazar İsmi & Embed Başlığı:** Kartın en üstünde yer alacak başlık bilgileri.
+    - **Embed Açıklaması:** Olayın detaylarını içeren ana gövde metni.
+    - **Görseller:** Küçük resim (_Thumbnail URL_) veya büyük afiş (_Large Image URL_).
+    - **Alt Bilgi (Footer):** Kartın en altındaki küçük bilgilendirme yazısı ve tarih damgası.
+  </Tab>
+  <Tab title="Örnek JSON Yapısı">
+    ```json
+    {
+      "content": "🎉 **Yeni Bir Satın Alım Gerçekleşti!**",
+      "embeds": [
+        {
+          "title": "Mağaza Satışı: {product_name}",
+          "description": "**{username}** adlı oyuncumuz mağazamızdan **{product_name}** ürününü **{price} {currency}** karşılığında satın aldı!",
+          "color": 5793266,
+          "footer": {
+            "text": "{website_name} • Otomatik Bildirim Servisi"
+          }
+        }
+      ]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Frame caption="Embed Tasarım Düzenleyici ve Canlı Discord Önizlemesi">
+  ![32a75c66 C16c 40cd 8d2d 9934b009dd50](/images/32a75c66-c16c-40cd-8d2d-9934b009dd50.png "32a75c66 C16c 40cd 8d2d 9934b009dd50")
+</Frame>
+
+<Tip>
+  Ayarlarınızı kaydetmeden önce sol altta bulunan **Webhook'u Test Et** butonuna tıklayarak belirlediğiniz Discord kanalına anlık bir deneme bildirimi gönderebilir ve sağ taraftaki simülasyondan canlı görünümü kontrol edebilirsiniz.
+</Tip>

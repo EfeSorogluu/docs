@@ -1,3 +1,106 @@
 ---
-title: "E-posta"
+title: "E-posta Yönetimi"
+description: "Sıfır kurulum merkezi Crafter Relay servisi, DNS tabanlı özel alan adı doğrulaması ve HTML e-posta şablonları."
 ---
+
+Crafter CMS E-posta Yönetimi; karmaşık SMTP sunucu kurulumları veya port yapılandırmalarıyla uğraşmadan, doğrudan merkezi bulut servisi (**Merkezi Crafter Relay**) veya kendi alan adınız üzerinden yüksek teslimat oranlı e-postalar göndermenizi sağlar.
+
+[Yönetim Paneli \> Ayarlar \> E-posta](https://app.crafter.net.tr/tr/dashboard/settings/mailing) sayfasına giderek giden e-posta ayarlarınızı ve pazarlama kampanyalarınızı yönetebilirsiniz.
+
+---
+
+## 1. Genel & Gönderici Bilgileri
+
+Sistem varsayılan olarak **Sıfır Kurulum Bulut Servisi** ile aktif gelir. Hiçbir teknik ayar yapmadan şifre sıfırlama, 2FA kodları ve üyelik bildirimleri `no-reply@crafter.net.tr` üzerinden anında iletilir.
+
+<Frame caption="Genel ve Gönderici Bilgileri Ekranı">
+  ![D50e64e6 6fb9 4434 95f9 F9fba9ecddc6](/images/d50e64e6-6fb9-4434-95f9-f9fba9ecddc6.png "D50e64e6 6fb9 4434 95f9 F9fba9ecddc6")
+</Frame>
+
+- **Gönderici Adı (Sender Name):** E-postanın gelen kutusunda görünecek başlığı (Örn: `Crafter Oyuncu Topluluğu`).
+- **Yanıt Adresi (Reply-To Email):** Kullanıcılar gelen e-postayı yanıtladığında mesajın iletileceği e-posta adresi (Örn: `info@siteniz.com`).
+- **Sistem E-Postaları:** Şifre sıfırlama, 2FA doğrulama ve üyelik e-postalarının genel gönderim anahtarı (toggle).
+
+---
+
+## 2. Özel Alan Adı (Custom Domain) Kurulumu
+
+E-postalarınızın `@crafter.net.tr` yerine doğrudan kendi alan adınızdan (Örn: `info@alanadiniz.com`) gitmesi için sadece **DNS kayıtlarını** tanımlamanız yeterlidir; SMTP sunucusu kurmanız gerekmez.
+
+<Steps>
+  <Step title="Alan Adınızı Tanımlayın">
+    **2. Özel Alan Adı** sekmesine geçin ve alan adınızı (Örn: `alanadiniz.com`) girerek kaydedin.
+  </Step>
+  <Step title="DNS Kayıtlarını Alan Adı Yöneticinize Ekleyin">
+    Panelin oluşturduğu **DKIM**, **SPF** ve **DMARC** TXT kayıtlarını alan adı sağlayıcınızın (Cloudflare, GoDaddy, Namecheap vb.) DNS yönetimi sayfasına kopyalayın.
+
+    <Frame caption="Alan Adı DNS Yapılandırma Tablosu">
+      ![616ff39e 3b4e 47df A0a6 B1cb4a9474ee](/images/616ff39e-3b4e-47df-a0a6-b1cb4a9474ee.png "616ff39e 3b4e 47df A0a6 B1cb4a9474ee")
+    </Frame>
+
+    <Warning>
+      **Cloudflare Kullanıcıları İçin Kritik Not:** DNS kayıtlarını eklerken Proxy (Turuncu Bulut) mutlaka **KAPALI (DNS Only - Gri Bulut)** olmalıdır.
+    </Warning>
+  </Step>
+  <Step title="DNS Kayıtlarını Doğrulayın">
+    Kayıtları ekledikten sonra paneldeki **DNS Kayıtlarını Doğrula** butonuna tıklayın. Doğrulama tamamlandığında giden e-postalar otomatik olarak özel alan adınız üzerinden imzalanarak gönderilir.
+  </Step>
+</Steps>
+
+---
+
+## 3. Şablonlar & HTML Editör
+
+Sistem tarafından kullanıcılara gönderilen tüm bildirimlerin HTML/CSS tasarımını canlı önizleme eşliğinde özelleştirebilirsiniz.
+
+<Frame caption="E-posta Şablonları ve Kod Editörü Paneli">
+  ![C3fc7493 01c4 46a5 B0d4 68ab4ab5d4c9](/images/c3fc7493-01c4-46a5-b0d4-68ab4ab5d4c9.png "C3fc7493 01c4 46a5 B0d4 68ab4ab5d4c9")
+</Frame>
+
+### Dahili Sistem Şablonları
+
+- **E-Posta Doğrulama Kodu:** Yeni kayıtlarda giden aktivasyon şablonu.
+- **İki Adımlı Doğrulama (2FA) Kodu:** Güvenlik giriş kodu şablonu.
+- **Şifre Sıfırlama Bağlantısı:** Parola yenileme e-postası.
+- **Hoş Geldiniz Bildirimi:** Kayıt sonrası karşılama mesajı.
+- **Özel Bildirim & Duyuru:** Kullanıcı bazlı bildirim şablonu.
+
+### Desteklenen Dinamik Değişkenler
+
+Şablon gövdesinde ve e-posta konusunda aşağıdaki etiketleri kullanabilirsiniz:
+
+- `{{website_name}}` — Web sitenizin adı
+- `{{website_url}}` — Web sitenizin bağlantı adresi
+- `{{website_logo}}` — Sitenizin logo görsel URL'si
+- `{{username}}` — Alıcı kullanıcının adı
+- `{{email}}` — Alıcının e-posta adresi
+- `{{action_url}}` — Doğrulama veya şifre sıfırlama işlem butonu bağlantısı
+- `{{year}}` — Güncel yıl
+
+<Tip>
+  Şablonunuzu kaydetmeden önce sağ üstteki **Önizle** butonuyla test edebilir veya **Test Gönder** butonuna basarak kendi e-postanıza örnek bir kopya gönderebilirsiniz.
+</Tip>
+
+---
+
+## 4. Pazarlama & Toplu Kampanyalar
+
+Kayıtlı kullanıcılarınıza, harcama yapan müşterilerinize veya inaktif üyelere özel duyuru ve indirim bültenleri gönderebilirsiniz.
+
+<Steps>
+  <Step title="Kampanya Panelini Açın">
+    **4. Pazarlama & Kampanyalar** sekmesine geçin ve **Yeni Kampanya Oluştur** butonuna tıklayın.
+  </Step>
+  <Step title="Hedef Kitleyi ve Başlığı Belirleyin">
+    - **Kampanya Başlığı:** Panel içi referans adı (Örn: _2026 Bahar İndirimi Duyurusu_).
+    - **Akıllı Hedef Kitle:** Gönderim yapılacak kitleyi seçin (_Tüm Kullanıcılar_, _Ödeme Yapanlar_, _İnaktif Üyeler_ vb.).
+    - **E-Posta Konusu:** Alıcıların gelen kutusunda göreceği konu başlığı.
+  </Step>
+  <Step title="Tasarımı Oluşturun ve Gönderin">
+    Hazır şablonlardan yükleyin veya HTML editörüyle özel tasarımınızı hazırlayın. Önizleme kontrolünün ardından kampanyayı yayına alabilir veya taslak olarak kaydedebilirsiniz.
+  </Step>
+</Steps>
+
+<Frame caption="Yeni E-Posta Kampanyası Oluşturma Ekranı">
+  ![561bcf91 Fdb4 4afb Aefd 1860781e1a51](/images/561bcf91-fdb4-4afb-aefd-1860781e1a51.png "561bcf91 Fdb4 4afb Aefd 1860781e1a51")
+</Frame>

@@ -1,3 +1,116 @@
 ---
-title: "SEO Ayarları"
+title: "SEO Ayarları ve Meta Yönetimi"
+description: "Arama motoru optimizasyonu, otomatik XML Sitemap, robots.txt, Open Graph (OG) ve şablon bazlı dinamik SEO değişkenleri."
 ---
+
+Crafter CMS SEO Yönetimi; web sitenizin Google ve diğer arama motorlarındaki görünürlüğünü en üst düzeye çıkarmak, sosyal medya paylaşımlarında zengin önizleme kartları (Open Graph / Twitter Card) oluşturmak ve sayfa bazlı dinamik meta etiketleri yapılandırmak için geliştirilmiştir.
+
+[Yönetim Paneli \> Yapılandırma \> Ayarlar \> SEO Ayarları](https://app.crafter.net.tr/tr/dashboard/settings/seo) sayfasına giderek global SEO kurallarınızı ve sayfa bazlı meta şablonlarınızı düzenleyebilirsiniz.
+
+<Frame caption="SEO Ayarları Genel Yönetim Paneli">
+  ![A8a983e8 8f12 4812 9c03 1fe5c6939a06](/images/a8a983e8-8f12-4812-9c03-1fe5c6939a06.png "A8a983e8 8f12 4812 9c03 1fe5c6939a06")
+</Frame>
+
+---
+
+## 1. Genel SEO Yapılandırması
+
+Tüm sayfalarınızda geçerli olacak varsayılan kuralları ve sosyal medya kartlarını belirleyin:
+
+- **Varsayılan Başlık Formatı:** Sayfa başlıklarının tarayıcı sekmesinde ve Google arama sonuçlarında nasıl dizileceğini belirler (Varsayılan: `{page_title} | {site_name}`).
+- **Twitter Site Username:** Paylaşımlarda etiketlenecek resmi Twitter/X kullanıcı adı (Örn: `@CrafterTR`).
+- **Varsayılan Açık Grafik (OG) Resmi:** Sayfaya özel bir görsel tanımlanmadığında Discord, Twitter veya WhatsApp paylaşımlarında gösterilecek ana sosyal medya afişi.
+
+---
+
+## 2. Tarayıcı & Sitemap (Site Haritası)
+
+Arama motoru botlarının sitenizi kolayca dizine eklemesini sağlayan teknik SEO ayarları:
+
+- **Sitemap Etkinleştir (sitemap.xml):** Otomatik XML Site Haritası üretimini aktif eder. Sitenizdeki tüm sayfalar, ürünler, forum konuları ve blog yazıları anlık olarak `siteniz.com/sitemap.xml` adresinde indekslenir.
+- **Sitemap Ön Bellek Süresi (saniye):** Site haritasının sunucu önbelleğinde saklanma süresi (Örn: `3600` saniye = 1 saat).
+- **Özel robots.txt Kuralları:** Arama motoru örümceklerine izin verilen veya engellenen yolları tanımlayan metin alanı. Sistem varsayılan olarak sitemap adresinizi otomatik dahil eder.
+
+---
+
+## 3. Sayfa & Şablon Bazlı SEO Yönetimi
+
+Sol menüde yer alan sayfa listesini (**Ana Sayfa**, **Mağaza**, **Blog**, **Forum**, **Giriş/Kayıt**, **Profil**, **Sepetim**, **Sandık**) kullanarak her sayfa türüne özel meta etiketleri atayabilirsiniz.
+
+<Frame caption="Sayfa Bazlı SEO ve Canlı Google Arama Önizleme Ekranı">
+  ![4483ab15 B46c 4ec0 Affe 7d787779516d](/images/4483ab15-b46c-4ec0-affe-7d787779516d.png "4483ab15 B46c 4ec0 Affe 7d787779516d")
+</Frame>
+
+### Sayfa SEO Parametreleri
+
+- **Meta Title:** Sayfanın arama motorlarında görünen başlığı.
+- **Meta Description:** Arama sonuçlarında listelenen 160 karakterlik açıklama metni.
+- **Sayfa Özgü Resim (OG):** Bu sayfaya özel sosyal medya paylaşım görseli.
+- **Robots Etiketi:** Sayfanın indekslenme kuralı (`Sistem Varsayılanı`, `index, follow`, `noindex, nofollow` vb.).
+- **Canlı Google Önizlemesi:** Sağ taraftaki simülasyondan girilen meta başlık ve açıklamaların arama motorunda nasıl görüneceğini anlık kontrol edebilirsiniz.
+
+---
+
+## 4. Kullanılabilir Dinamik SEO Değişkenleri
+
+Meta Title veya Meta Description alanlarında dinamik veriler çekmek için süslü parantez `{değişken}` formatını kullanabilirsiniz.
+
+### 🌐 Genel Değişkenler (Tüm Sayfalarda Geçerli)
+
+| Değişken | Açıklama |
+| :-- | :-- |
+| `{site.name}` | Sitenin adı |
+| `{site.description}` | Sitenin genel varsayılan açıklaması |
+| `{site.url}` | Sitenin tam URL adresi |
+
+### 🛒 Mağaza (Store) Sayfaları
+
+| Şablon / Sayfa | Değişken | Açıklama |
+| :-- | :-- | :-- |
+| **Ürün Detay** | `{product.name}` | Ürünün adı |
+|  | `{product.description}` | Ürünün kısa açıklaması |
+|  | `{product.price}` | Ürünün fiyatı |
+|  | `{category.name}` | Ürünün ait olduğu kategorinin adı |
+|  | `{server.name}` | Ürünün tanımlı olduğu sunucunun adı |
+| **Kategori** | `{category.name}` | Kategori adı |
+|  | `{category.description}` | Kategori açıklaması |
+|  | `{server.name}` | Kategoriye ait sunucunun adı |
+|  | `{product.count}` | Bu kategoride bulunan toplam ürün sayısı |
+| **Sunucu Mağazası** | `{server.name}` | Seçilen sunucunun adı |
+
+### 📰 Haberler & Blog
+
+| Şablon / Sayfa | Değişken | Açıklama |
+| :-- | :-- | :-- |
+| **Blog Yazısı** | `{post.title}` | Haber / duyuru başlığı |
+|  | `{author.name}` | Haberi yayınlayan yetkilinin adı |
+
+### 💬 Forum Sayfaları
+
+| Şablon / Sayfa | Değişken | Açıklama |
+| :-- | :-- | :-- |
+| **Forum Konusu** | `{topic.title}` | Forum konusu başlığı |
+|  | `{author.name}` | Konuyu açan üyenin adı |
+| **Forum Kategori** | `{category.name}` | Forum kategori adı |
+
+### 👤 Profil & Özel Sayfalar
+
+| Şablon / Sayfa | Değişken | Açıklama |
+| :-- | :-- | :-- |
+| **Kullanıcı Profili** | `{user.name}` | Oyuncunun kullanıcı adı |
+|  | `{user.rank}` | Oyuncunun sitedeki yetki/rütbe grubu |
+| **CMS Özel Sayfası** | `{page.title}` | Sayfanın başlığı (Örn: _Hakkımızda_) |
+|  | `{page.slug}` | Sayfanın URL uzantısı (Örn: `hakkimizda`) |
+
+### 🎫 Destek & Başvurular
+
+| Şablon / Sayfa | Değişken | Açıklama |
+| :-- | :-- | :-- |
+| **Destek Talebi** | `{ticket.id}` | Destek talebinin benzersiz ID numarası |
+|  | `{ticket.title}` | Destek talebinin başlığı |
+| **Yardım Kategorisi** | `{category.name}` | Yardım merkezi kategori adı |
+| **Başvuru Formu** | `{application.name}` | Yetkili başvuru formunun adı |
+
+<Tip>
+  Sayfa bazlı SEO alanlarını boş bırakırsanız sistem otomatik olarak **Genel SEO** ayarlarında belirlediğiniz varsayılan başlık ve açıklamaları fallback olarak kullanır.
+</Tip>

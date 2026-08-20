@@ -1,0 +1,43 @@
+Crafter CMS Discord Bot modülü; web siteniz ile Discord topluluk sunucunuz arasında resmî Crafter botu aracılığıyla güvenli bir köprü kurar. Bu modül sayesinde Discord ile tek tıkla giriş (OAuth2), 2FA güvenlik kodları gönderimi ve mağazadan VIP/ürün alan oyunculara Discord'da otomatik rol tanımlama işlemlerini yönetebilirsiniz.
+
+[Yönetim Paneli \> Modüller \> Discord Botu](https://app.crafter.net.tr/tr/dashboard/modules/discord-bot) sayfasına giderek botu sunucunuza bağlayabilir ve etkileşim özelliklerini yapılandırabilirsiniz.
+
+<Frame caption="Discord Botu ve Sunucu Eşleştirme Yönetim Ekranı">
+  ![5a0dfe80 4ee9 4410 8279 9c01882a5568](/images/5a0dfe80-4ee9-4410-8279-9c01882a5568.png "5a0dfe80 4ee9 4410 8279 9c01882a5568")
+</Frame>
+
+---
+
+## Sunucu Eşleştirme Adımları
+
+Web sitenizi Discord sunucunuza bağlamak için aşağıdaki 2 adımı tamamlamanız yeterlidir:
+
+<Steps>
+  <Step title="Resmî Crafter Botunu Sunucunuza Ekleyin">
+    Aşağıdaki resmî davet bağlantısını kullanarak botu yetkili olduğunuz Discord sunucusuna davet edin:
+
+    <Card title="Crafter Discord Botunu Davet Et" icon="discord" href="https://discord.com/oauth2/authorize?client_id=1256993018758824108&permissions=8&scope=bot%20applications.commands">
+      Resmî Crafter botunu Yönetici (Administrator) yetkileriyle sunucunuza eklemek için tıklayın.
+    </Card>
+  </Step>
+  <Step title="Eşleştirme Komutunu Çalıştırın">
+    1. Panelinizde **Nasıl Eşleştirilir?** kutusunda size özel üretilen tek kullanımlık eşleştirme komutunu kopyalayın (Örn: `/esle CRF-YIIV09`).
+    2. Discord sunucunuzdaki herhangi bir metin kanalına bu slash komutunu yazıp gönderin.
+    3. Bot onay mesajı verdiğinde paneldeki durum rozeti yeşil renkte **Eşleşti** olarak güncellenecektir.
+  </Step>
+</Steps>
+
+---
+
+## Bot Modülü & Özellik Ayarları
+
+Sunucu eşleştirmesi tamamlandıktan sonra aşağıdaki modül özelliklerini aktif edebilirsiniz:
+
+- **Discord Bot Modülünü Etkinleştir (Toggle):** Bot üzerinden 2FA kodu gönderme, rol senkronizasyonu ve doğrudan bot bildirimlerini açar.
+- **Discord ile Giriş (OAuth2) (Toggle):** Web sitenizin giriş/kayıt sayfalarına _"Discord ile Giriş Yap"_ butonunu ekler. Kullanıcılar tek tıkla şifresiz oturum açabilir.
+- **Hesap Eşleştirmeye İzin Ver (Toggle):** Kayıtlı kullanıcıların web sitesindeki profil ayarları üzerinden kendi Discord hesaplarını bağlamasına olanak tanır.
+- **Otomatik Rol Senkronizasyonu (Toggle):** Sitede mağazadan VIP, rütbe veya özel paket satın alan oyuncuların Discord rollerinin sunucuda otomatik olarak verilmesini ve süreleri bittiğinde geri alınmasını sağlar.
+
+<Tip>
+  Otomatik rol senkronizasyonunun sorunsuz çalışabilmesi için Discord sunucu ayarlarınızda **Crafter Bot** rolünün, kullanıcılara dağıtılacak VIP ve yetki rollerinden **daha üst sırada** yer aldığından emin olun.
+</Tip>

@@ -1,3 +1,44 @@
 ---
-title: "Ödeme"
+title: "Ödeme Yöntemleri ve Sağlayıcı Yapılandırması"
+description: "Ödeme yöntemlerini listeleme, limitler, kredi çarpanı, öncelik sıralaması ve API entegrasyonu."
 ---
+
+Crafter CMS Ödeme Yöntemleri sayfası; web sitenizde bakiye yüklemesi yapacak oyunculara sunulan tüm ödeme kanallarını (Kredi/Banka Kartı, Havale, Mobil Ödeme vb.) yönetmenizi, limitlerini belirlemenizi ve kampanya amaçlı kredi çarpanları tanımlamanızı sağlar.
+
+[Yönetim Paneli \> Yapılandırma \> Ayarlar \> Ödeme](https://app.crafter.net.tr/tr/dashboard/settings/payment) sayfasına giderek mevcut ödeme yöntemlerinizi düzenleyebilir veya yeni bir sağlayıcı tanımlayabilirsiniz.
+
+<Frame caption="Ödeme Yöntemleri Yönetim Listesi ve Düzenleme Paneli">
+  ![6bd76350 4134 4115 Bda1 0573ef39be49](/images/6bd76350-4134-4115-bda1-0573ef39be49.png "6bd76350 4134 4115 Bda1 0573ef39be49")
+</Frame>
+
+---
+
+## Ödeme Yöntemi Parametreleri
+
+Bir ödeme yöntemini eklerken veya düzenlerken aşağıdaki alanları yapılandırabilirsiniz:
+
+### 1. Temel Bilgiler
+
+- **Servis Sağlayıcı:** Entegre edilecek sanal POS firması (Örn: _Shopier_, _İyzico_, _PayTR_, _Stripe_, _Tosla_, _XSolla_).
+- **Görünen Ad:** Oyuncuların bakiye yükleme ekranında gördüğü ödeme yöntemi başlığı (Örn: `Kredi // Banka Kartı`, `Havale / EFT`).
+- **Minimum Tutar:** Oyuncunun bu yöntemle tek seferde yükleyebileceği en düşük bakiye limiti (Örn: `1 TRY`).
+- **Maksimum Tutar:** Tek seferde yüklenebilecek en yüksek bakiye limiti (Örn: `10000 TRY`).
+- **Sıralama (Öncelik):** Ödeme sayfasındaki dizilim önceliği (Örn: `1` en üstte görünür).
+- **Kredi Çarpanı:** Belirli bir ödeme yöntemine özel bonus bakiye tanımlamak için kullanılır.
+  - Standart yüklemelerde `1` (1x) olarak bırakılır.
+  - Örneğin `1.2` (1.2x) yapılırsa, oyuncu 100 TL ödediğinde hesabına 120 Bakiye/Kredi yüklenir (Bonus bakiye etkinliği).
+- **Aktif (Toggle):** Ödeme yöntemini bakiye yükleme sayfasında anında yayına alır veya gizler.
+
+---
+
+### 2. Yapılandırma (API & Güvenlik Anahtarları)
+
+Seçtiğiniz servis sağlayıcıya ait kimlik ve erişim bilgilerini ilgili kutulara eşleştirin:
+
+- **API Key:** Sağlayıcıdan temin edilen genel API anahtarı veya kişisel erişim tokenı.
+- **Secret Key:** Sağlayıcıya ait gizli servis anahtarı / kullanıcı adı.
+- **Webhook Secret:** Bakiye onaylarının güvenli bir şekilde doğrulanmasını sağlayan bildirim/webhook gizli anahtarı.
+
+<Note>
+  Her ödeme sağlayıcısının (Shopier, İyzico, PayTR vb.) API anahtarlarını nereden alacağınızı ve webhook bağlantılarını nasıl kuracağınızı adım adım öğrenmek için [**Ödeme Sağlayıcıları Entegrasyon Rehberleri**](https://docs.crafter.net.tr/tr/integrations/payment) sayfalarımızı inceleyebilirsiniz.
+</Note>

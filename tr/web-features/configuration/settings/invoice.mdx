@@ -1,3 +1,44 @@
 ---
-title: "Fatura"
+title: "E-Fatura Ayarları"
+description: "Crafter CMS mağaza satışlarında BirFatura servisi ile otomatik e-fatura ve e-arşiv kesimi yapılandırması."
 ---
+
+Crafter CMS Fatura modülü; web siteniz üzerinden gerçekleşen mağaza alışverişleri ve bakiye yüklemeleri için **BirFatura** entegrasyonu aracılığıyla otomatik e-fatura / e-arşiv faturaları düzenlemenizi sağlar.
+
+[Yönetim Paneli \> Yapılandırma \> Ayarlar \> Fatura](https://app.crafter.net.tr/tr/dashboard/settings/invoice) sayfasına giderek otomatik faturalandırma servisini aktif edebilir ve API bağlantısını kurabilirsiniz.
+
+<Frame caption="Fatura Ayarları ve BirFatura Entegrasyon Ekranı">
+  ![A698310f B8c4 4adf 81a0 913bff7314ba](/images/a698310f-b8c4-4adf-81a0-913bff7314ba.png "A698310f B8c4 4adf 81a0 913bff7314ba")
+</Frame>
+
+---
+
+## Kurulum ve Yapılandırma Adımları
+
+<Steps>
+  <Step title="Fatura Servisini Aktif Edin">
+    Fatura Ayarları kartının sağ üst köşesindeki anahtarı (toggle) **aktif** konuma getirin.
+  </Step>
+  <Step title="Servis Sağlayıcıyı Seçin">
+    - **Servis Sağlayıcı:** Açılır menüden `BirFatura` seçeneğini belirleyin.
+  </Step>
+  <Step title="API Anahtarınızı (Token) Alın ve Tanımlayın">
+    1. [BirFatura Yönetim Paneli](https://panel.birfatura.com/)'ne giriş yapın.
+    2. **Ayarlar \> API Ayarları** menüsüne giderek size özel üretilen **API Şifresi / Token** değerini kopyalayın.
+    3. Kopyaladığınız anahtarı Crafter CMS panelindeki **API Şifresi / Token** kutusuna yapıştırın.
+  </Step>
+  <Step title="Webhook / Entegrasyon Adresini Tanımlayın">
+    Crafter mağaza siparişlerinin anlık olarak BirFatura sistemine aktarılması için BirFatura panelinizdeki ilgili entegrasyon/webhook alanına aşağıdaki URL adresini ekleyin:
+
+    ```text
+    [https://api.crafter.net.tr/birfatura/api/orders](https://api.crafter.net.tr/birfatura/api/orders)
+    ```
+  </Step>
+  <Step title="Ayarları Kaydedin">
+    Sağ altta bulunan **Kaydet** butonuna tıklayarak entegrasyonu tamamlayın.
+  </Step>
+</Steps>
+
+<Tip>
+  Entegrasyon tamamlandıktan sonra oyuncuların gerçekleştirdiği her başarılı sipariş anında BirFatura sistemine sipariş olarak düşer ve belirlediğiniz şablon kurallarına göre e-arşiv / e-faturası otomatik olarak düzenlenir.
+</Tip>

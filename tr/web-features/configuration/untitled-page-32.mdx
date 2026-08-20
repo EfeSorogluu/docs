@@ -1,3 +1,125 @@
 ---
-title: "Kayıtlar"
+title: "Sistem Kayıtları (Audit Logs)"
+description: "Sitede ve CMS panelinde gerçekleşen tüm kullanıcı, yönetici, mağaza ve güvenlik hareketlerinin denetim günlüğü."
 ---
+
+Crafter CMS Sistem Kayıtları (Audit Logs); web sitenizde veya yönetim panelinizde gerçekleştirilen tüm üye girişleri, mağaza alışverişleri, bakiye yüklemeleri, yönetici müdahaleleri ve güvenlik olaylarını anlık olarak kayıt altına alan denetim ve bildirim mekanizmasıdır.
+
+[Yönetim Paneli \> Kayıtlar](https://app.crafter.net.tr/tr/dashboard/logs) sayfasına giderek sistemde gerçekleşen tüm eylemleri kronolojik olarak inceleyebilirsiniz.
+
+<Frame caption="Sistem Kayıtları (Logs) Denetim Ekranı">
+  ![D765785c B500 41b6 A504 9f37bc66aa57](/images/d765785c-b500-41b6-a504-9f37bc66aa57.png "D765785c B500 41b6 A504 9f37bc66aa57")
+</Frame>
+
+---
+
+## 1. Bir Log Kaydının Anatomisi
+
+Sistemde oluşturulan her hareket kaydı aşağıdaki standart parametreleri içerir:
+
+- **İşlem Tipi (`LOG_TYPES`):** Gerçekleşen özel işlem kodu (Örn: `purchase_product`, `update_product`, `ban_user`).
+- **Kategori (`LOG_CATEGORIES`):** İşlemin ait olduğu ana modül (Örn: `payment`, `user`, `auth`, `product`).
+- **İşlemi Yapan (`performedBy`):** Eylemi gerçekleştiren kullanıcının adı veya `SYSTEM`.
+- **Açıklama & Mesaj:** Sistemin ürettiği insan tarafından okunabilir Türkçe özet (Örn: _demo "VIP" ürününü güncelledi_).
+- **Olay Verisi (`eventData`):** Fiyat, eski/yeni yetki, ban sebebi veya güncellenen alanları barındıran teknik veri.
+- **Tarih & Zaman:** İşlemin gerçekleştiği anlık zaman damgası.
+
+---
+
+## 2. Önem Dereceleri (Severity)
+
+Loglar önem ve kritiklik durumlarına göre 4 farklı rozet seviyesine ayrılır:
+
+<CardGroup cols={2}>
+  <Card title="BİLGİ (Info)" color="#3b82f6" icon="circle-info">
+    Standart operasyonlar, sayfa/ayar okuma ve olağan kullanıcı hareketleri.
+  </Card>
+
+  <Card title="BAŞARILI (Success)" color="#16a34a" icon="circle-check">
+    Başarıyla tamamlanan bakiye yüklemeleri, üye kayıtları ve mağaza siparişleri.
+  </Card>
+
+  <Card title="UYARI (Warning)" color="#f59e0b" icon="triangle-exclamation">
+    Yönetici müdahaleleri, kullanıcı yasaklamaları (ban) ve silme işlemleri.
+  </Card>
+
+  <Card title="HATA (Error)" color="#ef4444" icon="circle-xmark">
+    Başarısız ödeme denemeleri, yetkisiz erişimler ve güvenlik ihlali girişimleri.
+  </Card>
+</CardGroup>
+
+---
+
+## 3. Ana Log Kategorileri (`LOG_CATEGORIES`)
+
+Sistem kayıtları toplam **16 ana kategori** altında toplanır:
+
+| Kategori | Kapsamı |
+| :-- | :-- |
+| **`auth`** | Giriş, kayıt, şifre sıfırlama ve CMS oturum işlemleri. |
+| **`user`** | Kullanıcı düzenleme, banlama, bakiye transferi ve yetki değişimleri. |
+| **`payment`** | Ödeme başlatma, sağlayıcı geri bildirimleri ve kredi yüklemeleri. |
+| **`product`** | Ürün ekleme, fiyat/stok düzenleme, silme ve indirim işlemleri. |
+| **`category`** | Mağaza kategori yönetimi. |
+| **`chest`** | Web sandığı işlemleri (oyuna aktarma, eşya hediye etme, ekleme/silme). |
+| **`role`** | Yetki grubu oluşturma ve izin değişiklikleri. |
+| **`server`** | Minecraft oyun sunucusu ekleme, düzenleme ve silme. |
+| **`ticket`** | Destek talebi açma, yanıtlama, kapatma ve atama işlemleri. |
+| **`post`** | Haber/Duyuru oluşturma, yayınlama ve sabitleme. |
+| **`forum`** | Forum konuları, mesajlar, beğeniler ve forum kategori yönetimi. |
+| **`help_center`** | Yardım merkezi makaleleri, SSS ve rehber kategorileri. |
+| **`coupon`** | İndirim kuponu oluşturma ve sepet kullanımları. |
+| **`redeem_code`** | Hediye/Promosyon kodu oluşturma ve bozdurma. |
+| **`staff_form`** | Yetkili başvuru formları ve başvuru incelemeleri. |
+| **`config`** | Genel ayarlar, güvenlik (Turnstile), Discord ve tema yapılandırmaları. |
+
+---
+
+## 4. Log Tipleri ve Olay Eşleşmeleri (`LOG_TYPES`)
+
+Sistemde gerçekleşen ve hem denetim günlüğüne işlenen hem de **Discord Webhook** tetikleyicilerinde kullanılabilen olay kodları:
+
+<AccordionGroup>
+  <Accordion title="🔐 Kimlik Doğrulama & Oturum (auth)">
+    - `sign_in`: Oyuncu web sitesine giriş yaptığında.
+    - `sign_up`: Yeni bir kullanıcı kayıt olduğunda.
+    - `cms_auth`: Yetkili kullanıcı Crafter CMS paneline giriş yaptığında.
+    - `forgot_password`: Şifre sıfırlama talebi oluşturulduğunda.
+    - `reset_password`: Kullanıcı şifresi başarıyla yenilendiğinde.
+  </Accordion>
+
+  <Accordion title="👤 Kullanıcı & Ceza İşlemleri (user)">
+    - `create_user` / `update_user` / `delete_user`: Panelden kullanıcı oluşturma, düzenleme ve silme.
+    - `update_user_role`: Kullanıcının yetki/rol grubu değiştirildiğinde.
+    - `transfer_balance`: İki oyuncu arasında kredi/bakiye transferi yapıldığında.
+    - `ban_user` / `unban_user`: Oyuncu siteden yasaklandığında veya yasağı kaldırıldığında.
+    - `create_report` / `update_report`: Oyuncu şikayetleri açıldığında veya incelendiğinde.
+    - `create_warning` / `delete_warning`: Oyuncuya uyarı verildiğinde veya silindiğinde.
+  </Accordion>
+
+  <Accordion title="🛒 Mağaza, Ödeme & Sandık (payment, product, chest)">
+    - `balance_load_success`: Kredi yüklemesi başarıyla onaylandığında.
+    - `purchase_product` / `store.purchase.product`: Mağazadan ürün satın alındığında.
+    - `create_product` / `update_product` / `delete_product`: Ürün yönetimi işlemleri.
+    - `product_apply_discount` / `product_apply_bulk_discount`: Tekil veya toplu indirim başlatıldığında.
+    - `use_chest_item`: Sandıktaki eşya oyun sunucusuna aktarıldığında.
+    - `gift_chest_item`: Sandık eşyası başka bir kullanıcıya hediye edildiğinde.
+  </Accordion>
+
+  <Accordion title="🎫 Destek, Forum & Blog (ticket, forum, post)">
+    - `create_ticket` / `reply_ticket` / `close_ticket`: Destek talebi açma, yanıtlama ve kapatma.
+    - `assign_ticket`: Destek talebi belirli bir yetkiliye atandığında.
+    - `create_post` / `publish_post` / `pin_post`: Haber oluşturma, yayına alma ve sabitleme.
+    - `create_forum_topic` / `create_forum_reply`: Forumda konu açma ve cevap yazma.
+  </Accordion>
+
+  <Accordion title="🎟️ Kodlar, Oy & Yapılandırma (coupon, vote, config)">
+    - `use_coupon` / `use_redeem_code`: Kupon kullanımı veya hediye kodu bozdurma.
+    - `vote_success` / `vote_failed`: ServersMC veya liste sitelerinden oy kullanımı.
+    - `update_website_config` / `update_security_config`: Genel site ve güvenlik ayarları güncellendiğinde.
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+  Sistem kayıtlarındaki tüm bu olayları anlık olarak Discord kanallarınıza yönlendirmek için [**Discord Entegrasyonu ve Webhooklar**](/integrations/social/discord) sayfamızı inceleyebilirsiniz.
+</Tip>

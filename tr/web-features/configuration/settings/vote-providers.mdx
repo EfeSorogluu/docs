@@ -1,3 +1,51 @@
 ---
-title: "Oy Sistemi"
+title: "Oy Sistemi ve ServersMC Entegrasyonu"
+description: "ServersMC iş birliği ile sunucu listelerindeki oy kullanımlarını Crafter CMS web sitenize bağlama ve otomatik ödüllendirme."
 ---
+
+Crafter CMS Oy Sistemi modülü; [ServersMC](https://www.servers-mc.net) gibi popüler Minecraft sunucu listelerinde oyuncularınızın verdiği oyları (vote) web sitenizle senkronize etmenizi ve oy kullanan oyunculara otomatik kredi, sandık eşyası veya ödül tanımlamanızı sağlar.
+
+[Yönetim Paneli \> Yapılandırma \> Ayarlar \> Oy Sistemi](https://app.crafter.net.tr/tr/dashboard/settings/vote) sayfasına giderek oy sağlayıcılarınızı yönetebilir ve yeni entegrasyon ekleyebilirsiniz.
+
+<Frame caption="Oy Sistemi Sağlayıcı Yapılandırma Paneli">
+  ![0b999827 Ab52 4ef5 B39b Cedd58122e46](/images/0b999827-ab52-4ef5-b39b-cedd58122e46.png "0b999827 Ab52 4ef5 B39b Cedd58122e46")
+</Frame>
+
+---
+
+## ServersMC Entegrasyon Adımları
+
+ServersMC üzerindeki sunucunuzu Crafter CMS'e bağlamak için aşağıdaki adımları takip edin:
+
+<Steps>
+  <Step title="ServersMC Profil Sayfanıza Gidin">
+    1. [ServersMC Profilim](https://www.servers-mc.net/me) sayfasına giriş yapın.
+    2. **Sunucularım** sekmesi altından Crafter CMS'e bağlamak istediğiniz sunucunun sağındaki mavi **Ayar / Yönetim** butonuna tıklayın.
+  </Step>
+  <Step title="Sunucu Gizli Anahtarını (Secret Key) Kopyalayın">
+    Açılan pencerede sunucu başlığının hemen yanında parantez içinde yer alan uzun alfanümerik **Gizli Anahtarı (Secret Key)** kopyalayın.
+  </Step>
+  <Step title="Crafter CMS Paneline Tanımlayın">
+    1. Crafter CMS panelinde [Ayarlar \> Oy Sistemi](https://app.crafter.net.tr/tr/dashboard/settings/vote) sayfasında sağ üstteki oluşturma alanını açın.
+    2. **Sağlayıcı Türü:** `ServersMC` olarak seçin.
+    3. **Gizli Anahtar (Secret Key):** ServersMC'den kopyaladığınız anahtarı bu kutuya yapıştırın.
+    4. **Aktif:** Sağlayıcı durumunu aktif konuma getirin.
+  </Step>
+  <Step title="Kaydedin">
+    **Kaydet** butonuna basarak entegrasyonu tamamlayın.
+  </Step>
+</Steps>
+
+---
+
+## Oy Bildirimleri ve Ödüller
+
+Entegrasyon tamamlandığında:
+
+- Oyuncularınız ServersMC üzerinden oy verdiklerinde sistem bu işlemi anlık olarak algılar.
+- Başarılı oy kullanımlarında Discord webhook'unuza `vote_success` olayı tetiklenir.
+- Web sitenizdeki sıralama tablolarında ve kullanıcı profilinde oyuncunun toplam oy sayısı otomatik olarak güncellenir.
+
+<Tip>
+  Oy kullanan oyunculara Discord üzerinden duyuru geçmek için [Ayarlar \> Discord](https://app.crafter.net.tr/tr/dashboard/settings/discord) bölümünden `vote_success` webhook bildirimini aktif edebilirsiniz.
+</Tip>

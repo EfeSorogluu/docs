@@ -1,3 +1,74 @@
 ---
-title: "Sunucular"
+title: "Sunucu Ayarları ve Bağlantı Protokolleri"
+description: "Minecraft sunucularını veya diğer oyun sunucularını tanımlama, IP/Port yapılandırması ve Crafter Connect, RCON, WebSender bağlantı protokolleri."
 ---
+
+Crafter CMS Sunucu Ayarları modülü; ağınızda yer alan tüm alt sunucuları (Survival, Skyblock, Faction vb.) sisteme tanımlamanızı, oyun sürümü/türü bilgilerini sitenizde sergilemenizi ve mağaza ürünlerinin oyun içine otomatik teslim edilmesini sağlar.
+
+[Yönetim Paneli \> Yapılandırma \> Ayarlar \> Sunucular](https://app.crafter.net.tr/tr/dashboard/settings/servers) sayfasına giderek sunucu listenizi yönetebilir ve yeni sunucular ekleyebilirsiniz.
+
+<Frame caption="Sunucu Ayarları Yönetim Paneli">
+  ![34a9c785 05ce 42d3 Adbb Efeed7874a8c 1](/images/34a9c785-05ce-42d3-adbb-efeed7874a8c-1.png "34a9c785 05ce 42d3 Adbb Efeed7874a8c 1")
+</Frame>
+
+---
+
+## Sunucu Tanımlama ve Düzenleme
+
+Yeni bir alt sunucu eklerken veya mevcut bir sunucuyu yapılandırırken aşağıdaki alanları doldurun:
+
+### 1. Temel Bilgiler
+
+- **Sunucu İkonu:** Sunucuya ait logoyu veya temsilî görseli yükleyin. Bu görsel mağaza filtrelerinde ve sunucu seçim alanlarında listelenir.
+- **Sunucu İsmi:** Sunucunun adı (Örn: `Survival`, `Skyblock 1.20`).
+- **IP Adresi & Port:** Sunucunun doğrudan bağlantı IP adresi ve portu (Örn: `mc.siteniz.com` / `25565`).
+- **Listeleniyor mu? (Toggle):** Aktif edildiğinde bu sunucu mağaza filtreleme menülerinde ve kategori seçimlerinde oyunculara gösterilir.
+
+---
+
+### 2. Bağlantı Ayarları ve Protokoller
+
+Crafter CMS, web sitenizden oyun sunucunuza satın alım komutlarını anında iletmek için 4 farklı protokol seçeneği sunar:
+
+<Tabs>
+  <Tab title="Crafter Connect (Önerilen)">
+    Crafter'ın resmi eklentisi aracılığıyla yüksek güvenlikli, çift yönlü ve anlık bağlantı sağlar.
+
+    - **Gereksinim:** Sunucunuza `CrafterConnect.jar` eklentisinin yüklenmiş olması gerekir.
+    - **Avantajı:** Port açma zorunluluğunu ortadan kaldırır, gecikmesiz komut iletir ve sandık/envanter senkronizasyonunu en kararlı şekilde gerçekleştirir.
+    - **Yapılandırma:** Panelden üretilen Token/Gizli Anahtarı eklentinin `config.yml` dosyasına eklemeniz yeterlidir.
+  </Tab>
+  <Tab title="RCON">
+    Minecraft'ın dahili Uzaktan Konsol (Remote Console) protokolü.
+
+    - **Gereksinim:** Sunucunuzun `server.properties` dosyasında `enable-rcon=true` ayarlanmalı, `rcon.port` ve `rcon.password` belirlenmelidir.
+    - **Yapılandırma:** Panelde sunucu RCON portunu ve şifrenizi girerek doğrudan konsol bağlantısı kurun.
+  </Tab>
+  <Tab title="WebSender">
+    Bukkit/Spigot sunucularında yaygın kullanılan klasik WebSender eklenti entegrasyonu.
+
+    - **Gereksinim:** Sunucunuzda `WebSender.jar` kurulu ve web portu dış bağlantılara açık olmalıdır.
+    - **Yapılandırma:** WebSender yapılandırma dosyasındaki Port ve Şifre bilgilerini paneldeki ilgili alanlara girin.
+  </Tab>
+  <Tab title="Bağlantı Yok (None)">
+    Sunucuya herhangi bir konsol komutu iletilmesini istemiyorsanız veya sunucuyu sadece bilgilendirme/mağaza vitrini amacıyla eklemek istiyorsanız bu seçeneği kullanın.
+  </Tab>
+</Tabs>
+
+<Card title="Detaylı Kurulum ve Yapılandırma Rehberi" icon="book-open" href="/tr/game-servers/minecraft">
+  Protokollerin sunucu tarafındaki kurulum adımları, port ayarları ve `CrafterConnect` eklentisinin yapılandırılması hakkında detaylı bilgi için **Minecraft Sunucu Kurulum Rehberi** sayfamızı inceleyin.
+</Card>
+
+---
+
+## Genel Sunucu Bilgileri Görüntüleme
+
+Web sitenizin ana sayfasında ve sunucu durumu widget'larında oyunculara gösterilecek genel meta verileri yapılandırın:
+
+- **Oyun Sürümü:** Desteklenen sunucu sürümü (Örn: `1.20.1`, `1.8 - 1.20+`).
+- **Oyun Türü:** Platform türü (Örn: `Minecraft`, `Hytale`).
+- **Sadece Orijinal Minecraft:** Sunucunuzun Premium (Mojang/Microsoft) hesap zorunluluğu olup olmadığını belirtir. Aktif edildiğinde sitenizde orijinal hesap rozeti gösterilir.
+
+<Tip>
+  Sunucularınızı tanımladıktan sonra [Mağaza \> Ürünler](https://app.crafter.net.tr/tr/dashboard/store/products) sayfasından oluşturduğunuz VIP veya kasa paketlerini ilgili sunucuyla eşleştirebilirsiniz.
+</Tip>
