@@ -94,17 +94,17 @@
               {
                 "group": "Ayarlar",
                 "pages": [
-                  "tr/web-features/configuration/settings/untitled-page-20",
-                  "tr/web-features/configuration/settings/untitled-page-21",
-                  "tr/web-features/configuration/settings/untitled-page-22",
-                  "tr/web-features/configuration/settings/untitled-page-23",
-                  "tr/web-features/configuration/settings/untitled-page-24",
-                  "tr/web-features/configuration/settings/untitled-page-25",
-                  "tr/web-features/configuration/settings/untitled-page-26",
-                  "tr/web-features/configuration/settings/untitled-page-27",
-                  "tr/web-features/configuration/settings/untitled-page-28",
-                  "tr/web-features/configuration/settings/untitled-page",
-                  "tr/web-features/configuration/settings/untitled-page-29"
+                  "tr/web-features/configuration/settings/general",
+                  "tr/web-features/configuration/settings/store",
+                  "tr/web-features/configuration/settings/payment",
+                  "tr/web-features/configuration/settings/servers",
+                  "tr/web-features/configuration/settings/discord",
+                  "tr/web-features/configuration/settings/security",
+                  "tr/web-features/configuration/settings/legal",
+                  "tr/web-features/configuration/settings/seo",
+                  "tr/web-features/configuration/settings/invoice",
+                  "tr/web-features/configuration/settings/vote-providers",
+                  "tr/web-features/configuration/settings/smtp-mailing"
                 ]
               },
               {

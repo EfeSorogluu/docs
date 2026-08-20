@@ -1,22 +1,82 @@
+Crafter CMS, oyuncularınızın web siteniz üzerinden kredi kartı, banka kartı ve diğer yerel ödeme yöntemleriyle güvenli bakiye yüklemesi yapabilmesi için Shopier altyapısını destekler.
+
 ---
-title: 'Shopier Ödeme Entegrasyonu'
-description: 'Bu rehber, Crafter CMS ile Shopier ödeme entegrasyonunu yapmak için gerekli adımları detaylıca açıklar.'
+
+## 1. Aşama: Shopier Erişim Anahtarlarını Alma
+
+Shopier üye işyeri panelinizden API ve bildirim anahtarlarını oluşturun.
+
+<Steps>
+  <Step title="Kişisel Erişim Tokenı (PAT) Oluşturun">
+    1. [Shopier Kişisel Erişim Tokenı](https://www.shopier.com/m/pat.php) sayfasına gidin.
+    2. Bir anahtar adı (Örn: `CrafterCMS`) belirleyip **Anahtar Oluştur** butonuna tıklayın.
+    3. Oluşturulan uzun token dizisini kopyalayıp güvenli bir yere kaydedin.
+       <Frame>
+         ![Image](/images/image-2.png "Image")
+       </Frame>
+  </Step>
+  <Step title="Bildirim Erişimi (OSB) ve Webhook Tanımlayın">
+    1. [Shopier Bildirim Erişimi](https://www.shopier.com/m/notificationaccess.php) sayfasına geçin.
+    2. Sayfada yer alan **OSB Kullanıcı Adı** ve **OSB Şifresi** değerlerini not edin.
+    3. **Bildirim URL** alanında protokolü `https://` olarak seçin ve callback adresini girin:
+
+    ```text
+    api.crafter.net.tr/website/payment/callback/shopier
+    ```
+
+    <Frame caption="Shopier Bildirim Erişimi ve Callback URL Yapılandırması">
+      ![Image](/images/image.png "Image")
+    </Frame>
+  </Step>
+</Steps>
+
 ---
 
-import { Steps, Callout } from 'nextra/components'
+## 2. Aşama: Crafter CMS Paneline Tanımlama
 
-## Adım 1: Crafter CMS Yönetim Paneline Giriş
+Topladığınız anahtarları Crafter yönetim panelinizdeki ödeme sağlayıcı alanına bağlayın.
 
-[Crafter Kontrol Paneli](https://crafter.net.tr/dashboard)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+<Steps>
+  <Step title="Ödeme Sağlayıcıları Menüsüne Gidin">
+    [Yönetim Paneli \> Ayarlar \> Ödeme Sağlayıcıları](https://app.crafter.net.tr/tr/dashboard/settings/payment) sayfasını açın ve yeni sağlayıcı ekleme alanından **Shopier** seçeneğini belirleyin.
+  </Step>
+  <Step title="API Yapılandırmasını Doldurun">
+    Shopier'den aldığınız bilgileri ilgili kutulara eşleştirin:
 
-## Adım 2: Ödeme Sağlayıcı Ayarlarını Yapılandırın
+    - **API Key:** 1. adımda aldığınız _Kişisel Erişim Tokenı_
+    - **Secret Key:** Shopier _OSB Kullanıcı Adı_
+    - **Webhook Secret:** Shopier _OSB Şifresi_
+    - **Test Modu:** Canlı ödemeleri kabul etmek için anahtarı **kapalı** (pasif) bırakın.
+  </Step>
+  <Step title="Kaydedin">
+    Bilgileri doğruladıktan sonra sağlayıcıyı kaydedin.
+  </Step>
+</Steps>
 
-Ödeme sağlayıcısı ayarlarına geçiş yapın.
-<img src="/images/payment/select-payment.png" alt="Shopier Entegrasyonu Aşama 1" />
-Sağlayıcı ekle butonuna tıklayın.
-<img src="/images/payment/click-to-add.png" alt="Shopier Entegrasyonu Aşama 2" />
-Gelen formda *Ödeme Sağlayıcı* olarak *Shopier* seçin ve bilgileri Shopier üye işyeri hesabınıza göre düzenleyin.
-<img src="/images/payment/information.png" alt="Shopier Entegrasyonu Aşama 3" />
+<Frame caption="Crafter CMS Shopier Ödeme Sağlayıcı Yapılandırması">
+  ![Görsel 2026 08 20 102645366](/images/görsel_2026-08-20_102645366.png "Görsel 2026 08 20 102645366")
+</Frame>
 
-## Adım 3: Webhook Adresi
-Shopier Callback URL'si: https://api.crafter.net.tr/website/payment/callback/shopier olmalıdır.
+---
+
+## 3. Aşama: Test Siparişi ve OSB Aktivasyonu
+
+Shopier'in web sitenizdeki otomatik bakiye yüklemelerini onaylayabilmesi için ilk test doğrulamasını gerçekleştirin.
+
+<Steps>
+  <Step title="Test Yüklemesi Başlatın">
+    Web sitenize giriş yapın ve bakiye yükleme ekranından **1 TL'lik** bir test ödemesi gerçekleştirin.
+  </Step>
+  <Step title="Sipariş ID Değerini Alın">
+    Shopier satıcı panelinizde [Siparişler](https://www.shopier.com/m/orders.php) bölümüne gidin ve az önce oluşturduğunuz 1 TL'lik işlemin **Sipariş Numarasını (ID)** kopyalayın.
+  </Step>
+  <Step title="Bildirim Testini Doğrulayın ve Aktif Edin">
+    1. Yeniden [Shopier Bildirim Erişimi](https://www.shopier.com/m/notificationaccess.php) sayfasına dönün.
+    2. **Bildirim Testi** kutusuna kopyaladığınız sipariş numarasını yapıştırıp testi çalıştırın.
+    3. Test başarılı uyarısı aldığınızda açılan onay alanından **OSB Aktifleştirme** seçeneğini aktif konuma getirin.
+  </Step>
+</Steps>
+
+<Tip>
+  Tüm adımları tamamladıktan sonra oyuncularınızın yaptığı ödemeler otomatik olarak doğrulanacak ve bakiyeleri anında hesaplarına aktarılacaktır.
+</Tip>
