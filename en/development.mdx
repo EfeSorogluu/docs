@@ -1,0 +1,80 @@
+---
+title: "Theme Development & Marketplace"
+description: "Develop, test, and publish custom Liquid themes on the Crafter Marketplace."
+---
+
+## 1. Overview
+
+Crafter CMS themes can be developed and published to the marketplace for thousands of game server networks to discover. The entire development workflow is handled directly through our zero-dependency CLI tool via `npx`.
+
+---
+
+## 2. Template Engine (Liquid)
+
+Crafter CMS theme architecture is powered by the flexible and secure **Liquid** engine:
+
+- **Dynamic Data Integration:** Standard HTML, CSS, and JS structures are preserved while Liquid tags inject dynamic store data (products, cart items, user session, etc.).
+- **Features:** Secure sandbox execution, lightning-fast rendering, and modular snippet reusability.
+
+### Example Usage
+
+```liquid
+<!-- Output store name -->
+<h1>{{ shop.name }}</h1>
+
+<!-- Load an asset file -->
+{{ 'style.css' | asset_url }}
+```
+
+---
+
+## 3. Development Workflow
+
+The Crafter CLI provides ready-to-use theme boilerplates with pre-configured Liquid layouts.
+
+### 3.1. Authentication (Login)
+
+Before initiating development, authenticate via the terminal:
+
+```bash
+npx @crafter-cms/cli@latest login
+```
+
+### 3.2. Initialize Theme Project (Init)
+
+Scaffold a new theme project with starter template files:
+
+```bash
+npx @crafter-cms/cli@latest init
+```
+
+### 3.3. Live Development Mode (Dev Mode)
+
+Start the live sync development server from your theme folder:
+
+```bash
+npx @crafter-cms/cli@latest dev
+```
+
+**Dev Mode Features:**
+- Automatically generates and maintains theme integrity manifests (`crafter-manifest.json`).
+- Live-reloads local changes directly against an isolated sandbox cloud store.
+- Enables instant real-time Liquid testing with actual store data.
+
+### 3.4. Publish to Marketplace
+
+When your theme is polished and ready for release, publish it with:
+
+```bash
+npx @crafter-cms/cli@latest publish
+```
+
+**Publish Parameters:**
+1. **Version Number:** Semantic version tag (e.g., `1.0.0` or `1.0.1`).
+2. **Release Notes:** Summary of changes and new features.
+
+---
+
+## 4. Support & Community
+
+For technical questions or theme review inquiries, visit our [Discord Server](https://discord.crafter.net.tr/).

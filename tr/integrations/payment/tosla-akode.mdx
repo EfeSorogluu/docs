@@ -1,28 +1,42 @@
 ---
 title: "Tosla (AKÖde) Ödeme Entegrasyonu"
-description: "Bu rehber, Crafter CMS ile XSolla ödeme entegrasyonunu yapmak için gerekli adımları detaylıca açıklar."
+description: "Crafter CMS ile Akbank iştiraki Tosla (AKÖde) sanal POS ve cüzdan ödeme entegrasyonu."
 ---
 
-import { Steps, Callout } from 'nextra/components'
+Crafter CMS, Akbank iştiraki AKÖde altyapısı ile komisyonsuz cüzdan ve kart ödemeleri almanızı sağlayan Tosla entegrasyonunu destekler.
 
-## Adım 1: Crafter CMS Yönetim Paneline Giriş
+---
 
-[Crafter Kontrol Paneli](https://crafter.net.tr/dashboard)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+## 1. Tosla (AKÖde) İşyeri Bilgilerini Alma
 
-## Adım 2: Ödeme Sağlayıcı Ayarlarını Yapılandırın
+Tosla İşyeri Portalınıza giriş yapın ve API bilgilerinizi hazırlayın:
 
-Ödeme sağlayıcısı ayarlarına geçiş yapın.
+- **Üye İşyeri No (Merchant Code)**
+- **API Anahtarı (API Key)**
+- **Gizli Anahtar (Secret Key)**
 
-![XSolla Entegrasyonu Aşama 1](/images/payment/select-payment.png)
+---
 
-Sağlayıcı ekle butonuna tıklayın.
+## 2. Crafter CMS Yönetim Paneline Tanımlama
 
-![XSolla Entegrasyonu Aşama 2](/images/payment/click-to-add.png)
+<Steps>
+  <Step title="Ödeme Yöntemleri Menüsüne Gidin">
+    [Yönetim Paneli \> Yapılandırma \> Ayarlar \> Ödeme](https://app.crafter.net.tr/tr/dashboard/settings/payment) sayfasını açın ve **Tosla (AKÖde)** seçeneğini belirleyin.
+  </Step>
+  <Step title="Bilgileri Doldurun">
+    Tosla işyeri panelinizdeki Merchant Code ve API anahtarlarınızı ilgili kutucuklara yapıştırın.
+  </Step>
+  <Step title="Kaydedin">
+    Ayarları kaydederek sistemi aktif edin.
+  </Step>
+</Steps>
 
-Gelen formda _Ödeme Sağlayıcı_ olarak _XSolla_ seçin ve bilgileri XSolla üye işyeri hesabınıza göre düzenleyin.
+---
 
-![XSolla Entegrasyonu Aşama 3](/images/payment/information.png)
+## 3. Webhook / Bildirim URL Adresi
 
-## Adım 3: Webhook Adresi
+Tosla panelinizde bildirim URL'si olarak aşağıdaki adresi tanımlayın:
 
-XSolla Webhook URL'si: [https://api.crafter.net.tr/website/payment/callback/tosla](https://api.crafter.net.tr/website/payment/callback/tosla) olmalıdır.
+```text
+https://api.crafter.net.tr/website/payment/callback/tosla
+```

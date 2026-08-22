@@ -1,22 +1,49 @@
 ---
-title: 'PayTR Ödeme Entegrasyonu'
-description: 'Bu rehber, Crafter CMS ile PayTR ödeme entegrasyonunu yapmak için gerekli adımları detaylıca açıklar.'
+title: "PayTR Ödeme Entegrasyonu"
+description: "Crafter CMS ile PayTR iFrame ve Sanal POS ödeme entegrasyonu adımları."
 ---
 
-import { Steps, Callout } from 'nextra/components'
+Crafter CMS, oyuncularınızın web siteniz üzerinden kredi kartı, banka kartı ve yerel ödeme yöntemleriyle güvenli bakiye yüklemesi yapabilmesi için PayTR altyapısını destekler.
 
-## Adım 1: Crafter CMS Yönetim Paneline Giriş
+---
 
-[Crafter Kontrol Paneli](https://crafter.net.tr/dashboard)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+## 1. PayTR Mağaza Bilgilerini Alma
 
-## Adım 2: Ödeme Sağlayıcı Ayarlarını Yapılandırın
+PayTR Mağaza Panelinize ([magaza.paytr.com](https://www.magaza.paytr.com)) giriş yapın ve aşağıdaki bilgileri temin edin:
 
-Ödeme sağlayıcısı ayarlarına geçiş yapın.
-<img src="/images/payment/select-payment.png" alt="PayTR Entegrasyonu Aşama 1" />
-Sağlayıcı ekle butonuna tıklayın.
-<img src="/images/payment/click-to-add.png" alt="PayTR Entegrasyonu Aşama 2" />
-Gelen formda *Ödeme Sağlayıcı* olarak *PayTR* seçin ve bilgileri PayTR üye işyeri hesabınıza göre düzenleyin.
-<img src="/images/payment/information.png" alt="PayTR Entegrasyonu Aşama 3" />
+- **Mağaza No (Merchant ID)**
+- **Mağaza Parola (Merchant Key)**
+- **Mağaza Gizli Anahtar (Merchant Salt)**
 
-## Adım 3: Webhook Adresi
-PayTR Callback URL'si: https://api.crafter.net.tr/website/payment/callback/paytr olmalıdır.
+---
+
+## 2. Crafter CMS Yönetim Paneline Tanımlama
+
+<Steps>
+  <Step title="Ödeme Yöntemleri Menüsüne Gidin">
+    [Yönetim Paneli \> Yapılandırma \> Ayarlar \> Ödeme](https://app.crafter.net.tr/tr/dashboard/settings/payment) sayfasını açın ve yeni sağlayıcı ekleme alanından **PayTR** seçeneğini belirleyin.
+  </Step>
+  <Step title="API Bilgilerini Doldurun">
+    PayTR panelinizden aldığınız bilgileri ilgili alanlara girin:
+    - **Merchant ID:** Mağaza Numaranız
+    - **Merchant Key:** Mağaza Parolanız
+    - **Merchant Salt:** Mağaza Gizli Anahtarınız
+  </Step>
+  <Step title="Kaydedin ve Test Edin">
+    Ayarları kaydedin ve web siteniz üzerinden test bakiye yüklemesi gerçekleştirin.
+  </Step>
+</Steps>
+
+---
+
+## 3. Webhook / Bildirim URL Adresi
+
+PayTR panelinizde Bildirim URL (Callback URL) adresi olarak aşağıdaki bağlantıyı tanımlayın:
+
+```text
+https://api.crafter.net.tr/website/payment/callback/paytr
+```
+
+<Tip>
+  Ödemeler tamamlandığında PayTR otomatik olarak Crafter API'sine bildirim gönderir ve oyuncunun bakiyesi anında hesabına aktarılır.
+</Tip>

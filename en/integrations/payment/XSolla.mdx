@@ -1,0 +1,42 @@
+---
+title: "XSolla Payment Integration"
+description: "Accept 700+ global video game payment methods and regional currencies via XSolla."
+---
+
+Crafter CMS integrates with XSolla Merchant to provide video game monetization across 200+ regions with support for credit cards, regional digital wallets, and cash kiosks.
+
+---
+
+## 1. XSolla Publisher Account
+
+Sign in to your [XSolla Publisher Account](https://publisher.xsolla.com/), create a Merchant Project, and retrieve:
+- **Merchant ID**
+- **Project ID**
+- **API Key**
+- **Secret Key**
+
+---
+
+## 2. Configure in Crafter CMS
+
+<Steps>
+  <Step title="Open Payment Settings">
+    Go to [Dashboard \> Settings \> Payment](https://app.crafter.net.tr/tr/dashboard/settings/payment) and select **XSolla**.
+  </Step>
+  <Step title="Enter Project Credentials">
+    Insert your Merchant ID, Project ID, and API keys.
+  </Step>
+  <Step title="Save and Activate">
+    Save settings to enable the XSolla PayStation modal on your store.
+  </Step>
+</Steps>
+
+---
+
+## 3. Webhook URL
+
+In your XSolla Project Webhook settings, specify:
+
+```text
+https://api.crafter.net.tr/website/payment/callback/xsolla
+```

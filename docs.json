@@ -3,30 +3,21 @@
   "theme": "maple",
   "name": "Crafter Dökümantasyon",
   "colors": {
-    "primary": "#17B87A", 
-    "light": "#50E3C2", 
-    "dark": "#0F7A55" 
+    "primary": "#17B87A",
+    "light": "#50E3C2",
+    "dark": "#0F7A55"
   },
   "favicon": "/favicon.ico",
-  "tabs": [
-    {
-      "name": "🇹🇷 Türkçe",
-      "url": "tr"
-    },
-    {
-      "name": "🇬🇧 English",
-      "url": "en"
-    }
-  ],
+
   "navigation": {
     "tabs": [
       {
-        "tab": "Türkçe",
+        "tab": "🇹🇷 Türkçe",
         "groups": [
           {
-            "group": "Giriş",
+            "group": "Giriş & Kurulum",
             "pages": [
-              "tr/index",
+              "tr/introduction",
               "tr/quickstart",
               "tr/development"
             ]
@@ -35,14 +26,14 @@
             "group": "Kullanıcı Yönetimi",
             "pages": [
               "tr/web-features/user-management/users",
-              "tr/web-features/user-management/untitled-page-34",
+              "tr/web-features/user-management/roles",
               "tr/web-features/user-management/reports",
               "tr/web-features/user-management/applications",
               "tr/web-features/user-management/punishments"
             ]
           },
           {
-            "group": "Mağaza",
+            "group": "Mağaza & Finans",
             "pages": [
               "tr/web-features/store/products",
               "tr/web-features/store/categories",
@@ -53,7 +44,7 @@
             ]
           },
           {
-            "group": "İçerik",
+            "group": "İçerik Yönetimi",
             "pages": [
               "tr/web-features/content/theme-library",
               "tr/web-features/content/posts",
@@ -69,27 +60,22 @@
               {
                 "group": "Yardım Merkezi",
                 "pages": [
-                  "tr/web-features/content/help-center/categories",
                   "tr/web-features/content/help-center/articles",
+                  "tr/web-features/content/help-center/categories",
                   "tr/web-features/content/help-center/faq"
                 ]
               }
             ]
           },
           {
-            "group": "İletişim",
+            "group": "İletişim & Destek",
             "pages": [
-              {
-                "group": "Destek Talepleri",
-                "pages": [
-                  "tr/web-features/communication/tickets/list",
-                  "tr/web-features/communication/tickets/templates"
-                ]
-              }
+              "tr/web-features/communication/tickets/list",
+              "tr/web-features/communication/tickets/templates"
             ]
           },
           {
-            "group": "Yapılandırma",
+            "group": "Yapılandırma & Ayarlar",
             "pages": [
               {
                 "group": "Ayarlar",
@@ -110,11 +96,32 @@
               {
                 "group": "Modüller",
                 "pages": [
+                  "tr/web-features/configuration/modules/discord-bot",
                   "tr/web-features/configuration/modules/punishments",
                   "tr/web-features/configuration/modules/authme"
                 ]
               },
-              "tr/web-features/configuration/untitled-page-32"
+              "tr/web-features/configuration/audit-logs"
+            ]
+          },
+          {
+            "group": "Entegrasyonlar",
+            "pages": [
+              {
+                "group": "Ödeme Sağlayıcıları",
+                "pages": [
+                  "tr/integrations/payment",
+                  "tr/integrations/payment/PayTR",
+                  "tr/integrations/payment/Iyzico",
+                  "tr/integrations/payment/Shopier",
+                  "tr/integrations/payment/Stripe",
+                  "tr/integrations/payment/tosla-akode",
+                  "tr/integrations/payment/XSolla"
+                ]
+              },
+              "tr/integrations/fatura-entegrasyon",
+              "tr/integrations/vote-integrations",
+              "tr/integrations/cloudflare-turnstile"
             ]
           },
           {
@@ -124,7 +131,148 @@
               "tr/game-servers/fivem",
               "tr/game-servers/rust",
               "tr/game-servers/cs2",
+              "tr/game-servers/ark-survival-evolved-ascended",
+              "tr/game-servers/day-z",
+              "tr/game-servers/empyrion",
+              "tr/game-servers/mta-sa",
+              "tr/game-servers/sa-mp",
+              "tr/game-servers/the-forest",
+              "tr/game-servers/unturned",
+              "tr/game-servers/valheim",
               "tr/game-servers/custom-request"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "🇬🇧 English",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "en/introduction",
+              "en/quickstart",
+              "en/development"
+            ]
+          },
+          {
+            "group": "User Management",
+            "pages": [
+              "en/web-features/user-management/users",
+              "en/web-features/user-management/roles",
+              "en/web-features/user-management/reports",
+              "en/web-features/user-management/applications",
+              "en/web-features/user-management/punishments"
+            ]
+          },
+          {
+            "group": "Store & Finance",
+            "pages": [
+              "en/web-features/store/products",
+              "en/web-features/store/categories",
+              "en/web-features/store/discounts",
+              "en/web-features/store/redeem-codes",
+              "en/web-features/store/payments",
+              "en/web-features/store/chests"
+            ]
+          },
+          {
+            "group": "Content Management",
+            "pages": [
+              "en/web-features/content/theme-library",
+              "en/web-features/content/posts",
+              "en/web-features/content/pages",
+              {
+                "group": "Forum",
+                "pages": [
+                  "en/web-features/content/forum/categories",
+                  "en/web-features/content/forum/topics",
+                  "en/web-features/content/forum/moderation"
+                ]
+              },
+              {
+                "group": "Help Center",
+                "pages": [
+                  "en/web-features/content/help-center/articles",
+                  "en/web-features/content/help-center/categories",
+                  "en/web-features/content/help-center/faq"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Communication & Support",
+            "pages": [
+              "en/web-features/communication/tickets/list",
+              "en/web-features/communication/tickets/templates"
+            ]
+          },
+          {
+            "group": "Configuration & Settings",
+            "pages": [
+              {
+                "group": "Settings",
+                "pages": [
+                  "en/web-features/configuration/settings/general",
+                  "en/web-features/configuration/settings/store",
+                  "en/web-features/configuration/settings/payment",
+                  "en/web-features/configuration/settings/servers",
+                  "en/web-features/configuration/settings/discord",
+                  "en/web-features/configuration/settings/security",
+                  "en/web-features/configuration/settings/legal",
+                  "en/web-features/configuration/settings/seo",
+                  "en/web-features/configuration/settings/invoice",
+                  "en/web-features/configuration/settings/vote-providers",
+                  "en/web-features/configuration/settings/smtp-mailing"
+                ]
+              },
+              {
+                "group": "Modules",
+                "pages": [
+                  "en/web-features/configuration/modules/discord-bot",
+                  "en/web-features/configuration/modules/punishments",
+                  "en/web-features/configuration/modules/authme"
+                ]
+              },
+              "en/web-features/configuration/audit-logs"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              {
+                "group": "Payment Gateways",
+                "pages": [
+                  "en/integrations/payment",
+                  "en/integrations/payment/PayTR",
+                  "en/integrations/payment/Iyzico",
+                  "en/integrations/payment/Shopier",
+                  "en/integrations/payment/Stripe",
+                  "en/integrations/payment/tosla-akode",
+                  "en/integrations/payment/XSolla"
+                ]
+              },
+              "en/integrations/fatura-entegrasyon",
+              "en/integrations/vote-integrations",
+              "en/integrations/cloudflare-turnstile"
+            ]
+          },
+          {
+            "group": "Game Servers",
+            "pages": [
+              "en/game-servers/minecraft",
+              "en/game-servers/fivem",
+              "en/game-servers/rust",
+              "en/game-servers/cs2",
+              "en/game-servers/ark-survival-evolved-ascended",
+              "en/game-servers/day-z",
+              "en/game-servers/empyrion",
+              "en/game-servers/mta-sa",
+              "en/game-servers/sa-mp",
+              "en/game-servers/the-forest",
+              "en/game-servers/unturned",
+              "en/game-servers/valheim",
+              "en/game-servers/custom-request"
             ]
           }
         ]
@@ -135,7 +283,7 @@
   "navbar": {
     "links": [
       {
-        "label": "Destek",
+        "label": "Destek / Support",
         "href": "https://discord.crafter.net.tr"
       }
     ],

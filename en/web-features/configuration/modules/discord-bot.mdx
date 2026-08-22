@@ -1,0 +1,51 @@
+---
+title: "Discord Bot & Server Linking"
+description: "Link your website with your Discord community server for one-click OAuth2 logins and automatic role sync."
+---
+
+The Crafter CMS Discord Bot module bridges your web platform with your Discord community through the official Crafter Bot. It enables one-click OAuth2 authentication, 2FA code delivery, and automatic role sync for store rank purchases.
+
+Navigate to [Dashboard \> Modules \> Discord Bot](https://app.crafter.net.tr/tr/dashboard/modules/discord-bot) to link the bot.
+
+<Frame caption="Discord Bot Management Interface">
+  ![Discord Bot Overview](/images/5a0dfe80-4ee9-4410-8279-9c01882a5568.png
+  "Discord Bot Overview")
+</Frame>
+
+---
+
+## Server Linking Steps
+
+<Steps>
+  <Step title="Invite the Official Crafter Bot">
+    Use the official authorization link to invite the bot with Administrator
+    permissions:
+    <Card
+      title="Invite Official Crafter Discord Bot"
+      icon="discord"
+      href="https://discord.com/oauth2/authorize?client_id=1256993018758824108&permissions=8&scope=bot%20applications.commands"
+    >
+      Click to invite Crafter Bot to your Discord server.
+    </Card>
+  </Step>
+  <Step title="Run Pairing Command">
+    1. Copy your unique pairing code displayed in the dashboard (e.g., `/esle
+    CRF-YIIV09` or `/link CRF-...`). 2. Run this slash command in any text
+    channel on your Discord server. 3. The status indicator will turn green
+    **Paired** upon verification.
+  </Step>
+</Steps>
+
+---
+
+## Bot Features & Permissions
+
+- **Enable Discord Bot Module (Toggle):** Enables role sync, direct message alerts, and 2FA code delivery.
+- **Discord OAuth2 Login (Toggle):** Adds a _"Sign In with Discord"_ button on login and registration pages.
+- **Allow Account Linking (Toggle):** Enables players to connect their Discord account in their web profile.
+- **Automatic Role Sync (Toggle):** Grants Discord roles automatically when a player buys VIP ranks, and revokes them upon package expiration.
+
+<Tip>
+  Ensure the **Crafter Bot** role is placed **above** all VIP and rank roles in
+  your Discord Server Settings hierarchy.
+</Tip>

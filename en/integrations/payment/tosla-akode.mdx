@@ -1,0 +1,41 @@
+---
+title: "Tosla (AKÖde) Payment Integration"
+description: "Accept zero-commission card and wallet payments powered by Akbank Tosla."
+---
+
+Crafter CMS supports Tosla (AKÖde) for digital wallet and debit card checkouts.
+
+---
+
+## 1. Obtain Tosla Merchant Credentials
+
+Sign in to your Tosla Merchant Portal and retrieve:
+- **Merchant Code**
+- **API Key**
+- **Secret Key**
+
+---
+
+## 2. Configure in Crafter CMS
+
+<Steps>
+  <Step title="Open Payment Settings">
+    Navigate to [Dashboard \> Settings \> Payment](https://app.crafter.net.tr/tr/dashboard/settings/payment) and select **Tosla (AKÖde)**.
+  </Step>
+  <Step title="Paste Credentials">
+    Enter your Merchant Code, API Key, and Secret Key.
+  </Step>
+  <Step title="Save">
+    Save settings to activate Tosla checkouts.
+  </Step>
+</Steps>
+
+---
+
+## 3. Webhook URL
+
+Set your notification webhook endpoint to:
+
+```text
+https://api.crafter.net.tr/website/payment/callback/tosla
+```

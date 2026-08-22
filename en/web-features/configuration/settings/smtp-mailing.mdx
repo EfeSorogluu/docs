@@ -1,0 +1,55 @@
+---
+title: "Email & Relay Management"
+description: "Zero-config cloud relay service, custom DNS domain verification, and responsive HTML email templates."
+---
+
+Crafter CMS Email Management eliminates complex SMTP server setups by offering a built-in zero-configuration cloud relay along with custom domain DKIM/SPF verification.
+
+Navigate to [Dashboard \> Settings \> Mailing](https://app.crafter.net.tr/tr/dashboard/settings/mailing) to manage outbound emails.
+
+---
+
+## 1. General & Sender Information
+
+Crafter includes **Zero-Config Cloud Relay** enabled by default. System notifications (passwords, 2FA, welcome emails) deliver immediately from `no-reply@crafter.net.tr`.
+
+<Frame caption="Sender Profile Panel">
+  ![Sender Profile](/images/d50e64e6-6fb9-4434-95f9-f9fba9ecddc6.png "Sender Profile")
+</Frame>
+
+- **Sender Name:** Header name on incoming emails (e.g., `Crafter Gaming Network`).
+- **Reply-To Email:** Inquiries destination (e.g., `support@yourdomain.com`).
+
+---
+
+## 2. Custom Domain (DNS Verification)
+
+To send emails directly from your own domain without running mail servers, add DNS verification records:
+
+<Steps>
+  <Step title="Add Domain">
+    Enter your root domain (e.g., `yourdomain.com`) in the **Custom Domain** tab.
+  </Step>
+  <Step title="Add DNS TXT Records">
+    Insert the provided **DKIM**, **SPF**, and **DMARC** TXT records into your DNS provider (Cloudflare, Namecheap, etc.).
+    <Frame caption="DNS Verification Table">
+      ![DNS Records](/images/616ff39e-3b4e-47df-a0a6-b1cb4a9474ee.png "DNS Records")
+    </Frame>
+    <Warning>
+      If using Cloudflare, ensure TXT records are set to **DNS Only** (not Proxied).
+    </Warning>
+  </Step>
+  <Step title="Verify Records">
+    Click **Verify DNS Records** to activate custom domain signing.
+  </Step>
+</Steps>
+
+---
+
+## 3. Template Customization & HTML Editor
+
+Customize HTML/CSS layouts for system emails with live rendering:
+
+<Frame caption="HTML Email Template Editor">
+  ![Email Templates](/images/c3fc7493-01c4-46a5-b0d4-68ab4ab5d4c9.png "Email Templates")
+</Frame>

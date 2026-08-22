@@ -1,0 +1,75 @@
+---
+title: "Roles & Permissions"
+description: "Role-Based Access Control (RBAC), custom staff roles, and granular permission matrices."
+---
+
+Crafter CMS features a robust **Role-Based Access Control (RBAC)** architecture that allows you to configure exact staff and player permissions across the entire platform.
+
+Navigate to [Dashboard \> User Management \> Roles & Permissions](https://app.crafter.net.tr/tr/dashboard/roles) to configure roles or create custom permission tiers.
+
+<Frame caption="Roles & Permissions Management Screen">
+  ![Roles and Permissions Overview](/images/787ab9a0-526a-4360-b8c3-e107af1932fd.png "Roles and Permissions Overview")
+</Frame>
+
+---
+
+## System Roles & Protections
+
+To guarantee security and stability, essential core roles are pre-configured:
+
+- **Owner (Kurucu):** Top-level superadmin role. Full access to all modules, settings, and logs. Cannot be deleted.
+- **Admin (Yönetici):** High-level operational role for network managers. Cannot be deleted.
+- **Moderator (Moderatör):** Handles tickets, player reports, and punishment operations.
+- **Player (Oyuncu - Default):** Automatically assigned to newly registered users. Grants standard player access without dashboard permissions. Cannot be deleted.
+
+<Warning>
+  **Protected Roles:** System roles such as `Owner`, `Admin`, and `Player` cannot be deleted to ensure system stability.
+</Warning>
+
+---
+
+## Creating a Custom Role
+
+Define specialized roles for your staff members (e.g., Helpers, Builders, Support Agents):
+
+<Steps>
+  <Step title="Open the Creation Drawer">
+    Click **Add New Role** on the Roles & Permissions overview page.
+  </Step>
+  <Step title="Define General Attributes">
+    Configure the core role properties:
+    - **Role Name:** Display name (e.g., Support Team, Helper, Trial Mod).
+    - **Color:** HEX color code for profile badges and dashboard highlights (e.g., `#3B82F6`).
+    - **Make Default:** Enable if newly registered accounts should automatically receive this role.
+  </Step>
+  <Step title="Select Permissions and Save">
+    Expand permission categories and toggle the exact capabilities you wish to assign, then click **Save**.
+  </Step>
+</Steps>
+
+<Frame caption="New Role Creation Panel">
+  ![New Role Creation Panel](/images/4db4553a-cf05-4c5d-b169-1560cf2226d8.png "New Role Creation Panel")
+</Frame>
+
+---
+
+## Role Editing & Permission Matrix
+
+Click **Edit** on any role card to customize permissions or modify badge colors.
+
+<Frame caption="Role Permission Matrix Editor">
+  ![Role Permission Matrix Editor](/images/4e7df4df-8266-41ac-9050-27307cba06a4.png "Role Permission Matrix Editor")
+</Frame>
+
+### Permission Categories
+
+Permissions are organized by module:
+
+- **System Permissions:** Settings (`manage_settings`), Security (`manage_security_config`), SEO, and Audit Logs (`view_logs`, `export_logs`).
+- **User & Moderation:** User account modifications, punishments, and staff applications.
+- **Store & Finance:** Product creation, categories, coupon codes, and transaction histories.
+- **Content & Themes:** Blog posts, forum management, help center articles, and theme templates.
+
+<Tip>
+  Use the **Search Permissions** filter at the top of the matrix to quickly locate specific permission nodes (e.g., `payment`, `theme`, `ticket`).
+</Tip>

@@ -1,0 +1,61 @@
+---
+title: "Shopier Payment Integration"
+description: "Configure Shopier payment gateway, Personal Access Tokens (PAT), and OSB webhook notifications."
+---
+
+Crafter CMS supports Shopier to allow players to top up account credits using credit cards, debit cards, and local payment methods without requiring formal company incorporation.
+
+---
+
+## 1. Obtain Shopier Access Credentials
+
+<Steps>
+  <Step title="Generate Personal Access Token (PAT)">
+    1. Visit [Shopier Personal Access Token](https://www.shopier.com/m/pat.php).
+    2. Enter a key label (e.g., `CrafterCMS`) and click **Generate Key**.
+    3. Copy the generated token string.
+  </Step>
+  <Step title="Configure Notification Access (OSB) & Webhook">
+    1. Open [Shopier Notification Access](https://www.shopier.com/m/notificationaccess.php).
+    2. Note your **OSB Username** and **OSB Password**.
+    3. Set the **Notification URL** protocol to `https://` and enter:
+    ```text
+    api.crafter.net.tr/website/payment/callback/shopier
+    ```
+  </Step>
+</Steps>
+
+---
+
+## 2. Configure in Crafter CMS
+
+<Steps>
+  <Step title="Open Payment Settings">
+    Navigate to [Dashboard \> Settings \> Payment](https://app.crafter.net.tr/tr/dashboard/settings/payment) and select **Shopier**.
+  </Step>
+  <Step title="Insert Credentials">
+    - **API Key:** Personal Access Token (PAT)
+    - **Secret Key:** Shopier OSB Username
+    - **Webhook Secret:** Shopier OSB Password
+    - **Test Mode:** Disabled (for live checkouts)
+  </Step>
+  <Step title="Save">
+    Click **Save** to activate.
+  </Step>
+</Steps>
+
+---
+
+## 3. Test Order & OSB Activation
+
+<Steps>
+  <Step title="Execute Test Top-up">
+    Initiate a small test payment on your website.
+  </Step>
+  <Step title="Copy Order ID">
+    From your Shopier merchant dashboard, copy the test transaction **Order ID**.
+  </Step>
+  <Step title="Verify Notification Test">
+    Return to [Shopier Notification Access](https://www.shopier.com/m/notificationaccess.php), enter the Order ID into **Notification Test**, run verification, and enable **OSB Activation**.
+  </Step>
+</Steps>

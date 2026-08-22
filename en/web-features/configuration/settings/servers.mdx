@@ -1,0 +1,56 @@
+---
+title: "Server Settings & Protocols"
+description: "Define subservers, IP/Port addresses, and configure CrafterConnect, RCON, or WebSender protocols."
+---
+
+The Crafter CMS Server Settings module allows you to register all realms and subservers in your network (Survival, Skyblock, Factions, etc.), display online player metrics, and configure instant command dispatch protocols.
+
+Navigate to [Dashboard \> Settings \> Servers](https://app.crafter.net.tr/tr/dashboard/settings/servers) to manage your server network.
+
+<Frame caption="Server Configuration Management Interface">
+  ![Server Configuration Panel](/images/34a9c785-05ce-42d3-adbb-efeed7874a8c-1.png "Server Configuration Panel")
+</Frame>
+
+---
+
+## Server Properties
+
+### 1. General Info
+
+- **Server Icon:** Subserver logo/icon shown in store filter dropdowns.
+- **Server Name:** Display title (e.g., `Survival 1.20`, `Hardcore Skyblock`).
+- **IP Address & Port:** Direct connection endpoint (e.g., `play.yourdomain.com:25565`).
+- **Listed in Store (Toggle):** Enables filtering by this realm on the web store.
+
+---
+
+### 2. Connection Protocols
+
+<Tabs>
+  <Tab title="CrafterConnect (Recommended)">
+    Official secure two-way WebSocket bridge plugin.
+
+    - **Requirements:** Install `CrafterConnect.jar` into your server's `plugins/` directory.
+    - **Benefits:** No port forwarding required; zero-latency command delivery; reliable chest sync.
+    - **Setup:** Paste the Website ID, Server ID, and Plugin Secret Key into `config.yml`.
+  </Tab>
+  <Tab title="RCON">
+    Native Minecraft Remote Console protocol.
+
+    - **Requirements:** Enable RCON in `server.properties` (`enable-rcon=true`, set `rcon.port` and `rcon.password`).
+    - **Setup:** Enter your public IP, RCON port, and password in the dashboard.
+  </Tab>
+  <Tab title="WebSender">
+    Legacy Bukkit/Spigot WebSender plugin integration.
+
+    - **Requirements:** `WebSender.jar` installed with open web port.
+    - **Setup:** Enter WebSender port and password credentials.
+  </Tab>
+  <Tab title="None (Showcase Only)">
+    For realms without command execution (informational display only).
+  </Tab>
+</Tabs>
+
+<Card title="Minecraft Server Setup Walkthrough" icon="book-open" href="/en/game-servers/minecraft">
+  Read the complete step-by-step setup guide for `CrafterConnect` and RCON configurations.
+</Card>

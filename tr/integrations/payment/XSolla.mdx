@@ -1,22 +1,43 @@
 ---
-title: 'XSolla Ödeme Entegrasyonu'
-description: 'Bu rehber, Crafter CMS ile XSolla ödeme entegrasyonunu yapmak için gerekli adımları detaylıca açıklar.'
+title: "XSolla Ödeme Entegrasyonu"
+description: "Crafter CMS ile küresel oyun ödemeleri için XSolla Merchant entegrasyonu."
 ---
 
-import { Steps, Callout } from 'nextra/components'
+Crafter CMS, dünya çapında oyun projeleri için 700'den fazla küresel ödeme yöntemini tek çatı altında sunan XSolla altyapısını destekler.
 
-## Adım 1: Crafter CMS Yönetim Paneline Giriş
+---
 
-[Crafter Kontrol Paneli](https://crafter.net.tr/dashboard)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+## 1. XSolla Publisher Hesabı
 
-## Adım 2: Ödeme Sağlayıcı Ayarlarını Yapılandırın
+[XSolla Publisher Account](https://publisher.xsolla.com/) panelinize giriş yapın ve bir Merchant projesi oluşturarak aşağıdaki bilgileri not edin:
 
-Ödeme sağlayıcısı ayarlarına geçiş yapın.
-<img src="/images/payment/select-payment.png" alt="XSolla Entegrasyonu Aşama 1" />
-Sağlayıcı ekle butonuna tıklayın.
-<img src="/images/payment/click-to-add.png" alt="XSolla Entegrasyonu Aşama 2" />
-Gelen formda *Ödeme Sağlayıcı* olarak *XSolla* seçin ve bilgileri XSolla üye işyeri hesabınıza göre düzenleyin.
-<img src="/images/payment/information.png" alt="XSolla Entegrasyonu Aşama 3" />
+- **Merchant ID**
+- **Project ID**
+- **API Key**
+- **Secret Key**
 
-## Adım 3: Webhook Adresi
-XSolla Webhook URL'si: https://api.crafter.net.tr/website/payment/callback/xsolla olmalıdır.
+---
+
+## 2. Crafter CMS Yönetim Paneline Tanımlama
+
+<Steps>
+  <Step title="Ödeme Yöntemleri Menüsüne Gidin">
+    [Yönetim Paneli \> Yapılandırma \> Ayarlar \> Ödeme](https://app.crafter.net.tr/tr/dashboard/settings/payment) sayfasına gidin ve **XSolla** seçeneğini seçin.
+  </Step>
+  <Step title="API Bilgilerini Eşleştirin">
+    XSolla panelinizdeki Proje ve API parametrelerini ilgili kutucuklara girin.
+  </Step>
+  <Step title="Kaydedin ve Doğrulayın">
+    Ayarları kaydederek entegrasyonu tamamlayın.
+  </Step>
+</Steps>
+
+---
+
+## 3. Webhook Adresi
+
+XSolla projenizin Webhooks ayarlarında aşağıdaki adresi belirtin:
+
+```text
+https://api.crafter.net.tr/website/payment/callback/xsolla
+```

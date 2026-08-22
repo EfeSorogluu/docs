@@ -1,4 +1,34 @@
 ---
-title: 'Fatura Entegrasyon'
+title: "E-Fatura Entegrasyonu"
+description: "Crafter CMS ile otomatik e-arşiv ve e-fatura kesim entegrasyonu."
 ---
 
+Crafter CMS, web siteniz üzerinden yapılan tüm bakiye yüklemeleri ve mağaza alışverişleri için yasal zorunluluklara uygun şekilde otomatik e-arşiv ve e-fatura kesilmesini sağlayan entegrasyonlar sunar.
+
+---
+
+## Desteklenen E-Fatura Sağlayıcıları
+
+- **BirFatura**
+
+---
+
+## Genel Yapılandırma Adımları
+
+<Steps>
+  <Step title="Fatura Ayarlarına Gidin">
+    [Yönetim Paneli \> Yapılandırma \> Ayarlar \> E-Fatura](https://app.crafter.net.tr/tr/dashboard/settings/invoice) menüsünü açın.
+  </Step>
+  <Step title="Şirket Bilgilerini Tanımlayın">
+    Firma unvanınız, vergi dairesi, vergi numarası ve yasal adres bilgilerinizi eksiksiz doldurun.
+  </Step>
+  <Step title="API Entegrasyonunu Aktif Edin">
+    Kullandığınız entegratörün API anahtarlarını girin ve **Otomatik Fatura Oluşturma** seçeneğini aktif konuma getirin.
+  </Step>
+</Steps>
+
+<Tip>
+  Fatura kesim süreçlerinde KDV oranlarını ürün ve ödeme bazlı olarak [Mağaza
+  Ayarları](https://app.crafter.net.tr/tr/dashboard/settings/store) üzerinden
+  özelleştirebilirsiniz.
+</Tip>

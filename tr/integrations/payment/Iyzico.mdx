@@ -1,23 +1,41 @@
 ---
-title: 'İyzico Ödeme Entegrasyonu'
-description: 'Bu rehber, Crafter CMS ile İyzico ödeme entegrasyonunu yapmak için gerekli adımları detaylıca açıklar.'
+title: "İyzico Ödeme Entegrasyonu"
+description: "Crafter CMS ile İyzico sanal POS ve 3D Secure ödeme altyapısı entegrasyonu."
 ---
 
-import { Steps, Callout } from 'nextra/components'
+Crafter CMS, bireysel ve kurumsal hesaplar için gelişmiş 3D Secure ödeme altyapısı sunan İyzico entegrasyonunu destekler.
 
-## Adım 1: Crafter CMS Yönetim Paneline Giriş
+---
 
-[Crafter Kontrol Paneli](https://crafter.net.tr/dashboard)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+## 1. İyzico API Anahtarlarını Alma
 
-## Adım 2: Ödeme Sağlayıcı Ayarlarını Yapılandırın
+[İyzico Kontrol Paneli](https://merchant.iyzipay.com/)'ne giriş yapın ve **Ayarlar > Firma Ayarları** bölümünden API anahtarlarınızı kopyalayın:
 
-Ödeme sağlayıcısı ayarlarına geçiş yapın.
-<img src="/images/payment/select-payment.png" alt="İyzico Entegrasyonu Aşama 1" />
-Sağlayıcı ekle butonuna tıklayın.
-<img src="/images/payment/click-to-add.png" alt="İyzico Entegrasyonu Aşama 2" />
-Gelen formda *Ödeme Sağlayıcı* olarak *İyzico* seçin ve bilgileri İyzico üye işyeri hesabınıza göre düzenleyin.
-<img src="/images/payment/information.png" alt="İyzico Entegrasyonu Aşama 3" />
+- **API Anahtarı (API Key)**
+- **Güvenlik Anahtarı (Secret Key)**
 
-## Adım 3: Webhook Adresi
-İyzico bir webhook adresi talep etmeyebilir. 
-Ancak talep ederse belirtilmesi gereken adres: https://api.crafter.net.tr/website/payment/callback/iyzico olmalıdır.
+---
+
+## 2. Crafter CMS Yönetim Paneline Tanımlama
+
+<Steps>
+  <Step title="Ödeme Yöntemleri Menüsüne Gidin">
+    [Yönetim Paneli \> Yapılandırma \> Ayarlar \> Ödeme](https://app.crafter.net.tr/tr/dashboard/settings/payment) sayfasına gidin ve **İyzico** sağlayıcısını seçin.
+  </Step>
+  <Step title="API Bilgilerini Girin">
+    İyzico panelinizden aldığınız **API Key** ve **Secret Key** değerlerini yapıştırın.
+  </Step>
+  <Step title="Kaydedin ve Doğrulayın">
+    Bilgileri doğrulayıp kaydedin.
+  </Step>
+</Steps>
+
+---
+
+## 3. Webhook / Bildirim URL Adresi
+
+İyzico panelinde webhook adresi talep edildiğinde aşağıdaki bağlantıyı girin:
+
+```text
+https://api.crafter.net.tr/website/payment/callback/iyzico
+```

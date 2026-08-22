@@ -1,0 +1,43 @@
+---
+title: "Cloudflare Turnstile Entegrasyonu"
+description: "Web sitenizi spam ve bot saldırılarına karşı görünmez CAPTCHA kalkanıyla koruyun."
+---
+
+Cloudflare Turnstile; kullanıcıları bulmaca çözmekle veya resim seçmekle uğraştırmadan, web sitenizi ve formlarınızı otomatik bot saldırılarına karşı koruyan modern, gizlilik odaklı bir CAPTCHA alternatifidir.
+
+<CardGroup cols={3}>
+  <Card title="Kullanıcı Dostu" color="#16a34a" icon="user-check">
+    Gerçek kullanıcılar için sıfır bulmaca ile arka planda akıcı doğrulama.
+  </Card>
+
+  <Card title="Gizlilik Odaklı" color="#3b82f6" icon="shield-halved">
+    Ziyaretçi veri gizliliğine saygı duyarken üst düzey bot koruması sağlar.
+  </Card>
+
+  <Card title="Yüksek Performans" color="#f59e0b" icon="bolt">
+    Hafif yapısı sayesinde sayfa açılış hızlarını olumsuz etkilemez.
+  </Card>
+</CardGroup>
+
+---
+
+## Kurulum ve Yapılandırma
+
+<Steps>
+  <Step title="Turnstile Menüsüne Gidin">
+    [Cloudflare Dashboard](https://dash.cloudflare.com/) hesabınıza giriş yapın ve sol menüden **Turnstile** seçeneğini seçin.
+  </Step>
+  <Step title="Yeni Widget Oluşturun">
+    **Add Widget** butonuna tıklayın ve alanları doldurun:
+    - **Widget Name:** `Crafter CMS Widget` yazın.
+    - **Domains (Hostnames):** `Add a custom hostname` seçeneğiyle önce `crafter.net.tr`, ardından kendi alan adınızı (örn: `siteniz.com` ve `www.siteniz.com`) ekleyin.
+  </Step>
+  <Step title="API Anahtarlarını Kopyalayın">
+    Kaydedin ve oluşturulan **Site Key** ile **Secret Key** anahtarlarını kopyalayın.
+  </Step>
+  <Step title="Crafter CMS Paneline Girin">
+    1. [Dashboard \> Ayarlar \> Güvenlik](https://app.crafter.net.tr/tr/dashboard/settings/security) sayfasına gidin.
+    2. **Cloudflare Turnstile** seçeneğini aktif edin.
+    3. **Site Key** ve **Secret Key** değerlerini yapıştırıp kaydedin.
+  </Step>
+</Steps>

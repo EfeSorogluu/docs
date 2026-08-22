@@ -1,3 +1,35 @@
 ---
-title: "Vote Entegrasyonu"
+title: "Sunucu Oy (Vote) Entegrasyonları"
+description: "Minecraft ve oyun listeleme siteleri üzerinden oy verip ödül kazanma mekanizması."
 ---
+
+Crafter CMS, popüler sunucu listeleme ve oy platformlarından oyuncularınızın sitenize veya oyun sunucunuza oy vererek otomatik ödül, bakiye veya sandık eşyası kazanmasını sağlar.
+
+---
+
+## Desteklenen Oy Sağlayıcıları
+
+- **ServersMC**
+- **Minecraft MP (Minecraft Server List)**
+- **TopG**
+- **Planet Minecraft**
+
+---
+
+## Kurulum ve Bağlantı
+
+<Steps>
+  <Step title="Oy Siteleri Ayarlarını Açın">
+    [Yönetim Paneli \> Yapılandırma \> Ayarlar \> Oy Sağlayıcıları](https://app.crafter.net.tr/tr/dashboard/settings/vote-providers) sayfasına gidin.
+  </Step>
+  <Step title="API / Servis Anahtarlarınızı Girin">
+    Listeleme sitelerinde sunucunuza ait API anahtarını veya sayfa kimliğini tanımlayın.
+  </Step>
+  <Step title="Oy Ödüllerini Belirleyin">
+    Oyuncu oy verdiğinde tanımlanacak bakiye miktarını veya sandık hediye eşyasını belirleyin.
+  </Step>
+</Steps>
+
+<Tip>
+  Verilen tüm oylar [Sistem Kayıtları](https://app.crafter.net.tr/tr/dashboard/logs) ekranında `vote_success` koduyla denetlenir.
+</Tip>

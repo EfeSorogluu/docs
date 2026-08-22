@@ -1,0 +1,41 @@
+---
+title: "PayTR Payment Integration"
+description: "Configure PayTR iFrame and Virtual POS payment gateway on Crafter CMS."
+---
+
+Crafter CMS supports PayTR to provide fast, secure 3D Secure credit card and bank transfer checkout capabilities.
+
+---
+
+## 1. Obtain PayTR Merchant Credentials
+
+Log in to your PayTR Merchant Panel ([magaza.paytr.com](https://www.magaza.paytr.com)) and copy your:
+- **Merchant ID**
+- **Merchant Key**
+- **Merchant Salt**
+
+---
+
+## 2. Configure in Crafter CMS
+
+<Steps>
+  <Step title="Open Payment Settings">
+    Navigate to [Dashboard \> Settings \> Payment](https://app.crafter.net.tr/tr/dashboard/settings/payment) and select **PayTR**.
+  </Step>
+  <Step title="Fill API Credentials">
+    Paste your Merchant ID, Merchant Key, and Merchant Salt.
+  </Step>
+  <Step title="Save and Test">
+    Save settings and execute a test top-up on your website.
+  </Step>
+</Steps>
+
+---
+
+## 3. Webhook / Callback URL
+
+In your PayTR panel, set your Notification (Callback) URL to:
+
+```text
+https://api.crafter.net.tr/website/payment/callback/paytr
+```

@@ -1,22 +1,42 @@
 ---
-title: 'Stripe Ödeme Entegrasyonu'
-description: 'Bu rehber, Crafter CMS ile Stripe ödeme entegrasyonunu yapmak için gerekli adımları detaylıca açıklar.'
+title: "Stripe Ödeme Entegrasyonu"
+description: "Crafter CMS ile Stripe üzerinden uluslararası kartlar ve döviz bazlı ödeme alma adımları."
 ---
 
-import { Steps, Callout } from 'nextra/components'
+Crafter CMS, global oyuncu kitlenizden uluslararası kredi kartları ve yerel döviz birimleriyle ödeme almanızı sağlayan Stripe altyapısını destekler.
 
-## Adım 1: Crafter CMS Yönetim Paneline Giriş
+---
 
-[Crafter Kontrol Paneli](https://crafter.net.tr/dashboard)'ne gidin ve kullanıcı bilgilerinizle giriş yapın.
+## 1. Stripe API Anahtarlarını Alma
 
-## Adım 2: Ödeme Sağlayıcı Ayarlarını Yapılandırın
+[Stripe Dashboard](https://dashboard.stripe.com/)'a giriş yapın ve **Developers > API keys** sekmesinden aşağıdaki anahtarları temin edin:
 
-Ödeme sağlayıcısı ayarlarına geçiş yapın.
-<img src="/images/payment/select-payment.png" alt="Stripe Entegrasyonu Aşama 1" />
-Sağlayıcı ekle butonuna tıklayın.
-<img src="/images/payment/click-to-add.png" alt="Stripe Entegrasyonu Aşama 2" />
-Gelen formda *Ödeme Sağlayıcı* olarak *Stripe* seçin ve bilgileri Stripe üye işyeri hesabınıza göre düzenleyin.
-<img src="/images/payment/information.png" alt="Stripe Entegrasyonu Aşama 3" />
+- **Publishable Key**
+- **Secret Key**
+- **Webhook Signing Secret** (Webhooks sekmesinden oluşturulan uç noktaya ait)
 
-## Adım 3: Webhook Adresi
-Stripe Webhook URL'si: https://api.crafter.net.tr/website/payment/callback/stripe olmalıdır.
+---
+
+## 2. Crafter CMS Yönetim Paneline Tanımlama
+
+<Steps>
+  <Step title="Ödeme Yöntemleri Menüsüne Gidin">
+    [Yönetim Paneli \> Yapılandırma \> Ayarlar \> Ödeme](https://app.crafter.net.tr/tr/dashboard/settings/payment) sayfasına gidin ve **Stripe** seçeneğini belirleyin.
+  </Step>
+  <Step title="API Bilgilerini Girin">
+    Stripe panelinden aldığınız anahtarları ilgili alanlara yapıştırın.
+  </Step>
+  <Step title="Kaydedin ve Canlıya Alın">
+    Kaydedin ve test işlemlerinin ardından canlı moda geçiş yapın.
+  </Step>
+</Steps>
+
+---
+
+## 3. Webhook Adresi
+
+Stripe Dashboard üzerinde **Developers > Webhooks** bölümünden uç nokta ekleyin:
+
+```text
+https://api.crafter.net.tr/website/payment/callback/stripe
+```

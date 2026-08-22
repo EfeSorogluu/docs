@@ -1,0 +1,40 @@
+---
+title: "İyzico Payment Integration"
+description: "Configure İyzico Virtual POS and 3D Secure checkout infrastructure."
+---
+
+Crafter CMS supports İyzico for processing credit card payments with comprehensive 3D Secure compliance for corporate and individual merchants.
+
+---
+
+## 1. Obtain İyzico API Keys
+
+Log in to the [İyzico Control Panel](https://merchant.iyzipay.com/) and navigate to **Settings > Company Settings** to copy your:
+- **API Key**
+- **Secret Key**
+
+---
+
+## 2. Configure in Crafter CMS
+
+<Steps>
+  <Step title="Open Payment Settings">
+    Navigate to [Dashboard \> Settings \> Payment](https://app.crafter.net.tr/tr/dashboard/settings/payment) and select **İyzico**.
+  </Step>
+  <Step title="Enter API Credentials">
+    Paste your **API Key** and **Secret Key**.
+  </Step>
+  <Step title="Save and Verify">
+    Click **Save** to enable İyzico checkouts.
+  </Step>
+</Steps>
+
+---
+
+## 3. Webhook Endpoint
+
+If requested by İyzico, set your webhook URL to:
+
+```text
+https://api.crafter.net.tr/website/payment/callback/iyzico
+```

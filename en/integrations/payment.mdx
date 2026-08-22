@@ -1,0 +1,55 @@
+---
+title: "Payment Gateways Overview"
+description: "Supported domestic and international payment gateways and virtual POS integrations."
+---
+
+Crafter CMS supports modern payment gateways across the world, enabling your players to securely top up account credits using Credit/Debit Cards, Wire Transfers, and Mobile Wallets.
+
+---
+
+## Supported Payment Gateways
+
+<CardGroup cols={3}>
+  <Card title="İyzico" icon="credit-card" href="/en/integrations/payment/iyzico">
+    Advanced 3D Secure payment gateway for individual and corporate accounts.
+  </Card>
+
+  <Card title="PayTR" icon="shield-check" href="/en/integrations/payment/paytr">
+    Popular Turkish virtual POS and iFrame checkout solution.
+  </Card>
+
+  <Card title="Shopier" icon="bag-shopping" href="/en/integrations/payment/shopier">
+    Instant automated marketplace payment system with zero company setup required.
+  </Card>
+
+  <Card title="Stripe" icon="stripe" href="/en/integrations/payment/stripe">
+    Global multi-currency credit card checkout infrastructure.
+  </Card>
+
+  <Card title="Tosla (AKÖde)" icon="wallet" href="/en/integrations/payment/tosla">
+    Zero-commission wallet and card payments powered by Akbank AKÖde.
+  </Card>
+
+  <Card title="XSolla" icon="gamepad" href="/en/integrations/payment/xsolla">
+    Global video game commerce suite supporting over 700+ payment methods worldwide.
+  </Card>
+</CardGroup>
+
+---
+
+## General Integration Workflow
+
+<Steps>
+  <Step title="Obtain Merchant API Keys">
+    Log in to your payment gateway portal and copy your **API Key**, **Secret Key**, and **Merchant ID**.
+  </Step>
+  <Step title="Configure Callback / Webhook URL">
+    Provide the Crafter webhook endpoint (`https://api.crafter.net.tr/website/payment/callback/...`) to your gateway provider.
+  </Step>
+  <Step title="Add to Crafter Dashboard">
+    Navigate to [Dashboard \> Settings \> Payment](https://app.crafter.net.tr/tr/dashboard/settings/payment) and paste your credentials.
+  </Step>
+  <Step title="Perform Test Transaction">
+    Complete a small test payment to verify automated credit delivery.
+  </Step>
+</Steps>

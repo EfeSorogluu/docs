@@ -1,0 +1,41 @@
+---
+title: "Stripe Payment Integration"
+description: "Accept global credit cards and multi-currency transactions via Stripe."
+---
+
+Crafter CMS supports Stripe for processing international card transactions across global player communities in USD, EUR, GBP, and other major currencies.
+
+---
+
+## 1. Obtain Stripe API Keys
+
+Sign in to your [Stripe Dashboard](https://dashboard.stripe.com/) and navigate to **Developers > API keys** to retrieve:
+- **Publishable Key**
+- **Secret Key**
+- **Webhook Signing Secret** (from the Webhooks tab)
+
+---
+
+## 2. Configure in Crafter CMS
+
+<Steps>
+  <Step title="Open Payment Settings">
+    Go to [Dashboard \> Settings \> Payment](https://app.crafter.net.tr/tr/dashboard/settings/payment) and select **Stripe**.
+  </Step>
+  <Step title="Paste API Keys">
+    Enter your Stripe credentials into the respective input fields.
+  </Step>
+  <Step title="Save and Go Live">
+    Save and test transactions before toggling live mode.
+  </Step>
+</Steps>
+
+---
+
+## 3. Webhook Endpoint
+
+Under **Developers > Webhooks** in your Stripe Dashboard, add the endpoint:
+
+```text
+https://api.crafter.net.tr/website/payment/callback/stripe
+```
