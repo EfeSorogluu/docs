@@ -1,3 +1,102 @@
 ---
 title: "Liste"
+description: "Destek taleplerini görüntüleme, filtreleme, yanıtlama ve destek kategorilerini yapılandırma."
 ---
+
+Crafter CMS Destek Talepleri modülü; oyuncularınızdan ve kullanıcılarınızdan gelen yardım taleplerini, sorun bildirimlerini ve soruları hızlı, düzenli ve etkin bir şekilde yönetmenizi ve sınıflandırmanızı sağlar.
+
+[Yönetim Paneli \> Destek Talepleri](https://app.crafter.net.tr/tr/dashboard/tickets) ana ekranından genel bakışa ulaşabilir, talepleri listeleyebilir ve kategori ayarlarını yapılandırabilirsiniz.
+
+<Frame caption="Destek Talepleri Genel Bakış Ekranı">
+  ![App Crafter Net Tr Tr Dashboard Tickets](/images/app.crafter.net.tr_tr_dashboard_tickets.png "App Crafter Net Tr Tr Dashboard Tickets")
+</Frame>
+
+---
+
+## Hızlı Erişim Kartları
+
+Destek Talepleri ana ekranında yer alan yönetim modülleri ve hızlı erişim kartları şunlardır:
+
+- **Tüm Talepler:** Kullanıcılar tarafından oluşturulmuş toplam destek talebi sayısını gösterir ve talep listesine hızlı geçiş sağlar.
+- **Kategorileri Yönet:** Destek taleplerinin sınıflandırıldığı departmanları ve renk kodlarını yönetmenizi sağlar.
+- **Hazır Cevaplar:** Sık tekrarlanan sorulara hızlı yanıt vermek için oluşturulan hazır yanıt taslaklarını yönetmenizi sağlar.
+
+---
+
+## Talepleri Yönetme ve Filtreleme
+
+Gelen tüm destek taleplerini [Yönetim Paneli \> Destek Talepleri \> Liste](https://app.crafter.net.tr/tr/dashboard/tickets/list) sayfasında görüntüleyebilir ve detaylı durum filtreleri ile organize edebilirsiniz.
+
+<Frame caption="Destek Talepleri Liste Ekranı">
+  ![App Crafter Net Tr Tr Dashboard Tickets List](/images/app.crafter.net.tr_tr_dashboard_tickets_list.png "App Crafter Net Tr Tr Dashboard Tickets List")
+</Frame>
+
+### Durum Filtreleri
+
+Talepleri durumlarına göre filtrelemek için üst kısımda bulunan sekmeleri kullanabilirsiniz:
+
+- **Hepsi:** Tüm durumdaki destek taleplerini tek listede gösterir.
+- **Açık:** Kullanıcı tarafından yeni açılan ve yetkili yanıtı bekleyen talepler.
+- **Yanıtlandı:** Destek ekibi tarafından cevaplanmış ve kullanıcı dönüşü bekleyen talepler.
+- **İşlemde:** Yetkili ekibin incelediği veya işlem yapmaya devam ettiği talepler.
+- **Kapalı:** Çözümlenmiş veya sonlandırılmış destek talepleri.
+
+### Talep Tablosu Sütunları
+
+Destek talepleri listesinde her talep için şu bilgiler görüntülenir:
+
+- **Talep ID:** Talebe ait benzersiz referans numarası.
+- **Konu:** Kullanıcının belirttiği destek talebi başlığı.
+- **Kullanıcı:** Talebi oluşturan kullanıcının adı/bilgisi.
+- **Durum:** Talebin mevcut aşamasını gösteren durum etiketi (_Açık, Yanıtlandı, İşlemde, Kapalı_).
+- **Son Güncelleme:** Talebe yapılan son müdahale veya mesajın tarihi/zamanı.
+
+---
+
+## Destek Talebi Kategorileri
+
+Destek taleplerini doğru departmanlara (Teknik Destek, Ödeme Problemleri, Şikayet & Öneri vb.) yönlendirmek ve renk kodları ile görsel olarak ayırt etmek için kategorileri kullanabilirsiniz.
+
+[Yönetim Paneli \> Destek Talepleri \> Kategoriler](https://app.crafter.net.tr/tr/dashboard/tickets/categories) sayfasına giderek mevcut destek talebi kategorilerini listeleyebilir, düzenleyebilir ve yeni kategoriler tanımlayabilirsiniz.
+
+<Frame caption="Destek Talebi Kategorileri Yönetim Ekranı">
+  ![App Crafter Net Tr Tr Dashboard Tickets Categories](/images/app.crafter.net.tr_tr_dashboard_tickets_categories.png "App Crafter Net Tr Tr Dashboard Tickets Categories")
+</Frame>
+
+### Kategori Tablosu ve Detaylar
+
+Destek talebi kategorileri yönetim ekranında yer alan tablo sütunları ve içerdiği bilgiler şunlardır:
+
+- **Ad:** Kategorinin ismi ve yanındaki renk gösterge rozeti (Örn: _Teknik Destek_).
+- **Açıklama:** Kategorinin hangi konuları kapsadığını açıklayan metin.
+- **Sıralama:** Kategorinin talep oluşturma ekranlarında hangi sırada görüntüleneceğini belirleyen sayısal değer.
+- **Durum:** Kategorinin aktiflik durumu (Aktif/Pasif).
+- **İşlemler:** Kategori bilgilerini güncelleme (Düzenle) veya kategoriyi silme (Sil) aksiyonları.
+
+---
+
+## Yeni Kategori Oluşturma
+
+Kullanıcıların taleplerini daha kolay gruplandırabilmesi için yeni destek kategorileri ekleyebilirsiniz.
+
+<Steps>
+  <Step title="Oluşturma Panelini Açın">
+    [Yönetim Paneli \> Destek Talepleri \> Kategoriler](https://app.crafter.net.tr/tr/dashboard/tickets/categories) sayfasında sağ üst köşede yer alan **\+ Oluştur** butonuna tıklayın.
+  </Step>
+  <Step title="Kategori Detaylarını Doldurun">
+    Açılan yan panelde (drawer) kategoriye ait detayları tanımlayın:
+
+    - **Ad:** Kategori adı (Örn: Teknik Destek, Ödeme Problemleri, Şikayet & Öneri).
+    - **Açıklama:** Kategori altına girecek konuların kısa tanımı (Örn: _Oyun içi problemleriniz hakkında teknik destek_).
+    - **Renk:** Kategorinin arayüzde ve talep listesinde ayırt edilmesini sağlayan renk seçimi (HEX kodu, Örn: `#3B82F6`).
+    - **Sıralama:** Kategorinin görünüm önceliğini belirleyen sayısal değer (Örn: `0`, `1`).
+    - **Aktif:** Kategorinin kullanıcılara sunulup sunulmayacağını belirleyen durum anahtarı.
+  </Step>
+  <Step title="Kategoriyi Kaydedin">
+    Gerekli alanları tamamladıktan sonra **Kaydet** butonuna basarak kategoriyi oluşturun.
+  </Step>
+</Steps>
+
+<Frame caption="Yeni Kategori Oluşturma Paneli">
+  ![App Crafter Net Tr Tr Dashboard Tickets Categories1](/images/app.crafter.net.tr_tr_dashboard_tickets_categories1.png "App Crafter Net Tr Tr Dashboard Tickets Categories1")
+</Frame>
