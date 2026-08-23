@@ -1,14 +1,13 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
-  "name": "Crafter Dökümantasyon",
+  "name": "Crafter",
   "colors": {
     "primary": "#17B87A",
     "light": "#50E3C2",
     "dark": "#0F7A55"
   },
   "favicon": "/favicon.ico",
-
   "navigation": {
     "tabs": [
       {
@@ -299,5 +298,5 @@
       "instagram": "https://instagram.com/crafter.net.tr"
     }
   },
-  "description": "Crafter ile ilgili tüm bilgileri burada bulabilirsiniz."
+  "description": "Official documentation for Crafter — Web CMS, Webstore and Management Platform for Minecraft and game servers."
 }
