@@ -115,7 +115,8 @@
                   "tr/integrations/payment/Shopier",
                   "tr/integrations/payment/Stripe",
                   "tr/integrations/payment/tosla-akode",
-                  "tr/integrations/payment/XSolla"
+                  "tr/integrations/payment/XSolla",
+                  "tr/integrations/payment/crafter-payments"
                 ]
               },
               "tr/integrations/fatura-entegrasyon",
