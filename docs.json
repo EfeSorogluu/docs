@@ -14,101 +14,46 @@
         "tab": "🇹🇷 Türkçe",
         "groups": [
           {
-            "group": "Giriş & Kurulum",
+            "group": "Başlangıç",
             "pages": [
               "tr/introduction",
-              "tr/quickstart",
-              "tr/development"
+              "tr/quickstart"
             ]
           },
           {
-            "group": "Kullanıcı Yönetimi",
-            "pages": [
-              "tr/web-features/user-management/users",
-              "tr/web-features/user-management/roles",
-              "tr/web-features/user-management/reports",
-              "tr/web-features/user-management/applications",
-              "tr/web-features/user-management/punishments"
-            ]
-          },
-          {
-            "group": "Mağaza & Finans",
-            "pages": [
-              "tr/web-features/store/products",
-              "tr/web-features/store/categories",
-              "tr/web-features/store/discounts",
-              "tr/web-features/store/redeem-codes",
-              "tr/web-features/store/payments",
-              "tr/web-features/store/chests"
-            ]
-          },
-          {
-            "group": "İçerik Yönetimi",
-            "pages": [
-              "tr/web-features/content/theme-library",
-              "tr/web-features/content/posts",
-              "tr/web-features/content/pages",
-              {
-                "group": "Forum",
-                "pages": [
-                  "tr/web-features/content/forum/categories",
-                  "tr/web-features/content/forum/topics",
-                  "tr/web-features/content/forum/moderation"
-                ]
-              },
-              {
-                "group": "Yardım Merkezi",
-                "pages": [
-                  "tr/web-features/content/help-center/articles",
-                  "tr/web-features/content/help-center/categories",
-                  "tr/web-features/content/help-center/faq"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "İletişim & Destek",
-            "pages": [
-              "tr/web-features/communication/tickets/list",
-              "tr/web-features/communication/tickets/templates"
-            ]
-          },
-          {
-            "group": "Yapılandırma & Ayarlar",
+            "group": "Mağaza sahipleri için",
             "pages": [
               {
-                "group": "Ayarlar",
+                "group": "Kurulum ve ayarlar",
                 "pages": [
                   "tr/web-features/configuration/settings/general",
                   "tr/web-features/configuration/settings/store",
-                  "tr/web-features/configuration/settings/payment",
                   "tr/web-features/configuration/settings/servers",
-                  "tr/web-features/configuration/settings/discord",
                   "tr/web-features/configuration/settings/security",
+                  "tr/integrations/cloudflare-turnstile",
                   "tr/web-features/configuration/settings/legal",
                   "tr/web-features/configuration/settings/seo",
-                  "tr/web-features/configuration/settings/invoice",
-                  "tr/web-features/configuration/settings/vote-providers",
-                  "tr/web-features/configuration/settings/smtp-mailing"
+                  "tr/web-features/configuration/settings/smtp-mailing",
+                  "tr/web-features/configuration/settings/discord",
+                  "tr/web-features/configuration/audit-logs"
                 ]
               },
               {
-                "group": "Modüller",
+                "group": "Ürünler",
                 "pages": [
-                  "tr/web-features/configuration/modules/discord-bot",
-                  "tr/web-features/configuration/modules/punishments",
-                  "tr/web-features/configuration/modules/authme"
+                  "tr/web-features/store/products",
+                  "tr/web-features/store/categories",
+                  "tr/web-features/store/discounts",
+                  "tr/web-features/store/redeem-codes",
+                  "tr/web-features/store/chests"
                 ]
               },
-              "tr/web-features/configuration/audit-logs"
-            ]
-          },
-          {
-            "group": "Entegrasyonlar",
-            "pages": [
               {
-                "group": "Ödeme Sağlayıcıları",
+                "group": "Ödemeler ve CrafterPayments",
                 "pages": [
+                  "tr/web-features/store/payments",
+                  "tr/web-features/configuration/settings/payment",
+                  "tr/integrations/payment/crafter-payments",
                   "tr/integrations/payment",
                   "tr/integrations/payment/PayTR",
                   "tr/integrations/payment/Iyzico",
@@ -116,30 +61,90 @@
                   "tr/integrations/payment/Stripe",
                   "tr/integrations/payment/tosla-akode",
                   "tr/integrations/payment/XSolla",
-                  "tr/integrations/payment/crafter-payments"
+                  "tr/web-features/configuration/settings/invoice",
+                  "tr/integrations/fatura-entegrasyon"
                 ]
               },
-              "tr/integrations/fatura-entegrasyon",
-              "tr/integrations/vote-integrations",
-              "tr/integrations/cloudflare-turnstile"
+              {
+                "group": "Destek talepleri",
+                "pages": [
+                  "tr/web-features/communication/tickets/list",
+                  "tr/web-features/communication/tickets/templates"
+                ]
+              },
+              {
+                "group": "Temalar ve editör",
+                "pages": [
+                  "tr/web-features/content/theme-library",
+                  "tr/web-features/content/pages"
+                ]
+              },
+              {
+                "group": "Kullanıcılar ve yetkililer",
+                "pages": [
+                  "tr/web-features/user-management/users",
+                  "tr/web-features/user-management/roles",
+                  "tr/web-features/user-management/reports",
+                  "tr/web-features/user-management/applications",
+                  "tr/web-features/user-management/punishments"
+                ]
+              },
+              {
+                "group": "Oyun entegrasyonları",
+                "pages": [
+                  "tr/game-servers/minecraft",
+                  "tr/web-features/configuration/modules/authme",
+                  "tr/web-features/configuration/modules/discord-bot",
+                  "tr/web-features/configuration/modules/punishments",
+                  "tr/web-features/configuration/settings/vote-providers",
+                  "tr/integrations/vote-integrations",
+                  {
+                    "group": "Diğer oyunlar (geliştirme aşamasında)",
+                    "pages": [
+                      "tr/game-servers/rust",
+                      "tr/game-servers/fivem",
+                      "tr/game-servers/cs2",
+                      "tr/game-servers/ark-survival-evolved-ascended",
+                      "tr/game-servers/day-z",
+                      "tr/game-servers/empyrion",
+                      "tr/game-servers/mta-sa",
+                      "tr/game-servers/sa-mp",
+                      "tr/game-servers/the-forest",
+                      "tr/game-servers/unturned",
+                      "tr/game-servers/valheim",
+                      "tr/game-servers/custom-request"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Topluluk modülleri",
+                "pages": [
+                  "tr/web-features/content/posts",
+                  {
+                    "group": "Forum",
+                    "pages": [
+                      "tr/web-features/content/forum/categories",
+                      "tr/web-features/content/forum/topics",
+                      "tr/web-features/content/forum/moderation"
+                    ]
+                  },
+                  {
+                    "group": "Yardım Merkezi",
+                    "pages": [
+                      "tr/web-features/content/help-center/articles",
+                      "tr/web-features/content/help-center/categories",
+                      "tr/web-features/content/help-center/faq"
+                    ]
+                  }
+                ]
+              }
             ]
           },
           {
-            "group": "Oyun Sunucuları",
+            "group": "Geliştiriciler için",
             "pages": [
-              "tr/game-servers/minecraft",
-              "tr/game-servers/fivem",
-              "tr/game-servers/rust",
-              "tr/game-servers/cs2",
-              "tr/game-servers/ark-survival-evolved-ascended",
-              "tr/game-servers/day-z",
-              "tr/game-servers/empyrion",
-              "tr/game-servers/mta-sa",
-              "tr/game-servers/sa-mp",
-              "tr/game-servers/the-forest",
-              "tr/game-servers/unturned",
-              "tr/game-servers/valheim",
-              "tr/game-servers/custom-request"
+              "tr/development"
             ]
           }
         ]
@@ -151,128 +156,134 @@
             "group": "Getting Started",
             "pages": [
               "en/introduction",
-              "en/quickstart",
-              "en/development"
+              "en/quickstart"
             ]
           },
           {
-            "group": "User Management",
-            "pages": [
-              "en/web-features/user-management/users",
-              "en/web-features/user-management/roles",
-              "en/web-features/user-management/reports",
-              "en/web-features/user-management/applications",
-              "en/web-features/user-management/punishments"
-            ]
-          },
-          {
-            "group": "Store & Finance",
-            "pages": [
-              "en/web-features/store/products",
-              "en/web-features/store/categories",
-              "en/web-features/store/discounts",
-              "en/web-features/store/redeem-codes",
-              "en/web-features/store/payments",
-              "en/web-features/store/chests"
-            ]
-          },
-          {
-            "group": "Content Management",
-            "pages": [
-              "en/web-features/content/theme-library",
-              "en/web-features/content/posts",
-              "en/web-features/content/pages",
-              {
-                "group": "Forum",
-                "pages": [
-                  "en/web-features/content/forum/categories",
-                  "en/web-features/content/forum/topics",
-                  "en/web-features/content/forum/moderation"
-                ]
-              },
-              {
-                "group": "Help Center",
-                "pages": [
-                  "en/web-features/content/help-center/articles",
-                  "en/web-features/content/help-center/categories",
-                  "en/web-features/content/help-center/faq"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Communication & Support",
-            "pages": [
-              "en/web-features/communication/tickets/list",
-              "en/web-features/communication/tickets/templates"
-            ]
-          },
-          {
-            "group": "Configuration & Settings",
+            "group": "For Store Owners",
             "pages": [
               {
-                "group": "Settings",
+                "group": "Setup & Settings",
                 "pages": [
                   "en/web-features/configuration/settings/general",
                   "en/web-features/configuration/settings/store",
-                  "en/web-features/configuration/settings/payment",
                   "en/web-features/configuration/settings/servers",
-                  "en/web-features/configuration/settings/discord",
                   "en/web-features/configuration/settings/security",
+                  "en/integrations/cloudflare-turnstile",
                   "en/web-features/configuration/settings/legal",
                   "en/web-features/configuration/settings/seo",
-                  "en/web-features/configuration/settings/invoice",
-                  "en/web-features/configuration/settings/vote-providers",
-                  "en/web-features/configuration/settings/smtp-mailing"
+                  "en/web-features/configuration/settings/smtp-mailing",
+                  "en/web-features/configuration/settings/discord",
+                  "en/web-features/configuration/audit-logs"
                 ]
               },
               {
-                "group": "Modules",
+                "group": "Products",
                 "pages": [
-                  "en/web-features/configuration/modules/discord-bot",
-                  "en/web-features/configuration/modules/punishments",
-                  "en/web-features/configuration/modules/authme"
+                  "en/web-features/store/products",
+                  "en/web-features/store/categories",
+                  "en/web-features/store/discounts",
+                  "en/web-features/store/redeem-codes",
+                  "en/web-features/store/chests"
                 ]
               },
-              "en/web-features/configuration/audit-logs"
-            ]
-          },
-          {
-            "group": "Integrations",
-            "pages": [
               {
-                "group": "Payment Gateways",
+                "group": "Payments & CrafterPayments",
                 "pages": [
+                  "en/web-features/store/payments",
+                  "en/web-features/configuration/settings/payment",
+                  "en/integrations/payment/crafter-payments",
                   "en/integrations/payment",
                   "en/integrations/payment/PayTR",
                   "en/integrations/payment/Iyzico",
                   "en/integrations/payment/Shopier",
                   "en/integrations/payment/Stripe",
                   "en/integrations/payment/tosla-akode",
-                  "en/integrations/payment/XSolla"
+                  "en/integrations/payment/XSolla",
+                  "en/web-features/configuration/settings/invoice",
+                  "en/integrations/fatura-entegrasyon"
                 ]
               },
-              "en/integrations/fatura-entegrasyon",
-              "en/integrations/vote-integrations",
-              "en/integrations/cloudflare-turnstile"
+              {
+                "group": "Support Tickets",
+                "pages": [
+                  "en/web-features/communication/tickets/list",
+                  "en/web-features/communication/tickets/templates"
+                ]
+              },
+              {
+                "group": "Themes & Editor",
+                "pages": [
+                  "en/web-features/content/theme-library",
+                  "en/web-features/content/pages"
+                ]
+              },
+              {
+                "group": "Users & Staff",
+                "pages": [
+                  "en/web-features/user-management/users",
+                  "en/web-features/user-management/roles",
+                  "en/web-features/user-management/reports",
+                  "en/web-features/user-management/applications",
+                  "en/web-features/user-management/punishments"
+                ]
+              },
+              {
+                "group": "Game Integrations",
+                "pages": [
+                  "en/game-servers/minecraft",
+                  "en/web-features/configuration/modules/authme",
+                  "en/web-features/configuration/modules/discord-bot",
+                  "en/web-features/configuration/modules/punishments",
+                  "en/web-features/configuration/settings/vote-providers",
+                  "en/integrations/vote-integrations",
+                  {
+                    "group": "Other Games (in development)",
+                    "pages": [
+                      "en/game-servers/rust",
+                      "en/game-servers/fivem",
+                      "en/game-servers/cs2",
+                      "en/game-servers/ark-survival-evolved-ascended",
+                      "en/game-servers/day-z",
+                      "en/game-servers/empyrion",
+                      "en/game-servers/mta-sa",
+                      "en/game-servers/sa-mp",
+                      "en/game-servers/the-forest",
+                      "en/game-servers/unturned",
+                      "en/game-servers/valheim",
+                      "en/game-servers/custom-request"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Community Modules",
+                "pages": [
+                  "en/web-features/content/posts",
+                  {
+                    "group": "Forum",
+                    "pages": [
+                      "en/web-features/content/forum/categories",
+                      "en/web-features/content/forum/topics",
+                      "en/web-features/content/forum/moderation"
+                    ]
+                  },
+                  {
+                    "group": "Help Center",
+                    "pages": [
+                      "en/web-features/content/help-center/articles",
+                      "en/web-features/content/help-center/categories",
+                      "en/web-features/content/help-center/faq"
+                    ]
+                  }
+                ]
+              }
             ]
           },
           {
-            "group": "Game Servers",
+            "group": "For Developers",
             "pages": [
-              "en/game-servers/minecraft",
-              "en/game-servers/fivem",
-              "en/game-servers/rust",
-              "en/game-servers/cs2",
-              "en/game-servers/ark-survival-evolved-ascended",
-              "en/game-servers/day-z",
-              "en/game-servers/empyrion",
-              "en/game-servers/mta-sa",
-              "en/game-servers/sa-mp",
-              "en/game-servers/the-forest",
-              "en/game-servers/unturned",
-              "en/game-servers/valheim",
-              "en/game-servers/custom-request"
+              "en/development"
             ]
           }
         ]
