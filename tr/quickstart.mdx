@@ -29,7 +29,7 @@ Bunun için [cloudflare.com](https://www.cloudflare.com/) adresine giderek sağ 
 
 ## Adım 3: Alan adınızı Crafter'a bağlayın
 
-Cloudflare'a giriş yaptıktan sonra sol taraftan "**Domains**' butonuna tıklayın ve hemen ardından "**Overview**" butonna tıklayın.
+Cloudflare'a giriş yaptıktan sonra sol taraftan "**Domains**' butonuna tıklayın ve hemen ardından "**Overview**" butonuna tıklayın.
 
 <Note>
   Eğer alan adınız Cloudflare'a bağlı değilse alan adınızı Cloudflare'a bağlayın.
@@ -49,12 +49,12 @@ Sol taraftan "**DNS**" butonuna tıklayın ve hemen ardından "**Records**" buto
 
 Daha sonra açılan sayfada "**Add record**" butonuna tıklayın ve boş alanları doldurun.
 
-- Type: ALIAS
-- Name (requried): @ → [example.com](http://example.com)
+- Type: CNAME
+- Name (required): @ → [example.com](http://example.com)
   <Note>
     www için "**Redirect rule**" ayarı gerektirir.
   </Note>
-- Target (requried): cname.crafter.web.tr
+- Target (required): cname.crafter.web.tr
 - Proxy status: Açık
 - TTL: Auto
 
@@ -65,7 +65,7 @@ Daha sonra açılan sayfada "**Add record**" butonuna tıklayın ve boş alanlar
 Ayarları yaptıktan sonra "**Save**" butonuna tıklayın.
 
 <Note>
-  Eğer bir "A" kaydınız varsa ve "Name (requried)" kısmı "@" ise "A" kaydı ile çakışır ve bir hata meydana gelir.
+  Eğer bir "A" kaydınız varsa ve "Name (required)" kısmı "@" ise "A" kaydı ile çakışır ve bir hata meydana gelir.
 </Note>
 
 Daha sonra sol taraftan "**SSL/TLS**" butonuna tıklayın ve hemen ardından "**Overview**" butonuna tıklayın.
@@ -74,7 +74,7 @@ Daha sonra sol taraftan "**SSL/TLS**" butonuna tıklayın ve hemen ardından "**
   ![setup4](/images/setup/setup4.png)
 </Frame>
 
-Daha sonra "**Configure**" butonuna tıklayın ve açılan sayfadaki seçeneklerde yer alan "**Fixable**" seçeneğini seçerek "**Save**" butonuna tıklayın ve kurulumu başarıyla sonlandırın.
+Daha sonra "**Configure**" butonuna tıklayın ve açılan sayfadaki seçeneklerde yer alan "**Full**" (kurulumunuza göre "**Flexible**") seçeneğini seçerek "**Save**" butonuna tıklayın ve kurulumu başarıyla sonlandırın.
 
 ## Adım 4: Alan adınızı yönetim paneli üzerinden birincil olarak ekleyin
 
