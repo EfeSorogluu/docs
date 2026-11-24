@@ -3,11 +3,11 @@
   "theme": "maple",
   "name": "Crafter",
   "colors": {
-    "primary": "#17B87A",
-    "light": "#50E3C2",
-    "dark": "#0F7A55"
+    "primary": "#635BFF",
+    "light": "#8D87FF",
+    "dark": "#635BFF"
   },
-  "favicon": "/favicon.ico",
+  "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
@@ -290,7 +290,10 @@
       }
     ]
   },
-  "logo": "/logo/light.png",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
   "navbar": {
     "links": [
       {
