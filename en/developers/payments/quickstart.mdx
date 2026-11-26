@@ -143,7 +143,7 @@ By the end of this guide you will have opened a checkout session from your serve
 
 ## Going live
 
-- In test mode you can create and read sessions; test-mode payments are not available yet. On the payment page, a test session returns `checkout_test_payments_unavailable`. For an end-to-end payment test, use a live key with a low-priced product.
+- In test mode, pay with a test card such as `4242 4242 4242 4242` (any future date, any CVC). No real money moves and delivery is simulated. See [Test cards](/en/developers/payments/keys-and-modes#test-cards).
 - In live mode, return URLs must use `https`. In test mode, `http://localhost` is allowed automatically.
 - In live mode, a monthly session quota applies based on your plan. See [Limits](/en/api-reference/introduction#limits).
 

@@ -36,11 +36,27 @@ Anahtarın modu her şeyi belirler: test anahtarıyla açılan oturum `cs_test_�
 | Aylık oturum kotası | Sayılmaz | Paketinize göre |
 | `http://localhost` dönüş adresi | Kendiliğinden izinli | İzinli değil |
 | `http://` izinli adres | Kabul edilir | Yalnızca `https://` |
-| Ödeme | Henüz açık değil (`checkout_test_payments_unavailable`) | Açık |
+| Ödeme | Yalnızca test kartları, gerçek para hareketi olmaz | Gerçek kartlar |
+| Siparişler | **Test** olarak işaretlenir, Siparişler sayfasında **Test** filtresinde listelenir | **Canlı** filtresinde listelenir |
+| Teslimat | Simüle edilir: oyun içi komut, stok, lisans ve rol işlemi yapılmaz | Gerçek teslimat |
+| Bakiye, ödemeler, faturalar, vergi, ücretler, istatistikler | Etkilenmez | Dahil |
+| Alıcıya giden e-postalar | Yalnızca makbuz, konu `[TEST]` ile başlar | Tüm sipariş e-postaları |
+| Webhook'lar | `livemode: false` | `livemode: true` |
 | İzinli adresler ve dönüş imza sırrı | Ayrı | Ayrı |
 
+### Test kartları
+
+Test oturumu aynı ödeme sayfasında test kart numaralarıyla ödenir; test modunda gerçek kartlar reddedilir. İleri bir son kullanma tarihi, herhangi bir üç haneli CVC ve herhangi bir posta kodu kullanın.
+
+| Kart numarası | Sonuç |
+| --- | --- |
+| `4242 4242 4242 4242` | Ödeme başarılı |
+| `4000 0025 0000 3155` | 3D Secure doğrulaması ister, ardından başarılı |
+| `4000 0000 0000 9995` | Reddedilir (yetersiz bakiye) |
+| `4000 0000 0000 0002` | Reddedilir (genel ret) |
+
 <Note>
-Test modu ödemeleri hazırlanıyor. Şimdilik test modunda oturum oluşturma, okuma, iptal ve dönüş akışını deneyebilirsiniz; gerçek ödeme denemesi için canlı anahtar kullanın.
+Test siparişleri bakiyenize ve ödemelerinize hiçbir zaman yansımaz, istatistiklerde görünmez. Teslimat simüle edildiği için oyun sunucunuzda komut çalışmaz. Ortamda test ödemeleri yapılandırılmamışsa test oturumunu ödemek `checkout_test_payments_unavailable` hatası verir.
 </Note>
 
 ## Dönüş imza sırrı
