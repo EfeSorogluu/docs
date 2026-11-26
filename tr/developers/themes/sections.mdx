@@ -1,0 +1,175 @@
+---
+title: "Bölümler ve bloklar"
+description: "Bölüm dosyaları, {% schema %}, ayar tipleri, bloklar, preset'ler, JSON şablonlar, section grupları ve bölüm render ucu."
+---
+
+## Bölüm dosyası
+
+Her bölüm `sections/<tip>.liquid` dosyasıdır. Dosya adı bölümün **tipidir** (`hero.liquid` → `hero`) ve yalnızca harf, rakam, `_` ve `-` içerebilir. Dosya Liquid işaretlemesi ve bir `{% schema %}` bloğundan oluşur:
+
+```liquid sections/hero.liquid
+<div class="hero hero--{{ section.settings.alignment }}">
+  <h1>{{ section.settings.heading }}</h1>
+  {%- for block in section.blocks %}
+    <a class="button" {{ block.crafter_attributes }} href="{{ block.settings.link }}">{{ block.settings.label }}</a>
+  {%- endfor %}
+</div>
+
+{% schema %}
+{
+  "name": "Hero",
+  "tag": "section",
+  "class": "hero-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Başlık", "default": "Hoş geldin" },
+    { "type": "select", "id": "alignment", "label": "Hizalama", "default": "center",
+      "options": [{ "value": "left", "label": "Sol" }, { "value": "center", "label": "Orta" }] }
+  ],
+  "blocks": [
+    { "type": "button", "name": "Buton", "limit": 2, "settings": [
+      { "type": "text", "id": "label", "label": "Metin" },
+      { "type": "url", "id": "link", "label": "Bağlantı" }
+    ] }
+  ],
+  "max_blocks": 2,
+  "presets": [{ "name": "Hero", "blocks": [{ "type": "button" }] }]
+}
+{% endschema %}
+```
+
+`{% schema %}` çıktıya yazılmaz; içeriği geçerli JSON olmalıdır. Şeması olmayan bölüm editörün kataloğunda görünmez.
+
+## Şema alanları
+
+| Alan | Anlamı |
+|---|---|
+| `name` | Editörde görünen ad |
+| `settings` | Bölüm ayarları |
+| `blocks` | Eklenebilecek blok tipleri: `type`, `name`, `settings`, isteğe bağlı `limit` (bir bölümdeki en fazla sayı) |
+| `max_blocks` | Bölümdeki en fazla blok sayısı (verilmezse 50) |
+| `limit` | Bu bölüm tipinin bir şablonda en çok kaç kez kullanılabileceği |
+| `presets` | Editörün "bölüm ekle" listesi; her preset `name`, isteğe bağlı `settings` ve `blocks` |
+| `tag` | Sarmalayıcı etiket: `div` (varsayılan), `section`, `header`, `footer`, `aside`, `nav`, `article`, `main` |
+| `class` | Sarmalayıcıya eklenecek sınıflar |
+
+## Ayar tipleri
+
+Her ayarın `type`, `id` ve `label` alanı vardır; `default` isteğe bağlıdır. Kayıtta olmayan ayar için `default` kullanılır. Mağaza sahibinin bilerek boşalttığı değere (`""` ya da `null`) varsayılan uygulanmaz. `id` yalnızca harf, rakam, `_` ve `-` içerir ve bir şemada tekrar edemez.
+
+| Tip | Değer | Not |
+|---|---|---|
+| `text`, `textarea` | metin | `text` en çok 5.000, `textarea` en çok 50.000 karakter |
+| `richtext`, `inline_richtext`, `html` | HTML metin | En çok 50.000 karakter; basarken `\| raw` gerekir |
+| `number` | sayı | |
+| `range` | sayı | `min` < `max` ve pozitif `step` zorunlu |
+| `checkbox` | `true` / `false` | |
+| `select`, `radio` | metin | `options: [{ "value", "label" }]` içinden biri |
+| `color` | `#rgb`, `#rrggbb`, `#rrggbbaa` ya da boş | |
+| `url` | `/yol` ya da `http(s)://…` | `javascript:` ve `//alan` kabul edilmez |
+| `image_picker`, `video_url` | URL | |
+| `font` | yazı tipi | |
+| `product`, `category`, `server`, `page` | kimlik ya da slug | Editör seçici gösterir; şablonda veri nesnesi olarak gelir (ör. `section.settings.product.url`) |
+| `header`, `paragraph` | değer yok | Yalnızca editörde bilgi gösterir; `id` gerekmez |
+
+`config/settings_schema.json` içindeki genel ayarlar bunlara ek olarak `image`, `category_picker` ve `array` tiplerini de kabul eder. Bilinmeyen tip kısa metin gibi işlenir ve `crafter theme check` uyarır.
+
+## Bölüm ve blok değişkenleri
+
+| Değişken | İçerik |
+|---|---|
+| `section.id` | Örnek kimliği (JSON şablondaki anahtar, ör. `hero`) |
+| `section.type` | Bölüm tipi (dosya adı) |
+| `section.settings` | Ayarlar (varsayılanlarla birleşmiş) |
+| `section.blocks` | `block_order` sırasında, kapatılmamış bloklar |
+| `section.location` | `template` ya da grup adı (`header-group`) |
+| `section.index` | Sayfadaki sırası (1'den başlar) |
+| `block.id`, `block.type`, `block.settings` | Blok bilgileri |
+| `block.crafter_attributes` | Editör işaretleri; bloğun kök etiketine yazın. Canlı mağazada boştur |
+
+Bloğu bir snippet'e verirken `{% render 'kart', block: block %}` yazın.
+
+<Tip>
+  `section.index` ile ilk bölümü ayırt edebilirsiniz: sayfanın ilk bölümü `h1` ve öncelikli yüklenen görsel kullanabilir, sonrakiler `h2`.
+</Tip>
+
+## JSON şablonlar
+
+`templates/<ad>.json` bir sayfanın bölümlerini ve sırasını tanımlar:
+
+```json templates/index.json
+{
+  "sections": {
+    "hero": { "type": "hero", "settings": { "heading": "Sunucumuza hoş geldin" } },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "q1": { "type": "question", "settings": { "question": "Teslimat ne kadar sürer?" } }
+      },
+      "block_order": ["q1"]
+    }
+  },
+  "order": ["hero", "faq"]
+}
+```
+
+- `sections`: örnek kimliği → `type`, `settings`, `blocks`, `block_order`, isteğe bağlı `disabled: true`.
+- `order`: çizim sırası; her bölüm `order` içinde tam bir kez yer alır.
+- Kimlikler yalnızca harf, rakam, `_` ve `-` içerir (en çok 64 karakter). Bir şablonda en çok 25 bölüm olabilir. Dosya en çok 512 KB olabilir.
+
+Temadaki dosya **varsayılandır**. Mağaza sahibi şablonu editörde kaydedince storefront mağazanın verisini kullanır. Editörde yapılan değişiklikleri koda almak için:
+
+```bash
+crafter theme pull --theme development --only "templates/*.json" --only "sections/*.json"
+```
+
+## Section grupları
+
+Header ve footer gibi her sayfada görünen alanlar `sections/<grup>.json` dosyasıdır. Biçim JSON şablonla aynıdır; ek olarak `type` ve `name` alanları vardır:
+
+```json sections/header-group.json
+{
+  "type": "header",
+  "name": "Üst bilgi",
+  "sections": {
+    "announcement": { "type": "announcement-bar" },
+    "header": { "type": "header" }
+  },
+  "order": ["announcement", "header"]
+}
+```
+
+Layout'ta `{% sections 'header-group' %}` ile çağrılır. `{% section 'cookie-banner' %}` tek bir bölümü statik çizer: veri önce aynı adlı section grubundan, yoksa şemanın ilk preset'inden ve varsayılanlarından gelir. Etiket argümanı tırnak içinde bir ad olmalıdır.
+
+## Sarmalayıcı ve hatalar
+
+Her bölüm şöyle sarılır:
+
+```html
+<div id="crafter-section-hero" class="crafter-section">…</div>
+```
+
+Etiket ve sınıf şemadaki `tag` ve `class` alanlarından gelir. Editör önizlemesinde sarmalayıcıya `data-crafter-section-id`, `data-crafter-section-type` (grupta `data-crafter-section-group`) eklenir; canlı mağazada bu öznitelikler yoktur.
+
+Hatalı bir bölüm sayfayı düşürmez: canlıda boş çıktı verir, editör önizlemesinde HTML yorumu olarak görünür.
+
+## Bölüm render ucu
+
+Herhangi bir sayfa yoluna `?section_id=<id>` eklendiğinde yanıt yalnızca o bölümün sarmalanmış HTML'idir (gruptaki bölüm için `&section_group=<grup>`). Birden çok bölüm için `?sections=hero,header-group:announcement`. Filtre formları ve sepet gibi kısmi yenilemeler için JS'te bunu doğrudan çağırmak yerine SDK'yı kullanın:
+
+```js assets/theme.js
+document.addEventListener('crafter:ready', () => {
+  document.querySelectorAll('form[data-section-filter]').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const url = `${location.pathname}?${new URLSearchParams(new FormData(form))}`;
+      await Crafter.sections.render([form.dataset.sectionFilter], { url });
+    });
+  });
+});
+```
+
+Editör, kaydedilen bölümü yeniden çizdiğinde `document` üzerinde `crafter:section:unload` (eski öğe) ve `crafter:section:load` (yeni öğe) olaylarını yayar; `event.detail.sectionId` bölüm kimliğidir. Bölümünüz JS ile başlatılıyorsa bu olayları dinleyin.
+
+## Uygulama blokları (`@app`)
+
+`@app` blokları henüz desteklenmiyor. Şemada `"type": "@app"` yazılırsa normal blok gibi işlenir ve `crafter theme check` `app_blocks_unsupported` uyarısı verir.

@@ -1,0 +1,186 @@
+---
+title: "Tema yapısı (v2)"
+description: "Tema v2 klasör yapısı, v2'nin nasıl anlaşıldığı, theme_info, şablon adları, Liquid nesneleri, filtreler ve çıktı kaçışı."
+---
+
+Crafter temaları [Liquid](https://liquidjs.com/) ile yazılır. Tema v2'de sayfalar `sections/` altındaki **bölümlerden** kurulur. Mağaza sahibi bölümleri tema editöründe ekler, sıralar ve ayarlar. Bu düzenlemeler tema koduna yazılmaz, mağaza başına veri olarak saklanır (taslak ve yayın ayrı). Tema güncellendiğinde mağazanın düzenlemeleri korunur.
+
+En hızlı başlangıç, bütün v2 özelliklerini kullanan başlangıç temasıdır:
+
+```bash
+crafter theme init benim-temam --v2
+```
+
+## Klasör yapısı
+
+```text
+config/settings_schema.json      genel tema ayarları ve theme_info
+layout/theme.liquid              sayfa iskeleti
+templates/index.json             JSON şablon: bölümler ve sırası
+templates/errors/500.liquid      .liquid şablonlar v2'de de çalışır
+sections/hero.liquid             bölüm: Liquid + {% schema %}
+sections/header-group.json       section grubu (header)
+sections/footer-group.json       section grubu (footer)
+snippets/money.liquid            {% render %} ile çağrılan parçalar
+assets/theme.css                 CSS, JS, görsel ve yazı tipleri
+locales/en.default.json          arayüz metinleri (varsayılan dil)
+locales/tr.json
+locales/en.default.schema.json   editör metinleri (şema çevirileri)
+locales/tr.schema.json
+crafter-manifest.json            isteğe bağlı
+```
+
+Kabul edilen dosya türleri: `.liquid`, `.json`, `.html` ve `assets/` için `.css`, `.js`, `.png`, `.jpg`, `.jpeg`, `.svg`, `.webp`, `.gif`, `.ico`, `.woff`, `.woff2`, `.ttf`, `.eot`, `.otf`. Tek dosya en çok 10 MB olabilir. Nokta ile başlayan dosya ve klasörler (`.env`, `.git`), `node_modules`, `dist` ve `.zip` dosyaları hiçbir zaman gönderilmez. `dev/` ve `versions/` kök klasör adları ayrılmıştır.
+
+## Tema v2 nasıl anlaşılır
+
+Tema düzeyinde bir sürüm dosyası zorunlu değildir:
+
+1. `crafter-manifest.json` içinde `themeVersion` yazılıysa o geçerlidir (`2` → v2, başka değer → v1).
+2. Yoksa dosya yapısına bakılır: `templates/index.json` varsa ve `templates/index.liquid` yoksa tema v2'dir.
+
+Karar tema başınadır. v2 temada `templates/<ad>.json` olan sayfa bölümlerden, olmayan sayfa `templates/<ad>.liquid` ile çizilir. İkisi birlikte varsa JSON kullanılır.
+
+## `theme_info`
+
+Temanın adı, sürümü ve yazarı `config/settings_schema.json` dosyasındaki ilk girdiden okunur:
+
+```json config/settings_schema.json
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Örnek Tema",
+    "theme_version": "1.0.0",
+    "theme_author": "Örnek Stüdyo",
+    "theme_documentation_url": "https://docs.example.com",
+    "theme_support_url": "https://example.com/destek"
+  },
+  {
+    "name": "Renkler",
+    "settings": [
+      { "type": "color", "id": "color_primary", "label": "Ana renk", "default": "#17B87A" }
+    ]
+  }
+]
+```
+
+Genel ayarlar şablonlarda `settings.<id>` olarak okunur (`{{ settings.color_primary }}`). `crafter theme check`, `theme_info` yoksa ya da alanları eksikse uyarır.
+
+## Layout
+
+`layout/theme.liquid` her sayfayı sarar. İki değişken zorunludur:
+
+```liquid layout/theme.liquid
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{ content_for_header }}
+    <link rel="stylesheet" href="{{ 'theme.css' | asset_url }}">
+  </head>
+  <body>
+    {% sections 'header-group' %}
+    <main>{{ content_for_layout }}</main>
+    {% sections 'footer-group' %}
+    <script src="{{ 'theme.js' | asset_url }}" defer></script>
+  </body>
+</html>
+```
+
+- `{{ content_for_layout }}`: sayfanın içeriği. Yoksa sayfa çizilmez.
+- `{{ content_for_header }}`: başlık, SEO etiketleri, önizleme ve [Crafter SDK](/tr/developers/sdk). v2 temalarda SDK'yı storefront buradan ekler; tema SDK'yı kendisi yüklemez.
+
+## Şablon adları ve yollar
+
+Şablon adları storefront'un yol eşlemesiyle aynıdır:
+
+| Şablon | Yol |
+|---|---|
+| `index` | `/` |
+| `store` | `/store` |
+| `store/server` | `/store/<sunucu>` |
+| `store/category` | `/store/<sunucu>/<kategori>` |
+| `store/product` | `/store/<sunucu>/<kategori>/<ürün>` |
+| `cart` | `/cart` |
+| `page`, `page.<son-ek>` | `/<sayfa>` (sayfanın şablon son eki seçilmişse `page.<son-ek>`) |
+| `profile` | `/profile`, `/profile/<ad>` |
+| `auth` | `/auth`, `/auth/sign-in`, `/auth/sign-up`, `/login`, `/register` |
+| `auth/password/forgot`, `auth/password/reset` | `/auth/password/...` |
+| `search` | `/search?q=` |
+| `posts`, `posts/post` | `/posts`, `/posts/<slug>` |
+| `forum`, `forum/category`, `forum/topic` | `/forum/...` |
+| `help`, `help/category` | `/help`, `/help/category/<id>` |
+| `errors/404`, `errors/500`, `errors/maintenance` | hata ve bakım sayfaları |
+
+Şablonu olmayan bir yolda storefront 404 şablonunu gösterir.
+
+## Liquid nesneleri
+
+Bütün şablon, bölüm ve snippet'lerde kullanılabilen başlıca nesneler:
+
+| Nesne | İçerik |
+|---|---|
+| `settings` | Genel tema ayarları (`config/settings_schema.json`) |
+| `website` | Mağaza bilgisi; ör. `website.currency` (mağaza para birimi), `website.turnstile_site_key` |
+| `customer` | Giriş yapmış müşteri (yoksa boş) |
+| `request` | İstek bilgisi; `request.locale` sayfanın dili |
+| `template` | Çizilen şablon |
+| `routes` | Sayfanın dilinde adresler: `root_url`, `store_url`, `cart_url`, `search_url`, `account_url`, `account_login_url`, `account_register_url`, `posts_url`, `forum_url`, `help_url`, `support_url`, `localization_url` |
+| `localization` | Dil ve para birimi seçimi ([Diller ve para birimi](/tr/developers/themes/localization)) |
+| `cart` | Sepet: `cart.items`, `cart.item_count`, `cart.total_price`, `cart.coupon`, `cart.currency` |
+| `catalog` | Mağazanın ürün, kategori, sunucu, sayfa ve yazı listeleri (okunduğunda yüklenir) |
+| `search` | Arama sayfasında `search.terms`, `search.performed`, `search.results_count`, `search.products`, `search.posts` |
+| `stats` | Herkese açık istatistikler; ör. `stats.totalMembers`, `stats.serverCount` |
+
+Sayfaya özel veriler (ürün sayfasında `product`, kategori sayfasında kategori ve ürünleri, yazı sayfasında yazı) ilgili şablonda gelir. Bölümlere özel değişkenler (`section`, `block`) için [Bölümler ve bloklar](/tr/developers/themes/sections) sayfasına bakın.
+
+`{% render 'snippet' %}` ile çağrılan snippet'ler sayfanın kök değişkenlerini (`settings`, `website`, `customer` …) doğrudan görür.
+
+## Filtreler ve etiketler
+
+Standart Liquid filtre ve etiketlerine ek olarak:
+
+| Ad | Kullanım |
+|---|---|
+| `asset_url` | `{{ 'theme.css' \| asset_url }}`: `assets/` altındaki dosyanın adresi |
+| `lexical_html` | `{{ post.content \| lexical_html }}`: zengin metni HTML'e çevirir (güvenli, `raw` gerekmez) |
+| `lexical_text` | `{{ post.content \| lexical_text \| truncate: 120 }}`: zengin metnin düz hali |
+| `t` | `{{ 'cart.title' \| t }}`: dil dosyasından metin |
+| `locale_url` | `{{ '/store' \| locale_url }}`: sayfanın dilinde adres |
+| `money`, `money_with_currency`, `money_without_currency` | Tutarı müşterinin para biriminde biçimler |
+| `store_money` | Tutarı mağaza para biriminde biçimler (bakiye gibi) |
+| `{% section 'tip' %}` | Tek bir bölümü statik çizer |
+| `{% sections 'grup' %}` | Section grubunu çizer |
+| `{% schema %}` | Bölüm şeması (çıktıya yazılmaz) |
+| `{% crafter_badge %}` | "Crafter ile oluşturuldu" ibaresinin temadaki yeri |
+
+Bilinmeyen bir filtre `crafter theme check` tarafından hata olarak bildirilir (`liquid_unknown_filter`).
+
+## Çıktı kaçışı
+
+v2'de `{{ … }}` çıktısı varsayılan olarak HTML kaçışlıdır. Müşteri verisini (kullanıcı adı, forum başlığı) `escape` yazmadan güvenle basabilirsiniz.
+
+Mağaza sahibinin yazdığı HTML'i bilerek ham basmak için zincirin **sonuna** `| raw` ekleyin:
+
+```liquid
+{{ section.settings.description | raw }}
+```
+
+Şunlar `raw` gerektirmez: `content_for_header`, `content_for_layout`, `block.crafter_attributes` ve `lexical_html` sonucu. Bu değerler başka bir filtreden geçerse yeniden kaçışlanır.
+
+<Warning>
+  Müşterinin girdiği veriye (kullanıcı adı, mesaj, forum içeriği) asla `| raw` eklemeyin. Bu, başka kullanıcıların tarayıcısında betik çalıştırılmasına (XSS) yol açar.
+</Warning>
+
+v1 temalarda kaçış kapalıdır; davranış değişmedi.
+
+## v1 temayı v2'ye taşıma
+
+1. `templates/index.json` yazıp `templates/index.liquid` dosyasını silin.
+2. Header ve footer'ı `sections/header.liquid` ve `sections/footer.liquid` bölümlerine çevirin, `sections/header-group.json` ve `sections/footer-group.json` gruplarını yazın, layout'ta `{% sections %}` kullanın.
+3. Düzenlenebilir olması gereken sayfaları bölümlere ayırıp `templates/<ad>.json` yazın.
+4. Sabit metin, görsel ve bağlantıları bölüm ayarlarına taşıyın; `settings_schema.json` yalnızca genel ayarlar (renk, yazı tipi, logo) için kalsın.
+5. HTML basan her yeri gözden geçirin; mağaza sahibinin HTML'ine `| raw` ekleyin.
+6. Tekrarlanan öğeleri (SSS sorusu, özellik kartı) blok yapın ve kök etiketlerine `{{ block.crafter_attributes }}` ekleyin.
+7. `crafter theme check` ile denetleyin.

@@ -1,0 +1,145 @@
+---
+title: "Crafter CLI"
+description: "Installing the Crafter CLI, login and scopes, theme commands, crafter.theme.toml, .crafterignore and CI usage."
+---
+
+The Crafter CLI (`@crafter-cms/cli`) lets you develop themes locally, preview them with the store's real data and push them to store themes.
+
+## Installation
+
+Requires Node.js 20.19 or later.
+
+```bash
+npm install -g @crafter-cms/cli
+crafter --version
+```
+
+You can also run it without installing: `npx @crafter-cms/cli <command>`.
+
+<Note>
+  The `crafter theme …` commands on this page ship with CLI **2.x**. The 1.x `crafter dev` and `crafter pack` keep working with a warning for one major version; `crafter publish` does nothing in 2.x and explains the new commands.
+</Note>
+
+## Quick start
+
+```bash
+crafter theme init my-theme --v2   # copies the starter theme
+cd my-theme
+crafter theme check                # checks without uploading
+crafter login                      # approve in the browser
+crafter switch --store <store>     # if you have several stores
+crafter theme dev --open           # http://127.0.0.1:9292
+```
+
+## Login and session
+
+| Command | Description |
+|---|---|
+| `crafter login [--store <id>] [--scope …] [--no-browser]` | Opens the consent screen in the browser; you choose which stores to allow there |
+| `crafter logout` | Revokes the session on the server and removes it from this computer |
+| `crafter whoami` | User, scopes and allowed stores |
+| `crafter switch --store <id\|name\|address>` | Picks the default store |
+
+Scopes:
+
+| Scope | Permission |
+|---|---|
+| `themes:read` | Read the store's themes and files |
+| `themes:write` | Create development themes and upload files |
+| `themes:publish` | Make a theme live, write to the live theme, rename the live theme |
+| `marketplace:submit` | Submit marketplace themes for review |
+| `marketplace:read` | See the status of your marketplace themes |
+
+The default scopes are `themes:read themes:write`. To make a theme live:
+
+```bash
+crafter login --scope themes:read themes:write themes:publish
+```
+
+Login runs in the browser with PKCE; the CLI receives a scoped, revocable CLI token, not a full session token. The token is stored in the OS keychain (macOS Keychain, Windows Credential Manager, Linux Secret Service), or in `~/.crafter/credentials.json` (mode 0600) if there is no keychain. You can see and close your open sessions in the dashboard under **Developer → CLI sessions**. After a password reset, "revoke all sessions" or a 2FA reset, the session ends; sign in again with `crafter login`.
+
+## Theme commands
+
+`--theme` can be a theme id, a name, `live` or `development`.
+
+| Command | Description |
+|---|---|
+| `crafter theme init [dir] --v2 [--name <name>] [--force]` | Copies the theme v2 starter theme; a non-empty folder needs `--force` |
+| `crafter theme check [dir] [--fail-level error\|warning]` | Checks the theme without uploading it ([Theme check](/en/developers/themes/theme-check)) |
+| `crafter theme dev [--store] [--port 9292] [--open] [--ignore …]` | Live preview in your private development theme |
+| `crafter theme push --theme <…> [--only …] [--ignore …] [--nodelete] [--allow-live] [--create <name>]` | Pushes local files to a store theme (changed files only) |
+| `crafter theme pull --theme <…> [--only …] [--ignore …] [--delete]` | Downloads files from the server |
+| `crafter theme list` | The store's themes and your development theme |
+| `crafter theme open --theme <…> [--editor] [--no-browser]` | Opens the live theme in the store, others in the editor |
+| `crafter theme rename <name> --theme <…>` | Renames a theme (`themes:publish` needed for the live theme) |
+| `crafter theme delete --theme <…>` | Deletes a theme (the live theme cannot be deleted) |
+| `crafter theme publish --theme <…>` | Makes the theme live in the store (`themes:publish` needed) |
+
+### `theme dev`
+
+- Opens a private **development theme** that customers never see; on the first run only differing files are uploaded.
+- Changes that arrive within 100 ms are sent together.
+- The `http://127.0.0.1:9292` proxy sends the preview token in a header and adapts cookies and redirects to the local address.
+- Hot reload: a CSS change swaps only the `<link>`, a `sections/x.liquid` change re-renders only those sections, anything else reloads the page.
+- Liquid errors show as an overlay in the browser and as `file:line` in the terminal; invalid JSON is shown in the terminal.
+- Ctrl+C revokes the preview link.
+
+### Safeguards
+
+- **Live theme:** `push` to the live theme only works with `--allow-live` and a confirmation. In `--no-interactive` mode, `--force` replaces the confirmation.
+- **Folder:** `theme push` and `theme dev` only run in a theme folder (`layout/theme.liquid` plus `templates/` or `sections/`). Use `--path` for another folder.
+- **Bulk delete:** if `push` would delete more than 20 files or more than 30% of the files on the server, it asks for confirmation with the numbers first; in `--no-interactive` mode it needs `--force` (or `--nodelete` to skip deletions).
+
+## Common flags
+
+| Flag | Description |
+|---|---|
+| `--json` | Machine-readable output (tokens are never printed) |
+| `--env <name>` | Environment from `crafter.theme.toml` |
+| `--no-interactive` | Never prompts (CI) |
+| `--path <dir>` | Theme folder |
+| `--lang tr\|en` | Message language (default: system language) |
+
+## Project files
+
+### `crafter.theme.toml`
+
+Developer settings; never packaged or uploaded.
+
+```toml crafter.theme.toml
+[environments.default]
+store = "<websiteId>"
+theme = "<themeId>"          # default theme for push/pull (optional)
+ignore = ["assets/*.map"]
+port = 9393
+```
+
+Environment selection: `--env` > `CRAFTER_ENV` > the environment named `default` > the only environment.
+
+### `.crafterignore`
+
+The single ignore list (`.gitignore` format: `#` comments, `!` exceptions, a trailing `/` for folders). Dotfiles and dot folders, `node_modules`, `dist` and `.zip` files are always excluded.
+
+```text .crafterignore
+README.md
+assets/*.map
+```
+
+### `crafter-manifest.json`
+
+Optional. The CLI only reads this file; if it needs to change it, it asks first.
+
+## CI
+
+Create a token (`crft_pat_…`) in the dashboard under **Developer → Developer tokens** and pass it in the `CRAFTER_TOKEN` environment variable. The token is shown only once, when it is created, and is limited to the scopes, stores and lifetime you choose.
+
+```bash
+crafter theme check --json
+CRAFTER_TOKEN=crft_pat_... crafter theme push --theme <id> --no-interactive --json
+```
+
+To write to the live theme from CI, the token needs the `themes:publish` scope and you must pass `--allow-live --force`.
+
+<Warning>
+  Never commit a developer token to the repository; keep it in your CI's secret variables. If you think a token has leaked, revoke it in the dashboard right away.
+</Warning>

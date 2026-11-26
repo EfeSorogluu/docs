@@ -1,0 +1,117 @@
+---
+title: "Theme check"
+description: "Check a theme before uploading it with crafter theme check: rules, error and warning codes and CI usage."
+---
+
+`crafter theme check` checks a theme without uploading it. The rules match the storefront's v2 engine and the validation the theme editor applies on save; the error codes are the same as the editor's.
+
+```bash
+crafter theme check                         # current folder
+crafter theme check ./my-theme --fail-level warning
+crafter theme check --json                  # machine-readable output
+```
+
+- Exits with code 1 when there are errors. `--fail-level warning` also fails on warnings.
+- `crafter-manifest.json` is not required; whether the theme is v2 is inferred from its JSON templates. v2-only rules (text, SDK, JSON templates) run only on v2 themes.
+- Uses no network and needs no login.
+
+Output is grouped by file; each line shows the line number, level, message and rule code.
+
+## Rules
+
+### Liquid and files
+
+| Code | Level | When |
+|---|---|---|
+| `liquid_syntax` | error | Liquid syntax error (e.g. an unclosed `{% if %}`) |
+| `liquid_unknown_filter` | error | A filter the storefront does not have |
+| `json_invalid` | error | Invalid JSON file |
+| `layout_missing` | error | `layout/theme.liquid` is missing |
+| `layout_content_missing` | error | The layout has no `{{ content_for_layout }}` |
+| `layout_header_missing` | warning | The layout has no `{{ content_for_header }}` (title, SEO, preview and SDK are not added) |
+| `missing_snippet`, `missing_section`, `missing_section_group`, `missing_asset` | error | A file referenced with `{% render %}`, `{% section %}`, `{% sections %}` or `asset_url` does not exist |
+| `file_skipped` | warning | A file type the server does not accept, or a file over 10 MB; it is not uploaded |
+
+### Schemas and settings
+
+| Code | Level | When |
+|---|---|---|
+| `section_type_invalid` | error | The section file name contains characters other than letters, digits, `_` and `-` |
+| `schema_missing` | warning | The section has no `{% schema %}`; it is not in the editor catalog |
+| `schema_invalid_json` | error | `{% schema %}` is not a valid JSON object |
+| `schema_name_missing`, `schema_block_name_missing` | warning | The schema or a block has no `name` |
+| `schema_tag_invalid`, `schema_class_invalid` | error | `tag` is not an allowed tag, or `class` is not a string |
+| `schema_limit_invalid` | error | `limit` or `max_blocks` is not a positive integer |
+| `schema_blocks_invalid`, `schema_block_invalid`, `schema_block_duplicate` | error | `blocks` is not an array, a block has no `type`, or a type repeats |
+| `schema_presets_invalid`, `preset_name_missing`, `preset_invalid` | error | Invalid preset array, name or content |
+| `app_blocks_unsupported` | warning | `@app` blocks are not supported yet |
+| `settings_invalid`, `setting_invalid` | error | `settings` is not an array, or a setting has no `type` |
+| `setting_type_unknown` | warning | Unknown setting type; treated as short text |
+| `setting_id_invalid`, `setting_id_duplicate` | error | `id` is missing, invalid or repeated |
+| `setting_label_missing` | warning | No `label` |
+| `setting_content_missing` | warning | A `header` or `paragraph` setting has no `content` |
+| `setting_options_invalid` | error | `options` for `select`/`radio` is empty or malformed |
+| `setting_range_invalid` | error | `range` lacks `min` < `max` and a positive `step` |
+| `setting_default_invalid` | error | `default` does not match the setting type |
+| `settings_schema_missing` | warning | `config/settings_schema.json` is missing |
+| `settings_schema_invalid` | error | `settings_schema.json` is not an array |
+| `theme_info_missing`, `theme_info_incomplete` | warning | `theme_info` is missing, incomplete, or its URLs are not `http(s)` |
+
+### JSON templates and section groups (v2)
+
+| Code | When |
+|---|---|
+| `template_name_invalid` | The template name contains characters other than letters, digits, `_`, `-`, `.` and `/` |
+| `invalid_structure`, `payload_too_large` | The file is not an object or is larger than 512 KB |
+| `too_many_sections` | More than 25 sections in a template |
+| `invalid_id`, `invalid_section`, `invalid_block`, `invalid_blocks` | Invalid id or section/block structure |
+| `unknown_section_type`, `unknown_block_type` | A section type the theme does not have, or a block type the schema does not define |
+| `section_limit_exceeded`, `max_blocks_exceeded`, `block_limit_exceeded` | The schema's `limit`, `max_blocks` or block `limit` is exceeded |
+| `invalid_order`, `order_duplicate`, `order_unknown_section`, `section_not_in_order` | The `order` array is malformed, has duplicates or does not match the sections |
+| `block_order_unknown_block`, `block_not_in_order` | `block_order` does not match the blocks |
+| `invalid_settings`, `unknown_setting`, `invalid_setting_value`, `invalid_value` | Setting values do not match the schema |
+
+Every finding in this group is an error.
+
+### Languages and text
+
+| Code | Level | When |
+|---|---|---|
+| `locale_invalid` | error | A locale file is not a JSON object |
+| `locale_default_missing` | error | No `locales/*.default.json` (or `*.default.schema.json`) |
+| `locale_key_missing` | error | A key used with `\| t` or as a `t:` setting value is missing from the default locale |
+| `schema_translation_missing` | error | A schema `t:` key is missing from the default schema locale |
+| `locale_key_untranslated` | warning | A key from the default locale is missing in another locale file |
+| `locale_key_unknown` | warning | A locale file has keys that the default locale does not have |
+| `hardcoded_text` | warning | (v2) Visible text that is not Liquid output, hardcoded text in `alt`/`aria-label`/`placeholder`/`title` attributes or in a `\| default: 'Text'` fallback; strings with non-ASCII letters in `assets/*.js` |
+| `money_hardcoded` | warning | A hardcoded `₺` outside `snippets/money.liquid` |
+
+### Crafter SDK usage (v2)
+
+In themes, cart, money and checkout go through the [Crafter SDK](/en/developers/sdk).
+
+| Code | Level | When |
+|---|---|---|
+| `sdk_cart_storage` | error | The cart is read or written directly through `localStorage` `'cart'`; use `Crafter.cart` |
+| `checkout_link_purpose` | error | A `/checkout` link without `purpose`; write `/checkout?purpose=cart` or use `Crafter.checkout()` |
+| `checkout_locale_url` | error | `locale_url` applied to `/checkout` (checkout has no language prefix) |
+| `checkout_without_sdk` | warning | JS navigates to `/checkout` by itself; use `Crafter.checkout({ purpose: 'cart' })` |
+| `money_reimplemented` | warning | JS formats money with `Intl`; use `Crafter.money.format` |
+
+## Using it in CI
+
+```yaml .github/workflows/theme-check.yml
+name: theme-check
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npx @crafter-cms/cli theme check --fail-level warning
+```
+
+With `--json`, findings come back as an `offenses` array; each finding has `severity`, `code`, `file`, optional `line` and `message`.

@@ -1,80 +1,61 @@
 ---
-title: "Theme Development & Marketplace"
-description: "Develop, test, and publish custom Liquid themes on the Crafter Marketplace."
+title: "Developer guide"
+description: "Theme development (v2) for Crafter, the Crafter CLI, theme check, publishing and review, the Crafter SDK and the CrafterConnect plugin."
 ---
 
-## 1. Overview
+This section is for developers who build themes for Crafter stores and connect game servers to a store. To install and edit a theme as a store owner, see [Theme Library & Editor](/en/web-features/content/theme-library).
 
-Crafter themes can be developed and published to the marketplace for thousands of game server networks to discover. The entire development workflow is handled directly through our zero-dependency CLI tool via `npx`.
+<Note>
+  This guide covers **theme v2** (sections and JSON templates) and **Crafter CLI 2.x**. Check your version with `crafter --version`. v1 themes (with `.liquid` templates only) keep working unchanged.
+</Note>
 
----
+## Theme development
 
-## 2. Template Engine (Liquid)
+<CardGroup cols={2}>
+  <Card title="Theme structure (v2)" icon="folder-tree" href="/en/developers/themes/structure">
+    Folders, how v2 is detected, `theme_info`, template names, Liquid objects, filters and output escaping.
+  </Card>
+  <Card title="Sections and blocks" icon="layer-group" href="/en/developers/themes/sections">
+    `{% schema %}`, setting types, blocks, presets, JSON templates, section groups and the section rendering endpoint.
+  </Card>
+  <Card title="Languages and currency" icon="language" href="/en/developers/themes/localization">
+    `locales/` files, the `t` filter, schema translations, `locale_url`, language and currency selectors, `money` filters.
+  </Card>
+  <Card title="Crafter CLI" icon="terminal" href="/en/developers/themes/cli">
+    Installation, login and scopes, `theme dev`, `push`, `pull`, `publish`, `crafter.theme.toml` and CI.
+  </Card>
+  <Card title="Theme check" icon="list-check" href="/en/developers/themes/theme-check">
+    Check a theme before uploading it: rules, error and warning codes, CI usage.
+  </Card>
+  <Card title="Publishing and review" icon="badge-check" href="/en/developers/themes/publishing">
+    Making a theme live in your store, submitting versions to the marketplace and the review process.
+  </Card>
+</CardGroup>
 
-Crafter theme architecture is powered by the flexible and secure **Liquid** engine:
+## SDK and server connection
 
-- **Dynamic Data Integration:** Standard HTML, CSS, and JS structures are preserved while Liquid tags inject dynamic store data (products, cart items, user session, etc.).
-- **Features:** Secure sandbox execution, lightning-fast rendering, and modular snippet reusability.
+<CardGroup cols={2}>
+  <Card title="Crafter SDK" icon="code" href="/en/developers/sdk">
+    `window.Crafter` in themes (cart, money, language, sections, checkout) and `@crafter-cms/sdk` in external apps.
+  </Card>
+  <Card title="CrafterConnect plugin" icon="plug" href="/en/developers/crafterconnect">
+    Setup with a connection code, server token, security settings, allowed command prefixes and the command queue.
+  </Card>
+</CardGroup>
 
-### Example Usage
-
-```liquid
-<!-- Output store name -->
-<h1>{{ shop.name }}</h1>
-
-<!-- Load an asset file -->
-{{ 'style.css' | asset_url }}
-```
-
----
-
-## 3. Development Workflow
-
-The Crafter CLI provides ready-to-use theme boilerplates with pre-configured Liquid layouts.
-
-### 3.1. Authentication (Login)
-
-Before initiating development, authenticate via the terminal:
-
-```bash
-npx @crafter-cms/cli@latest login
-```
-
-### 3.2. Initialize Theme Project (Init)
-
-Scaffold a new theme project with starter template files:
-
-```bash
-npx @crafter-cms/cli@latest init
-```
-
-### 3.3. Live Development Mode (Dev Mode)
-
-Start the live sync development server from your theme folder:
+## Quick start
 
 ```bash
-npx @crafter-cms/cli@latest dev
+npm install -g @crafter-cms/cli
+crafter theme init my-theme --v2
+cd my-theme
+crafter theme check
+crafter login
+crafter theme dev --open
 ```
 
-**Dev Mode Features:**
-- Automatically generates and maintains theme integrity manifests (`crafter-manifest.json`).
-- Live-reloads local changes directly against an isolated sandbox cloud store.
-- Enables instant real-time Liquid testing with actual store data.
+`crafter theme dev` uploads the theme to a private development theme that customers never see and previews it with the store's real data at `http://127.0.0.1:9292`. See [Crafter CLI](/en/developers/themes/cli) for details.
 
-### 3.4. Publish to Marketplace
+## Support
 
-When your theme is polished and ready for release, publish it with:
-
-```bash
-npx @crafter-cms/cli@latest publish
-```
-
-**Publish Parameters:**
-1. **Version Number:** Semantic version tag (e.g., `1.0.0` or `1.0.1`).
-2. **Release Notes:** Summary of changes and new features.
-
----
-
-## 4. Support & Community
-
-For technical questions or theme review inquiries, visit our [Discord Server](https://discord.crafter.net.tr/).
+For questions and feedback, join our [Discord](https://discord.crafter.net.tr/) server.

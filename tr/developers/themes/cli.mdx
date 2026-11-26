@@ -1,0 +1,145 @@
+---
+title: "Crafter CLI"
+description: "Crafter CLI kurulumu, giriş ve kapsamlar, tema komutları, crafter.theme.toml, .crafterignore ve CI kullanımı."
+---
+
+Crafter CLI (`@crafter-cms/cli`) temaları yerelde geliştirmenizi, mağazanın gerçek verisiyle önizlemenizi ve mağaza temalarına göndermenizi sağlar.
+
+## Kurulum
+
+Node.js 20.19 ya da üstü gerekir.
+
+```bash
+npm install -g @crafter-cms/cli
+crafter --version
+```
+
+Kurmadan çalıştırmak için `npx @crafter-cms/cli <komut>` da kullanılabilir.
+
+<Note>
+  Bu sayfadaki `crafter theme …` komutları CLI **2.x** ile gelir. 1.x'teki `crafter dev` ve `crafter pack` bir ana sürüm boyunca uyarıyla çalışır; `crafter publish` 2.x'te hiçbir işlem yapmaz ve yeni komutları anlatır.
+</Note>
+
+## Hızlı başlangıç
+
+```bash
+crafter theme init benim-temam --v2   # başlangıç temasını kopyalar
+cd benim-temam
+crafter theme check                   # göndermeden denetler
+crafter login                         # tarayıcıda onay verin
+crafter switch --store <mağaza>       # birden çok mağazanız varsa
+crafter theme dev --open              # http://127.0.0.1:9292
+```
+
+## Giriş ve oturum
+
+| Komut | Açıklama |
+|---|---|
+| `crafter login [--store <id>] [--scope …] [--no-browser]` | Tarayıcıda onay ekranını açar; hangi mağazalara izin verdiğinizi orada seçersiniz |
+| `crafter logout` | Oturumu sunucuda iptal eder ve bu bilgisayardan siler |
+| `crafter whoami` | Kullanıcı, kapsamlar ve izinli mağazalar |
+| `crafter switch --store <id\|ad\|adres>` | Varsayılan mağazayı seçer |
+
+Kapsamlar:
+
+| Kapsam | İzin |
+|---|---|
+| `themes:read` | Mağazanın temalarını ve dosyalarını okuma |
+| `themes:write` | Geliştirme temaları oluşturma ve dosya yükleme |
+| `themes:publish` | Temayı canlıya alma, canlı temaya yazma, canlı temayı yeniden adlandırma |
+| `marketplace:submit` | Pazar yeri temalarını incelemeye gönderme |
+| `marketplace:read` | Pazar yeri temalarınızın durumunu görme |
+
+Varsayılan kapsamlar `themes:read themes:write`. Temayı canlıya almak için:
+
+```bash
+crafter login --scope themes:read themes:write themes:publish
+```
+
+Giriş tarayıcıda PKCE ile yapılır; CLI'a tam oturum token'ı değil, kapsamlı ve iptal edilebilir bir CLI token'ı verilir. Token işletim sisteminin anahtar zincirinde (macOS Keychain, Windows Credential Manager, Linux Secret Service), yoksa `~/.crafter/credentials.json` dosyasında (0600 izinli) saklanır. Açık oturumlarınızı panelde **Geliştirici → CLI oturumları** ekranında görüp kapatabilirsiniz. Şifre sıfırlama, "tüm oturumları kapat" ya da 2FA sıfırlamadan sonra oturum kapanır; `crafter login` ile yeniden girin.
+
+## Tema komutları
+
+`--theme` değeri tema kimliği, adı, `live` ya da `development` olabilir.
+
+| Komut | Açıklama |
+|---|---|
+| `crafter theme init [klasör] --v2 [--name <ad>] [--force]` | Tema v2 başlangıç temasını kopyalar; klasör boş değilse `--force` gerekir |
+| `crafter theme check [klasör] [--fail-level error\|warning]` | Temayı göndermeden denetler ([Theme check](/tr/developers/themes/theme-check)) |
+| `crafter theme dev [--store] [--port 9292] [--open] [--ignore …]` | Size özel geliştirme temasında canlı önizleme |
+| `crafter theme push --theme <…> [--only …] [--ignore …] [--nodelete] [--allow-live] [--create <ad>]` | Yerel dosyaları bir mağaza temasına gönderir (yalnızca değişenler) |
+| `crafter theme pull --theme <…> [--only …] [--ignore …] [--delete]` | Sunucudaki dosyaları indirir |
+| `crafter theme list` | Mağazanın temaları ve geliştirme temanız |
+| `crafter theme open --theme <…> [--editor] [--no-browser]` | Canlı temayı mağazada, diğerlerini editörde açar |
+| `crafter theme rename <ad> --theme <…>` | Yeniden adlandırır (canlı temada `themes:publish` gerekir) |
+| `crafter theme delete --theme <…>` | Siler (canlı tema silinemez) |
+| `crafter theme publish --theme <…>` | Temayı mağazada canlı yapar (`themes:publish` gerekir) |
+
+### `theme dev`
+
+- Müşterilerin görmediği, size özel bir **geliştirme teması** açar; ilk açılışta yalnızca farklı dosyalar yüklenir.
+- 100 ms içinde gelen değişiklikleri toplu gönderir.
+- `http://127.0.0.1:9292` proxy'si önizleme token'ını başlıkta taşır, çerez ve yönlendirmeleri yerel adrese uyarlar.
+- Sıcak yenileme: CSS değişince yalnızca `<link>` yenilenir, `sections/x.liquid` değişince yalnızca o bölümler yeniden çizilir, diğer değişikliklerde sayfa yenilenir.
+- Liquid hataları tarayıcıda katman olarak ve terminalde `dosya:satır` ile, bozuk JSON terminalde gösterilir.
+- Ctrl+C önizleme bağlantısını iptal eder.
+
+### Korumalar
+
+- **Canlı tema:** Canlı temaya `push` yalnızca `--allow-live` ile yapılır ve onay sorulur. `--no-interactive` modda onay yerine `--force` gerekir.
+- **Klasör:** `theme push` ve `theme dev` yalnızca tema klasöründe çalışır (`layout/theme.liquid` ve `templates/` ya da `sections/`). Başka klasör için `--path` verin.
+- **Toplu silme:** `push` 20'den fazla dosyayı ya da sunucudaki dosyaların %30'undan fazlasını silecekse önce sayılarla onay sorar; `--no-interactive` modda `--force` (ya da silmemek için `--nodelete`) gerekir.
+
+## Ortak bayraklar
+
+| Bayrak | Açıklama |
+|---|---|
+| `--json` | Makine okunur çıktı (token'lar hiçbir zaman yazılmaz) |
+| `--env <ad>` | `crafter.theme.toml` içindeki ortam |
+| `--no-interactive` | Soru sormaz (CI) |
+| `--path <klasör>` | Tema klasörü |
+| `--lang tr\|en` | Mesaj dili (varsayılan: sistem dili) |
+
+## Proje dosyaları
+
+### `crafter.theme.toml`
+
+Geliştirici ayarları; pakete ve sunucuya gönderilmez.
+
+```toml crafter.theme.toml
+[environments.default]
+store = "<websiteId>"
+theme = "<themeId>"          # push/pull için varsayılan tema (isteğe bağlı)
+ignore = ["assets/*.map"]
+port = 9393
+```
+
+Ortam seçimi: `--env` > `CRAFTER_ENV` > `default` adlı ortam > tek ortam.
+
+### `.crafterignore`
+
+Tek yok sayma listesidir (`.gitignore` biçimi: `#` yorum, `!` istisna, sonu `/` olan klasör). Nokta ile başlayan dosya ve klasörler, `node_modules`, `dist` ve `.zip` dosyaları her zaman hariçtir.
+
+```text .crafterignore
+README.md
+assets/*.map
+```
+
+### `crafter-manifest.json`
+
+İsteğe bağlıdır. CLI bu dosyayı yalnızca okur; değiştirmesi gerekirse önce onay ister.
+
+## CI
+
+Panelde **Geliştirici → Geliştirici token'ları** ekranından bir token (`crft_pat_…`) oluşturun ve `CRAFTER_TOKEN` ortam değişkenine verin. Token yalnızca oluşturulduğunda bir kez gösterilir; seçtiğiniz kapsam, mağaza ve süreyle sınırlıdır.
+
+```bash
+crafter theme check --json
+CRAFTER_TOKEN=crft_pat_... crafter theme push --theme <id> --no-interactive --json
+```
+
+Canlı temaya CI'dan yazmak için token'da `themes:publish` kapsamı olmalı ve `--allow-live --force` verilmelidir.
+
+<Warning>
+  Geliştirici token'ını depoya yazmayın; CI'ın gizli değişkenlerinde saklayın. Sızdığını düşündüğünüz token'ı hemen panelden iptal edin.
+</Warning>

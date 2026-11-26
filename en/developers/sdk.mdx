@@ -1,0 +1,142 @@
+---
+title: "Crafter SDK"
+description: "Cart, money, language, section rendering and checkout with window.Crafter in themes; @crafter-cms/sdk in external apps."
+---
+
+The Crafter SDK (`@crafter-cms/sdk`) is a dependency-free JavaScript / TypeScript client for Crafter stores. It is used in two ways:
+
+- **Inside a theme v2:** the storefront adds the SDK to every page; the theme uses the `window.Crafter` instance.
+- **In external (headless) apps:** as an npm package in Node, React, Vue or mobile projects.
+
+## In themes
+
+Through `{{ content_for_header }}`, the storefront adds the store context (`window.__CRAFTER_CONTEXT__`: store, language, currency, rate) and a versioned browser build of the SDK (`defer`) to every v2 page. The SDK sets up the `window.Crafter` instance and dispatches `crafter:ready` on `document`.
+
+<Warning>
+  The SDK is mandatory in themes. A theme does not load the SDK itself or start it with `new Crafter()`, and does not write its own cart, money formatting, language switching or checkout code. `crafter theme check` checks this ([SDK rules](/en/developers/themes/theme-check)).
+</Warning>
+
+Code that may run before the SDK loads should wait for `crafter:ready`:
+
+```js assets/theme.js
+function onCrafterReady(fn) {
+  if (window.Crafter) fn(window.Crafter);
+  else document.addEventListener('crafter:ready', () => fn(window.Crafter), { once: true });
+}
+
+onCrafterReady((Crafter) => {
+  document.querySelectorAll('[data-add-to-cart]').forEach((button) => {
+    button.addEventListener('click', () => Crafter.cart.add({ id: button.dataset.productId }, 1));
+  });
+});
+```
+
+### Cart
+
+In the storefront the cart lives on the server: in a signed cookie for guests and in the account after sign-in, so it is the same across devices. The server always calculates prices. The theme does not distinguish the two modes.
+
+| Method | Description |
+|---|---|
+| `Crafter.cart.get()` | Returns the cart: `items`, `itemCount`, `subtotal`, `discount`, `total`, `currency`, `coupon` |
+| `Crafter.cart.add(product, qty)` | Adds a product (`{ id }`) |
+| `Crafter.cart.update(id, qty)` | Changes the quantity (0 removes) |
+| `Crafter.cart.remove(id)`, `Crafter.cart.clear()` | Removes a line or empties the cart |
+| `Crafter.cart.setCoupon(code)`, `Crafter.cart.removeCoupon()` | Applies a coupon (validated on the server) or removes it |
+
+Amounts are in the store currency; show them with `Crafter.money.format(cart.total)`. The first render needs no JS: the Liquid `cart` object (`cart.items`, `cart.item_count`, `cart.total_price`) renders the page on the server.
+
+```js
+try {
+  await Crafter.cart.setCoupon('SUMMER10');
+} catch (error) {
+  if (error.isCrafterError) {
+    // error.type: e.g. 'coupon_not_found', 'coupon_cart_total_below_minimum'
+    // error.details?.minCartValue, error.message (in the page language)
+    showError(error.message);
+  }
+}
+```
+
+### Money, language, sections and checkout
+
+```js
+// Money: store amount → customer currency, in the page language (same as Liquid `money`)
+Crafter.money.format(cart.total);
+Crafter.money.format(balance, { convert: false }); // in the store currency
+
+// Language and currency: POST /localization, the page moves to the chosen language URL
+await Crafter.localization.set({ currency: 'EUR' });
+await Crafter.localization.set({ language: 'en' });
+
+// Re-render sections
+await Crafter.sections.render(['main-cart', 'header-group:header']);
+
+// Checkout: /checkout?purpose=cart
+Crafter.checkout({ purpose: 'cart' });
+```
+
+| API | Description |
+|---|---|
+| `Crafter.money.format(amount, { convert?, currency?, locale? })` | Formats an amount; `convert: false` keeps the store currency |
+| `Crafter.localization.get()` | `{ language, currency, languages, currencies }` |
+| `Crafter.localization.set({ language?, currency? }, { returnTo?, reload? })` | Changes the language or currency |
+| `Crafter.sections.render(ids, { url?, swap? })` | Re-renders sections with `?sections=` and swaps them in the page |
+| `Crafter.checkout({ purpose?, amount?, navigate? })` | `purpose`: `'cart'` (default) or `'balance'` (balance top-up); `navigate: false` only returns the URL |
+
+You can also write checkout links in Liquid without JS: `<a href="/checkout?purpose=cart">`. The checkout URL has no language prefix; do not apply `locale_url`.
+
+### Events
+
+Events are dispatched on `document` as `CustomEvent`s with data in `event.detail`:
+
+| Event | When |
+|---|---|
+| `crafter:ready` | The SDK is ready |
+| `crafter:cart:updated` | The cart changed (including in another tab); `event.detail.itemCount` |
+| `crafter:localization:changed` | Language or currency changed; `event.detail.currency`, `event.detail.language` |
+| `crafter:section:load`, `crafter:section:unload` | The editor re-rendered a section; `event.detail.sectionId` |
+
+```js
+document.addEventListener('crafter:cart:updated', (event) => {
+  document.querySelector('[data-cart-count]').textContent = event.detail.itemCount;
+});
+```
+
+### Other modules
+
+The `Crafter.auth`, `users`, `store`, `chest`, `tickets`, `posts`, `pages`, `forum`, `helpcenter`, `staffForms`, `statistics`, `punishments`, `servers`, `vote`, `legal`, `reports`, `search`, `seo`, `luckperms`, `coupons`, `redeemCode`, `website` and `currencies` modules wrap the store's public and customer endpoints. In a theme these requests go through the storefront proxy on the same domain; the store is resolved from the domain, so the theme needs no `websiteId`.
+
+## In external (headless) apps
+
+```bash
+npm install @crafter-cms/sdk
+```
+
+```ts
+import { Crafter } from '@crafter-cms/sdk';
+
+const crafter = new Crafter({
+  mode: 'direct',
+  websiteId: '<websiteId>',
+  // apiBase defaults to 'https://api.crafter.net.tr'
+});
+
+const products = await crafter.store.getProducts();
+const servers = await crafter.servers.getList();
+```
+
+- `mode: 'direct'` sends requests straight to the Crafter API; `websiteId` is required.
+- After customer sign-in (`crafter.auth.signin`) the session token is stored in the browser's `localStorage` under the `crafter_token` key (change it with `storageKey`).
+- In headless use, the cart is kept in the browser.
+
+<Note>
+  The theme runtime APIs (`money`, `localization`, `sections`, `checkout`, the server cart) are in SDK **1.5** and later. See the installed version with `crafter.version`.
+</Note>
+
+## Security
+
+<Warning>
+  - The SDK runs in the browser; everything you put in it is visible to visitors. **Never** put a dashboard token, a developer token (`crft_pat_…`), a server token (`cct_…`), the plugin secret key or any API secret into theme code, `assets/` files or the client bundle of a headless app.
+  - The SDK only acts with the customer's own permissions; it is not used for administration.
+  - Prices, discounts and balances are always calculated on the server. Amounts shown on the client are for display only.
+</Warning>

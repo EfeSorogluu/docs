@@ -1,0 +1,147 @@
+---
+title: "Diller, çeviriler ve para birimi"
+description: "locales/ dil dosyaları, t filtresi, şema çevirileri, varsayılan içerik çevirileri, locale_url, dil ve para birimi seçicisi ve money filtreleri."
+---
+
+Mağaza panelde bir varsayılan dil ve açık diller seçer. Varsayılan dil vitrinde öneksiz (`/store`), diğer diller önekli (`/en/store`) yayınlanır. Tema bu dillerin hepsinde aynı dosyalarla çalışır.
+
+## Dil dosyaları
+
+| Dosya | İçerik |
+|---|---|
+| `locales/<dil>.default.json` | Temanın varsayılan dilindeki arayüz metinleri (tek bir `.default` dosyası olmalı) |
+| `locales/<dil>.json` | Diğer dillerdeki arayüz metinleri |
+| `locales/<dil>.default.schema.json` | Editör metinlerinin (şema etiketleri) varsayılan dili |
+| `locales/<dil>.schema.json` | Editör metinlerinin diğer dilleri |
+
+Dosyalar iç içe anahtarlı JSON nesneleridir:
+
+```json locales/en.default.json
+{
+  "cart": {
+    "title": "Your cart",
+    "items": { "one": "{{ count }} item", "other": "{{ count }} items" }
+  },
+  "general": { "hello": "Hello, {{ name }}" }
+}
+```
+
+```json locales/tr.json
+{
+  "cart": {
+    "title": "Sepetin",
+    "items": { "one": "{{ count }} ürün", "other": "{{ count }} ürün" }
+  },
+  "general": { "hello": "Merhaba, {{ name }}" }
+}
+```
+
+## `t` filtresi
+
+```liquid
+<h1>{{ 'cart.title' | t }}</h1>
+<p>{{ 'cart.items' | t: count: cart.item_count }}</p>
+<p>{{ 'general.hello' | t: name: customer.username }}</p>
+```
+
+- Arama sırası: sayfanın dili → ana dili (`pt-BR` → `pt`) → mağazanın varsayılan dili → `en`. Hiçbirinde yoksa anahtar basılır.
+- Değişken: `{{ ad }}`. Çoğul: `{ "zero"?, "one", "other" }` (dilin kuralına göre `few`/`many`) ve `count`.
+- Çıktı kaçışlanır. Adı `_html` ile biten anahtarlar HTML içerebilir; değişkenleri yine kaçışlanır.
+- Yedek metin gerekiyorsa önce `assign` kullanın: `{%- assign default_heading = 'store.title' | t -%}` sonra `{{ section.settings.heading | default: default_heading }}`.
+
+<Tip>
+  JS'nin ihtiyaç duyduğu metinleri layout'ta bir JSON bloğuna yazın ve JS'ten oradan okuyun. `crafter theme check`, `assets/*.js` içinde elle yazılmış metinleri uyarır.
+</Tip>
+
+```liquid layout/theme.liquid
+<script type="application/json" id="theme-strings">
+  {"addedToCart": {{ 'cart.added' | t | json }}}
+</script>
+```
+
+## Şema çevirileri
+
+Şemadaki `label`, `info` ve `name` değerleri `t:` ile başlayan anahtar olabilir. Çevirisi `*.schema.json` dosyasındadır ve panel kendi dilinde çözer:
+
+```json
+{ "type": "text", "id": "heading", "label": "t:sections.hero.settings.heading.label" }
+```
+
+```json locales/en.default.schema.json
+{ "sections": { "hero": { "settings": { "heading": { "label": "Heading" } } } } }
+```
+
+## Varsayılan içerik çevirileri
+
+JSON şablonlarda, section gruplarında, preset'lerde ve şema `default` değerlerinde metin ayarları (`text`, `textarea`, `richtext`, `inline_richtext`, `html`) `"t:<anahtar>"` olabilir. Anahtar **arayüz** dil dosyasındadır (`locales/<dil>.json`), şema dosyasında değil:
+
+```json templates/index.json
+{
+  "sections": {
+    "hero": { "type": "hero", "settings": { "heading": "t:content.hero.heading" } }
+  },
+  "order": ["hero"]
+}
+```
+
+Dokunulmamış içerik her ziyaretçinin dilinde görünür. Mağaza sahibi editörde metni değiştirirse yazdığı metin düz metin olarak kaydedilir ve diğer dillere mağaza çevirileriyle çevrilir.
+
+## Dile göre bağlantılar
+
+Tema içi bağlantıları `locale_url` ile yazın:
+
+```liquid
+<a href="{{ '/store' | locale_url }}">{{ 'store.title' | t }}</a>
+```
+
+Belirli bir dilin adresi için dil kodunu verin: `{{ '/store' | locale_url: 'de' }}` → `/de/store`.
+
+`routes` nesnesi de sayfanın dilinde adresler verir (`routes.store_url`, `routes.cart_url` …). Çok dilli mağazada `content_for_header` her dil için `hreflang` bağlantılarını kendisi ekler.
+
+<Warning>
+  Checkout adresine `locale_url` uygulamayın: checkout dil öneksizdir. `crafter theme check` bunu hata olarak bildirir (`checkout_locale_url`).
+</Warning>
+
+## Dil ve para birimi seçicisi
+
+`POST /localization` formu JS olmadan çalışır. Alanlar: `language`, `currency` ve `return_to` (uygulama içi yol). Seçim çereze yazılır ve aynı sayfanın seçilen dildeki adresine dönülür.
+
+```liquid snippets/localization-form.liquid
+{%- if localization.available_languages.size > 1 -%}
+  <form method="post" action="{{ localization.form_action }}">
+    <input type="hidden" name="return_to" value="{{ localization.return_to }}">
+    {%- for language in localization.available_languages -%}
+      <button type="submit" name="language" value="{{ language.iso_code }}" {% if language.current %}aria-current="true"{% endif %}>
+        {{ language.name }}
+      </button>
+    {%- endfor -%}
+  </form>
+{%- endif -%}
+```
+
+| Nesne | İçerik |
+|---|---|
+| `request.locale` | Sayfanın dili: `iso_code`, `name` (kendi dilinde), `primary`, `root_url` |
+| `localization.available_languages` | Açık diller; her biri `iso_code`, `name`, `url`, `current` |
+| `localization.currency` | Müşterinin para birimi |
+| `localization.available_currencies` | Seçilebilir para birimleri: `iso_code`, `symbol`, `name`, `current`, `rate` |
+| `localization.form_action`, `localization.return_to` | Formun adresi ve dönüş yolu |
+
+JS ile seçim için `Crafter.localization.set({ language })` ya da `({ currency })` kullanın ([Crafter SDK](/tr/developers/sdk)). Sağdan sola yazılan dillerde (ar, he, fa, ur) `<html dir="rtl">` basın ve CSS'te mantıksal özellikler (`margin-inline-start`, `inset-inline`) kullanın.
+
+## Para birimi ve tutarlar
+
+Tutarlar temaya mağaza para biriminde gelir. Filtreler bunları sunucunun belirlediği müşteri para birimine çevirip sayfanın dilinde biçimler:
+
+| Filtre | Örnek çıktı |
+|---|---|
+| `{{ product.price \| money }}` | `€15,99` |
+| `{{ product.price \| money_with_currency }}` | `€15,99 EUR` |
+| `{{ product.price \| money_without_currency }}` | `15,99` |
+| `{{ tutar \| store_money }}` | Mağaza para biriminde, çevrilmeden (bakiye gibi) |
+
+Para biçimini tek bir snippet'te toplayın (başlangıç temasında `snippets/money.liquid`) ve temada para sembolünü elle yazmayın; `crafter theme check` elle yazılmış `₺` için uyarır (`money_hardcoded`). Tarayıcıda hesaplanan tutarlar için `Crafter.money.format(tutar)` kullanın; JS'te `Intl.NumberFormat` ile para biçimlemek uyarı verir (`money_reimplemented`).
+
+<Note>
+  Müşteri farklı bir para birimindeyse tarayıcıda gösterilen tutar tahminidir; kesin tutar ödeme anında belirlenir.
+</Note>
