@@ -1,0 +1,142 @@
+---
+title: "Crafter SDK"
+description: "Temalarda window.Crafter ile sepet, para, dil, bölüm render ve checkout; harici uygulamalarda @crafter-cms/sdk."
+---
+
+Crafter SDK (`@crafter-cms/sdk`), Crafter mağazaları için bağımlılıksız bir JavaScript / TypeScript istemcisidir. İki şekilde kullanılır:
+
+- **Tema v2 içinde:** Storefront SDK'yı her sayfaya kendisi ekler; tema `window.Crafter` örneğini kullanır.
+- **Harici uygulamalarda (headless):** Node, React, Vue ya da mobil projelerde npm paketi olarak.
+
+## Temalarda
+
+Storefront her v2 sayfasına `{{ content_for_header }}` ile mağaza bağlamını (`window.__CRAFTER_CONTEXT__`: mağaza, dil, para birimi, kur) ve SDK'nın sürümlü tarayıcı derlemesini (`defer`) ekler. SDK `window.Crafter` örneğini kurar ve `document` üzerinde `crafter:ready` olayını yayar.
+
+<Warning>
+  Temalarda SDK zorunludur. Tema SDK'yı kendisi yüklemez ya da `new Crafter()` ile başlatmaz; sepet, para biçimi, dil seçimi ve checkout kodunu kendisi yazmaz. `crafter theme check` bunu denetler ([SDK kuralları](/tr/developers/themes/theme-check)).
+</Warning>
+
+SDK yüklenmeden çalışan kod `crafter:ready` olayını beklemelidir:
+
+```js assets/theme.js
+function onCrafterReady(fn) {
+  if (window.Crafter) fn(window.Crafter);
+  else document.addEventListener('crafter:ready', () => fn(window.Crafter), { once: true });
+}
+
+onCrafterReady((Crafter) => {
+  document.querySelectorAll('[data-add-to-cart]').forEach((button) => {
+    button.addEventListener('click', () => Crafter.cart.add({ id: button.dataset.productId }, 1));
+  });
+});
+```
+
+### Sepet
+
+Sepet storefront'ta sunucudadır: ziyaretçide imzalı bir çerezde, giriş yapınca hesapta tutulur ve cihazlar arası aynı kalır. Fiyatı her zaman sunucu hesaplar. Tema iki modu ayırt etmez.
+
+| Metot | Açıklama |
+|---|---|
+| `Crafter.cart.get()` | Sepeti döner: `items`, `itemCount`, `subtotal`, `discount`, `total`, `currency`, `coupon` |
+| `Crafter.cart.add(product, qty)` | Ürün ekler (`{ id }`) |
+| `Crafter.cart.update(id, qty)` | Adedi değiştirir (0 siler) |
+| `Crafter.cart.remove(id)`, `Crafter.cart.clear()` | Satırı ya da sepeti siler |
+| `Crafter.cart.setCoupon(code)`, `Crafter.cart.removeCoupon()` | Kupon ekler (sunucuda doğrulanır) ya da kaldırır |
+
+Tutarlar mağaza para birimindedir; göstermek için `Crafter.money.format(cart.total)` kullanın. İlk görünüm için JS gerekmez: Liquid `cart` nesnesi (`cart.items`, `cart.item_count`, `cart.total_price`) sayfayı sunucuda çizer.
+
+```js
+try {
+  await Crafter.cart.setCoupon('YAZ10');
+} catch (error) {
+  if (error.isCrafterError) {
+    // error.type: ör. 'coupon_not_found', 'coupon_cart_total_below_minimum'
+    // error.details?.minCartValue, error.message (sayfanın dilinde)
+    showError(error.message);
+  }
+}
+```
+
+### Para, dil, bölümler ve checkout
+
+```js
+// Para: mağaza tutarı → müşterinin para birimi, sayfanın dilinde (Liquid `money` ile aynı)
+Crafter.money.format(cart.total);
+Crafter.money.format(balance, { convert: false }); // mağaza para biriminde
+
+// Dil ve para birimi: POST /localization, sayfa seçilen dildeki adrese gider
+await Crafter.localization.set({ currency: 'EUR' });
+await Crafter.localization.set({ language: 'en' });
+
+// Bölümleri yeniden çiz
+await Crafter.sections.render(['main-cart', 'header-group:header']);
+
+// Checkout: /checkout?purpose=cart
+Crafter.checkout({ purpose: 'cart' });
+```
+
+| API | Açıklama |
+|---|---|
+| `Crafter.money.format(amount, { convert?, currency?, locale? })` | Tutarı biçimler; `convert: false` mağaza para biriminde bırakır |
+| `Crafter.localization.get()` | `{ language, currency, languages, currencies }` |
+| `Crafter.localization.set({ language?, currency? }, { returnTo?, reload? })` | Dili ya da para birimini değiştirir |
+| `Crafter.sections.render(ids, { url?, swap? })` | Bölümleri `?sections=` ile yeniden çizip sayfada değiştirir |
+| `Crafter.checkout({ purpose?, amount?, navigate? })` | `purpose`: `'cart'` (varsayılan) ya da `'balance'` (bakiye yükleme); `navigate: false` yalnızca adresi döner |
+
+Ödeme bağlantılarını Liquid'de JS'siz de yazabilirsiniz: `<a href="/checkout?purpose=cart">`. Checkout adresi dil öneksizdir; `locale_url` uygulamayın.
+
+### Olaylar
+
+Olaylar `document` üzerinde `CustomEvent` olarak yayılır, veri `event.detail` içindedir:
+
+| Olay | Ne zaman |
+|---|---|
+| `crafter:ready` | SDK hazır |
+| `crafter:cart:updated` | Sepet değişti (başka sekmedeki değişiklik dahil); `event.detail.itemCount` |
+| `crafter:localization:changed` | Dil ya da para birimi değişti; `event.detail.currency`, `event.detail.language` |
+| `crafter:section:load`, `crafter:section:unload` | Editör bir bölümü yeniden çizdi; `event.detail.sectionId` |
+
+```js
+document.addEventListener('crafter:cart:updated', (event) => {
+  document.querySelector('[data-cart-count]').textContent = event.detail.itemCount;
+});
+```
+
+### Diğer modüller
+
+`Crafter.auth`, `users`, `store`, `chest`, `tickets`, `posts`, `pages`, `forum`, `helpcenter`, `staffForms`, `statistics`, `punishments`, `servers`, `vote`, `legal`, `reports`, `search`, `seo`, `luckperms`, `coupons`, `redeemCode`, `website` ve `currencies` modülleri mağazanın herkese açık ve müşteri uçlarını sarar. Temada bu istekler aynı alan adındaki storefront proxy'si üzerinden gider; mağaza alan adından çözülür, temada `websiteId` gerekmez.
+
+## Harici uygulamalarda (headless)
+
+```bash
+npm install @crafter-cms/sdk
+```
+
+```ts
+import { Crafter } from '@crafter-cms/sdk';
+
+const crafter = new Crafter({
+  mode: 'direct',
+  websiteId: '<websiteId>',
+  // apiBase varsayılan: 'https://api.crafter.net.tr'
+});
+
+const products = await crafter.store.getProducts();
+const servers = await crafter.servers.getList();
+```
+
+- `mode: 'direct'` istekleri doğrudan Crafter API'sine gönderir; `websiteId` zorunludur.
+- Müşteri girişi (`crafter.auth.signin`) sonrası oturum token'ı tarayıcıda `localStorage` içinde `crafter_token` anahtarıyla saklanır (`storageKey` ile değiştirilebilir).
+- Sepet headless kullanımda tarayıcıda tutulur.
+
+<Note>
+  Tema çalışma zamanı API'leri (`money`, `localization`, `sections`, `checkout`, sunucu sepeti) SDK **1.5** ve üstündedir. Kurulu sürümü `crafter.version` ile görebilirsiniz.
+</Note>
+
+## Güvenlik
+
+<Warning>
+  - SDK tarayıcıda çalışır; içine koyduğunuz her şey ziyaretçiye görünür. Panel token'ı, geliştirici token'ı (`crft_pat_…`), sunucu token'ı (`cct_…`), eklenti gizli anahtarı ya da herhangi bir API gizli anahtarını tema koduna, `assets/` dosyalarına veya headless uygulamanın istemci paketine **asla** yazmayın.
+  - SDK yalnızca müşterinin kendi yetkisiyle işlem yapar; yönetim işlemleri için kullanılmaz.
+  - Fiyat, indirim ve bakiye her zaman sunucuda hesaplanır. İstemcide gösterilen tutar yalnızca gösterimdir.
+</Warning>

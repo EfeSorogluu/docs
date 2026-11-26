@@ -1,0 +1,117 @@
+---
+title: "Theme check"
+description: "crafter theme check ile temayı göndermeden denetleyin: kurallar, hata ve uyarı kodları ve CI kullanımı."
+---
+
+`crafter theme check` temayı sunucuya göndermeden denetler. Kurallar storefront'un v2 motoru ve tema editörünün kaydederken uyguladığı doğrulamayla aynıdır; editörün döndürdüğü hata kodları burada da aynıdır.
+
+```bash
+crafter theme check                         # bulunduğunuz klasör
+crafter theme check ./benim-temam --fail-level warning
+crafter theme check --json                  # makine okunur çıktı
+```
+
+- Hata varsa 1 koduyla çıkar. `--fail-level warning` uyarıda da hata koduyla çıkar.
+- `crafter-manifest.json` gerekmez; temanın v2 olup olmadığı JSON şablonlardan anlaşılır. v2'ye özel kurallar (metin, SDK, JSON şablonlar) yalnızca v2 temalarda çalışır.
+- Ağ kullanmaz, giriş gerektirmez.
+
+Çıktı dosya başına gruplanır; her satırda satır numarası, seviye, mesaj ve kural kodu yer alır.
+
+## Kurallar
+
+### Liquid ve dosyalar
+
+| Kod | Seviye | Ne zaman |
+|---|---|---|
+| `liquid_syntax` | hata | Liquid sözdizimi hatası (ör. kapatılmamış `{% if %}`) |
+| `liquid_unknown_filter` | hata | Storefront'ta olmayan filtre |
+| `json_invalid` | hata | Geçersiz JSON dosyası |
+| `layout_missing` | hata | `layout/theme.liquid` yok |
+| `layout_content_missing` | hata | Layout'ta `{{ content_for_layout }}` yok |
+| `layout_header_missing` | uyarı | Layout'ta `{{ content_for_header }}` yok (başlık, SEO, önizleme ve SDK eklenmez) |
+| `missing_snippet`, `missing_section`, `missing_section_group`, `missing_asset` | hata | `{% render %}`, `{% section %}`, `{% sections %}` ya da `asset_url` ile çağrılan dosya yok |
+| `file_skipped` | uyarı | Sunucunun kabul etmediği dosya türü ya da 10 MB'tan büyük dosya; gönderilmez |
+
+### Şemalar ve ayarlar
+
+| Kod | Seviye | Ne zaman |
+|---|---|---|
+| `section_type_invalid` | hata | Bölüm dosya adı harf, rakam, `_` ve `-` dışında karakter içeriyor |
+| `schema_missing` | uyarı | Bölümde `{% schema %}` yok; editör kataloğunda görünmez |
+| `schema_invalid_json` | hata | `{% schema %}` geçerli bir JSON nesnesi değil |
+| `schema_name_missing`, `schema_block_name_missing` | uyarı | Şemada ya da blokta `name` yok |
+| `schema_tag_invalid`, `schema_class_invalid` | hata | `tag` izin verilen etiketlerden biri değil ya da `class` metin değil |
+| `schema_limit_invalid` | hata | `limit` ya da `max_blocks` pozitif tam sayı değil |
+| `schema_blocks_invalid`, `schema_block_invalid`, `schema_block_duplicate` | hata | `blocks` dizi değil, blokta `type` yok ya da tip tekrar ediyor |
+| `schema_presets_invalid`, `preset_name_missing`, `preset_invalid` | hata | Preset dizisi, adı ya da içeriği geçersiz |
+| `app_blocks_unsupported` | uyarı | `@app` blokları henüz desteklenmiyor |
+| `settings_invalid`, `setting_invalid` | hata | `settings` dizi değil ya da ayarda `type` yok |
+| `setting_type_unknown` | uyarı | Bilinmeyen ayar tipi; kısa metin gibi işlenir |
+| `setting_id_invalid`, `setting_id_duplicate` | hata | `id` eksik, geçersiz ya da tekrar ediyor |
+| `setting_label_missing` | uyarı | `label` yok |
+| `setting_content_missing` | uyarı | `header` ya da `paragraph` ayarında `content` yok |
+| `setting_options_invalid` | hata | `select`/`radio` için `options` boş ya da hatalı |
+| `setting_range_invalid` | hata | `range` için `min` < `max` ve pozitif `step` yok |
+| `setting_default_invalid` | hata | `default` değeri ayar tipine uymuyor |
+| `settings_schema_missing` | uyarı | `config/settings_schema.json` yok |
+| `settings_schema_invalid` | hata | `settings_schema.json` bir dizi değil |
+| `theme_info_missing`, `theme_info_incomplete` | uyarı | `theme_info` yok, alanları eksik ya da adresleri `http(s)` değil |
+
+### JSON şablonlar ve section grupları (v2)
+
+| Kod | Ne zaman |
+|---|---|
+| `template_name_invalid` | Şablon adı harf, rakam, `_`, `-`, `.` ve `/` dışında karakter içeriyor |
+| `invalid_structure`, `payload_too_large` | Dosya bir nesne değil ya da 512 KB'tan büyük |
+| `too_many_sections` | Bir şablonda 25'ten fazla bölüm |
+| `invalid_id`, `invalid_section`, `invalid_block`, `invalid_blocks` | Kimlik ya da bölüm/blok yapısı geçersiz |
+| `unknown_section_type`, `unknown_block_type` | Temada olmayan bölüm ya da şemada olmayan blok tipi |
+| `section_limit_exceeded`, `max_blocks_exceeded`, `block_limit_exceeded` | Şemadaki `limit`, `max_blocks` ya da blok `limit` aşıldı |
+| `invalid_order`, `order_duplicate`, `order_unknown_section`, `section_not_in_order` | `order` dizisi hatalı, tekrar ediyor ya da bölümlerle uyuşmuyor |
+| `block_order_unknown_block`, `block_not_in_order` | `block_order` bloklarla uyuşmuyor |
+| `invalid_settings`, `unknown_setting`, `invalid_setting_value`, `invalid_value` | Ayar değerleri şemaya uymuyor |
+
+Bu bölümdeki bütün bulgular hatadır.
+
+### Diller ve metinler
+
+| Kod | Seviye | Ne zaman |
+|---|---|---|
+| `locale_invalid` | hata | Dil dosyası bir JSON nesnesi değil |
+| `locale_default_missing` | hata | `locales/*.default.json` (ya da `*.default.schema.json`) yok |
+| `locale_key_missing` | hata | `\| t` ile ya da ayar değerinde `t:` ile kullanılan anahtar varsayılan dil dosyasında yok |
+| `schema_translation_missing` | hata | Şemadaki `t:` anahtarı varsayılan şema dil dosyasında yok |
+| `locale_key_untranslated` | uyarı | Varsayılan dildeki anahtar başka bir dil dosyasında yok |
+| `locale_key_unknown` | uyarı | Bir dil dosyasında varsayılan dilde olmayan anahtar var |
+| `hardcoded_text` | uyarı | (v2) Liquid'de çıktı olmayan görünür metin, `alt`/`aria-label`/`placeholder`/`title` özniteliğinde ya da `\| default: 'Metin'` yedeğinde elle yazılmış metin; `assets/*.js` içinde ASCII dışı harfli dizeler |
+| `money_hardcoded` | uyarı | `snippets/money.liquid` dışında elle yazılmış `₺` |
+
+### Crafter SDK kullanımı (v2)
+
+Temalarda sepet, para ve checkout [Crafter SDK](/tr/developers/sdk) ile yapılır.
+
+| Kod | Seviye | Ne zaman |
+|---|---|---|
+| `sdk_cart_storage` | hata | Sepet `localStorage` `'cart'` ile doğrudan okunuyor ya da yazılıyor; `Crafter.cart` kullanın |
+| `checkout_link_purpose` | hata | `/checkout` bağlantısında `purpose` yok; `/checkout?purpose=cart` yazın ya da `Crafter.checkout()` kullanın |
+| `checkout_locale_url` | hata | `/checkout` adresine `locale_url` uygulanmış (checkout dil öneksizdir) |
+| `checkout_without_sdk` | uyarı | JS `/checkout` adresine kendisi gidiyor; `Crafter.checkout({ purpose: 'cart' })` kullanın |
+| `money_reimplemented` | uyarı | JS'te `Intl` ile para biçimleniyor; `Crafter.money.format` kullanın |
+
+## CI'da kullanım
+
+```yaml .github/workflows/theme-check.yml
+name: theme-check
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npx @crafter-cms/cli theme check --fail-level warning
+```
+
+`--json` ile bulgular `offenses` dizisi olarak döner; her bulguda `severity`, `code`, `file`, isteğe bağlı `line` ve `message` alanları vardır.

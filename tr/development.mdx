@@ -1,79 +1,61 @@
 ---
-title: "Marketplace"
-description: "Marketplace sistemi ile kendi temanı geliştir, yayınla ve kazan."
+title: "Geliştirici rehberi"
+description: "Crafter için tema geliştirme (v2), Crafter CLI, theme check, yayınlama ve inceleme, Crafter SDK ve CrafterConnect eklentisi."
 ---
 
-## 1. Genel Bakış
+Bu bölüm Crafter mağazaları için tema yazan ve oyun sunucusunu mağazaya bağlayan geliştiriciler içindir. Mağaza sahibi olarak tema kurmak ve düzenlemek için [Tema Kütüphanesi ve Düzenleyici](/tr/web-features/content/theme-library) sayfasına bakın.
 
-Crafter temaları geliştirilip mağazada yayınlanarak binlerce mağazanın kullanımına sunulabilir. Geliştirme ve test süreçlerinin tamamı, bilgisayara ek bir kurulum gerektirmeden doğrudan `npx` üzerinden çalışan CLI aracı ile yönetilmektedir.
+<Note>
+  Bu rehber **tema v2** (bölümler ve JSON şablonlar) ve **Crafter CLI 2.x** içindir. Sürümünüzü `crafter --version` ile kontrol edin. v1 temalar (yalnızca `.liquid` şablonlu) değişmeden çalışmaya devam eder.
+</Note>
 
-## 2. Şablon Motoru (Liquid)
+## Tema geliştirme
 
-Crafter temaları tamamen **Liquid** mimarisi üzerine kuruludur:
+<CardGroup cols={2}>
+  <Card title="Tema yapısı (v2)" icon="folder-tree" href="/tr/developers/themes/structure">
+    Klasörler, v2'nin nasıl anlaşıldığı, `theme_info`, şablon adları, Liquid nesneleri, filtreler ve çıktı kaçışı.
+  </Card>
+  <Card title="Bölümler ve bloklar" icon="layer-group" href="/tr/developers/themes/sections">
+    `{% schema %}`, ayar tipleri, bloklar, preset'ler, JSON şablonlar, section grupları ve bölüm render ucu.
+  </Card>
+  <Card title="Diller ve para birimi" icon="language" href="/tr/developers/themes/localization">
+    `locales/` dosyaları, `t` filtresi, şema çevirileri, `locale_url`, dil ve para birimi seçicisi, `money` filtreleri.
+  </Card>
+  <Card title="Crafter CLI" icon="terminal" href="/tr/developers/themes/cli">
+    Kurulum, giriş ve kapsamlar, `theme dev`, `push`, `pull`, `publish`, `crafter.theme.toml` ve CI.
+  </Card>
+  <Card title="Theme check" icon="list-check" href="/tr/developers/themes/theme-check">
+    Temayı göndermeden denetleyin: kurallar, hata ve uyarı kodları, CI kullanımı.
+  </Card>
+  <Card title="Yayınlama ve inceleme" icon="badge-check" href="/tr/developers/themes/publishing">
+    Temayı mağazada canlıya almak, pazar yerine sürüm göndermek ve inceleme süreci.
+  </Card>
+</CardGroup>
 
-- **Dinamik Veri Entegrasyonu:** HTML, CSS ve JS yapısı korunurken; Liquid etiketleri ile mağazanın dinamik verileri (ürünler, sepet, kullanıcılar vb.) anında sayfalara aktarılabilir.
-- **Özellikler:** Güvenli, esnek ve yüksek performanslı bir yapı sunar.
+## SDK ve sunucu bağlantısı
 
-### Örnek Kullanımlar
+<CardGroup cols={2}>
+  <Card title="Crafter SDK" icon="code" href="/tr/developers/sdk">
+    Temalarda `window.Crafter` (sepet, para, dil, bölümler, checkout) ve harici uygulamalarda `@crafter-cms/sdk`.
+  </Card>
+  <Card title="CrafterConnect eklentisi" icon="plug" href="/tr/developers/crafterconnect">
+    Bağlantı koduyla kurulum, sunucu token'ı, güvenlik ayarları, izinli komut önekleri ve komut kuyruğu.
+  </Card>
+</CardGroup>
 
-```liquid
-<!-- Mağaza adını yazdırma -->
-<h1>{{ shop.name }}</h1>
-
-<!-- Varlık (asset) dosyasını çağırma -->
-{{ 'style.css' | asset_url }}
-```
-
-## 3. Geliştirme Adımları
-
-Sıfırdan bir tema projesine başlandığında CLI aracı, Liquid temelleriyle donatılmış hazır bir taslak altyapı (boilerplate) sağlar.
-
-### 3.1. Platforma Giriş (Login)
-
-Geliştirme işlemlerine başlamadan önce terminal üzerinden platformda oturum açılmalıdır:
-
-```bash
-npx @crafter-cms/cli@latest login
-```
-
-### 3.2. Tema Projesi Oluşturma (Init)
-
-Yeni bir tema projesi başlatmak ve taslak Liquid dosyalarını oluşturmak için aşağıdaki komut çalıştırılır:
-
-```bash
-npx @crafter-cms/cli@latest init
-```
-
-### 3.3. Canlı Geliştirme Modu (Dev Mode)
-
-Geliştirme esnasında yapılan değişiklikleri anlık olarak görüntüleyebilmek için proje klasörü dizinindeyken geliştirme modu başlatılır:
+## Hızlı başlangıç
 
 ```bash
-npx @crafter-cms/cli@latest dev
+npm install -g @crafter-cms/cli
+crafter theme init benim-temam --v2
+cd benim-temam
+crafter theme check
+crafter login
+crafter theme dev --open
 ```
 
-**Geliştirme Modunun İşlevleri:**
+`crafter theme dev` temayı size özel, müşterilerin görmediği bir geliştirme temasına yükler ve `http://127.0.0.1:9292` adresinde mağazanın gerçek verisiyle önizler. Ayrıntılar [Crafter CLI](/tr/developers/themes/cli) sayfasında.
 
-- Güvenlik dosyalarını (`crafter-manifest.json`) arka planda otomatik olarak üretir ve yönetir.
-- Kodlar düzenlenip kaydedildikçe, değişiklikleri anında izole bir geliştirme (dev) ortamına senkronize eder.
-- Liquid kodlarının doğrudan mağaza üzerinde anlık ve canlı olarak test edilmesini sağlar.
+## Destek
 
-### 3.4. Sürüm Yayınlama (Publish)
-
-Tema geliştirme süreci bittiğinde veya yeni bir güncelleme hazır olduğunda markete gönderim işlemi şu komutla yapılır:
-
-```bash
-npx @crafter-cms/cli@latest publish
-```
-
-**Yayınlama Adımında İstenen Bilgiler:**
-
-1. **Sürüm Numarası:** Yeni versiyon tanımı (Örn: `1.0.0` veya `1.0.1`)
-2. **Sürüm Notları:** Yapılan değişikliklerin kısa özeti
-
-**Yayın Süreci İşleyişi:**
- Komut çalıştırıldıktan sonra CLI aracı, geliştirme ortamındaki kodları resmi bir paket haline dönüştürür ve markette yayınlanması amacıyla otomatik olarak onay sürecine iletir.
-
-## 4. Destek ve İletişim
-
-Geliştirme süreçleriyle ilgili tüm sorular ve geri bildirimler için [Discord](https://discord.crafter.net.tr/) sunucumuz üzerinden iletişime geçebilirsiniz.
+Sorular ve geri bildirimler için [Discord](https://discord.crafter.net.tr/) sunucumuza yazabilirsiniz.

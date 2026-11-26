@@ -1,0 +1,104 @@
+---
+title: "Publishing and review"
+description: "Making a theme live in your store, creating a marketplace theme, submitting a version for review and the review process."
+---
+
+Publishing a theme can mean two things:
+
+- **Making it live in your store:** making a theme the one your customers see.
+- **Publishing it on the marketplace:** submitting your theme so every Crafter store can install it. Each version goes through review.
+
+## Making a theme live in your store
+
+```bash
+crafter login --scope themes:read themes:write themes:publish
+crafter theme push --create "New design"   # creates a new unpublished theme and pushes to it
+crafter theme list
+crafter theme publish --theme "New design"
+```
+
+Instead of writing to the live theme directly, push to an unpublished theme first, check it in the editor (`crafter theme open --theme <…>`), then make it live with `theme publish`. `push` to the live theme only works with `--allow-live` and a confirmation.
+
+Section edits the store owner makes in the editor are stored separately from the theme code; updating the theme does not remove them.
+
+## Publishing on the marketplace
+
+Your marketplace themes are in the dashboard under **Developer → My themes** ([app.crafter.net.tr/en/developer/themes](https://app.crafter.net.tr/en/developer/themes)).
+
+<Steps>
+  <Step title="Create the theme">
+    Use **New theme** to enter the name, category, description, price (`0` for a free theme), tags, cover image (up to 5 MB) and gallery (up to 10 images). The theme is not published until its first version passes review.
+  </Step>
+  <Step title="Upload the files">
+    In the theme's **Files** tab, upload a ZIP. The ZIP replaces the whole working copy: files not in the ZIP are deleted. The ZIP can be up to 50 MB and each file up to 10 MB; disallowed file types are skipped. Published versions are not affected.
+  </Step>
+  <Step title="Check it">
+    Check the theme locally before submitting:
+
+    ```bash
+    crafter theme check --fail-level warning
+    ```
+  </Step>
+  <Step title="Submit the version for review">
+    In the **Versions** tab, use **Submit a new version**: enter a version number (semver recommended, e.g. `1.2.0`; it must be greater than the latest version, letters, digits and `. _ + -` only, up to 64 characters) and release notes, then press **Submit for review**. A snapshot of the working copy at that moment goes to review.
+  </Step>
+</Steps>
+
+<Note>
+  Submitting to the marketplace from the CLI (`crafter theme submit`) is coming in a later CLI version. For now, submit versions from the dashboard.
+</Note>
+
+## Review
+
+| Status | Meaning |
+|---|---|
+| Draft | The theme exists but has no published version yet |
+| In review | The submitted version is being reviewed |
+| Published | The version was approved and is on the marketplace |
+| Rejected | The version was rejected; the reason appears in the **Versions** tab |
+| Deprecated | The theme is no longer offered for new installs |
+
+- You also get the result (approval or rejection, plus any review note) by email.
+- Fix a rejected version and submit it again with a **new version number**; a version number cannot be reused.
+- An approved version is applied automatically to stores that use the theme. Their editor edits are kept, so keep section types, setting ids and block types stable between versions.
+- Submitted files are scanned automatically for copies of paid marketplace themes; a version found to be a copy is not accepted.
+
+### Pre-submission checklist
+
+- `crafter theme check --fail-level warning` passes with no errors and no warnings.
+- `theme_info` in `config/settings_schema.json` is complete and the support URL works.
+- All storefront strings are in the locale files and translated in every language you support (no `locale_key_untranslated` warnings).
+- Amounts are printed with the `money` filters; cart and checkout go through the SDK.
+- No `| raw` on customer data.
+- The package contains no secret keys, tokens or real personal data.
+
+## Marketplace preview
+
+Marketplace themes are previewed with a sample dataset, without a real store. The preview is read-only: cart, login and payment do not work. Built-in datasets: `minecraft` (default), `fivem`, `rust`, `cs2`, `digital_goods`.
+
+A theme can bring its own sample data in `preview/data.json`; that dataset appears first in the picker and becomes the default. You can also choose the default dataset in `crafter-manifest.json`:
+
+```json crafter-manifest.json
+{
+  "preview": { "defaultDataset": "digital_goods" }
+}
+```
+
+```json preview/data.json
+{
+  "label": { "tr": "Örnek mağaza", "en": "Sample store" },
+  "website": { "name": "Sample Network", "description": "Sample description", "logo": "https://cdn.example.com/logo.png" },
+  "categories": [{ "id": "c1", "name": "Ranks", "slug": "ranks", "image": "assets/rank.png" }],
+  "products": [{ "id": "p1", "name": "VIP", "slug": "vip", "price": 99.9, "discount_price": null, "price_usd": 4.99,
+                 "category": "c1", "images": ["assets/vip.png"], "description": "Sample product" }],
+  "servers": [{ "id": "s1", "name": "Survival", "slug": "survival", "game": "minecraft", "online": 128, "max": 500 }],
+  "posts": [{ "id": "n1", "title": "Announcement", "slug": "announcement", "excerpt": "Sample post", "createdAt": "2026-11-01T00:00:00Z" }],
+  "stats": { "totalMembers": 1420, "totalSales": 489 }
+}
+```
+
+Rules: the file can be at most 512 KB with at most 30 images. Images must be `https://` URLs or theme assets (`assets/…`). `id` and `slug` contain only letters, digits, `-` and `_`; a product's `category` must point to an existing category. Text can be plain or `{ "tr": "…", "en": "…" }`. If the file is invalid, publishing is not blocked and the preview opens with a built-in dataset.
+
+<Warning>
+  Do not put real personal data in `preview/data.json`. If you need email addresses, use made-up ones such as `example.com`.
+</Warning>

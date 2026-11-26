@@ -1,0 +1,186 @@
+---
+title: "Theme structure (v2)"
+description: "Theme v2 folder structure, how v2 is detected, theme_info, template names, Liquid objects, filters and output escaping."
+---
+
+Crafter themes are written in [Liquid](https://liquidjs.com/). In theme v2, pages are built from **sections** under `sections/`. The store owner adds, orders and configures sections in the theme editor. These edits are not written into the theme code; they are stored per store as data (draft and published separately). When the theme is updated, the store's edits are kept.
+
+The fastest start is the starter theme, which uses every v2 feature:
+
+```bash
+crafter theme init my-theme --v2
+```
+
+## Folder structure
+
+```text
+config/settings_schema.json      global theme settings and theme_info
+layout/theme.liquid              page skeleton
+templates/index.json             JSON template: sections and their order
+templates/errors/500.liquid      .liquid templates also work in v2
+sections/hero.liquid             section: Liquid + {% schema %}
+sections/header-group.json       section group (header)
+sections/footer-group.json       section group (footer)
+snippets/money.liquid            partials called with {% render %}
+assets/theme.css                 CSS, JS, images and fonts
+locales/en.default.json          storefront strings (default language)
+locales/tr.json
+locales/en.default.schema.json   editor strings (schema translations)
+locales/tr.schema.json
+crafter-manifest.json            optional
+```
+
+Accepted file types: `.liquid`, `.json`, `.html`, and for `assets/` `.css`, `.js`, `.png`, `.jpg`, `.jpeg`, `.svg`, `.webp`, `.gif`, `.ico`, `.woff`, `.woff2`, `.ttf`, `.eot`, `.otf`. A single file can be at most 10 MB. Dotfiles and dot folders (`.env`, `.git`), `node_modules`, `dist` and `.zip` files are never uploaded. The top-level folder names `dev/` and `versions/` are reserved.
+
+## How theme v2 is detected
+
+A theme-level version file is not required:
+
+1. If `crafter-manifest.json` sets `themeVersion`, that value wins (`2` → v2, any other value → v1).
+2. Otherwise the file layout decides: if `templates/index.json` exists and `templates/index.liquid` does not, the theme is v2.
+
+The decision is per theme. In a v2 theme, a page with `templates/<name>.json` is built from sections; a page without one is rendered with `templates/<name>.liquid`. If both exist, the JSON template is used.
+
+## `theme_info`
+
+The theme's name, version and author are read from the first entry in `config/settings_schema.json`:
+
+```json config/settings_schema.json
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Sample Theme",
+    "theme_version": "1.0.0",
+    "theme_author": "Sample Studio",
+    "theme_documentation_url": "https://docs.example.com",
+    "theme_support_url": "https://example.com/support"
+  },
+  {
+    "name": "Colors",
+    "settings": [
+      { "type": "color", "id": "color_primary", "label": "Primary color", "default": "#17B87A" }
+    ]
+  }
+]
+```
+
+Global settings are read in templates as `settings.<id>` (`{{ settings.color_primary }}`). `crafter theme check` warns when `theme_info` is missing or incomplete.
+
+## Layout
+
+`layout/theme.liquid` wraps every page. Two variables are required:
+
+```liquid layout/theme.liquid
+<!doctype html>
+<html lang="{{ request.locale.iso_code }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{ content_for_header }}
+    <link rel="stylesheet" href="{{ 'theme.css' | asset_url }}">
+  </head>
+  <body>
+    {% sections 'header-group' %}
+    <main>{{ content_for_layout }}</main>
+    {% sections 'footer-group' %}
+    <script src="{{ 'theme.js' | asset_url }}" defer></script>
+  </body>
+</html>
+```
+
+- `{{ content_for_layout }}`: the page content. Without it, nothing is rendered.
+- `{{ content_for_header }}`: title, SEO tags, preview support and the [Crafter SDK](/en/developers/sdk). In v2 themes the storefront adds the SDK here; the theme does not load the SDK itself.
+
+## Template names and paths
+
+Template names match the storefront's route mapping:
+
+| Template | Path |
+|---|---|
+| `index` | `/` |
+| `store` | `/store` |
+| `store/server` | `/store/<server>` |
+| `store/category` | `/store/<server>/<category>` |
+| `store/product` | `/store/<server>/<category>/<product>` |
+| `cart` | `/cart` |
+| `page`, `page.<suffix>` | `/<page>` (`page.<suffix>` when the page has a template suffix) |
+| `profile` | `/profile`, `/profile/<name>` |
+| `auth` | `/auth`, `/auth/sign-in`, `/auth/sign-up`, `/login`, `/register` |
+| `auth/password/forgot`, `auth/password/reset` | `/auth/password/...` |
+| `search` | `/search?q=` |
+| `posts`, `posts/post` | `/posts`, `/posts/<slug>` |
+| `forum`, `forum/category`, `forum/topic` | `/forum/...` |
+| `help`, `help/category` | `/help`, `/help/category/<id>` |
+| `errors/404`, `errors/500`, `errors/maintenance` | error and maintenance pages |
+
+On a path without a template, the storefront shows the 404 template.
+
+## Liquid objects
+
+The main objects available in every template, section and snippet:
+
+| Object | Content |
+|---|---|
+| `settings` | Global theme settings (`config/settings_schema.json`) |
+| `website` | Store information, e.g. `website.currency` (store currency), `website.turnstile_site_key` |
+| `customer` | The signed-in customer (empty otherwise) |
+| `request` | Request information; `request.locale` is the page language |
+| `template` | The template being rendered |
+| `routes` | URLs in the page language: `root_url`, `store_url`, `cart_url`, `search_url`, `account_url`, `account_login_url`, `account_register_url`, `posts_url`, `forum_url`, `help_url`, `support_url`, `localization_url` |
+| `localization` | Language and currency selection ([Languages and currency](/en/developers/themes/localization)) |
+| `cart` | Cart: `cart.items`, `cart.item_count`, `cart.total_price`, `cart.coupon`, `cart.currency` |
+| `catalog` | The store's product, category, server, page and post lists (loaded when read) |
+| `search` | On the search page: `search.terms`, `search.performed`, `search.results_count`, `search.products`, `search.posts` |
+| `stats` | Public statistics, e.g. `stats.totalMembers`, `stats.serverCount` |
+
+Page-specific data (`product` on the product page, the category and its products on the category page, the post on a post page) arrives in the matching template. For section-specific variables (`section`, `block`), see [Sections and blocks](/en/developers/themes/sections).
+
+Snippets called with `{% render 'snippet' %}` see the page's root variables (`settings`, `website`, `customer` …) directly.
+
+## Filters and tags
+
+In addition to the standard Liquid filters and tags:
+
+| Name | Usage |
+|---|---|
+| `asset_url` | `{{ 'theme.css' \| asset_url }}`: URL of a file under `assets/` |
+| `lexical_html` | `{{ post.content \| lexical_html }}`: rich text to HTML (safe, no `raw` needed) |
+| `lexical_text` | `{{ post.content \| lexical_text \| truncate: 120 }}`: rich text as plain text |
+| `t` | `{{ 'cart.title' \| t }}`: string from the locale files |
+| `locale_url` | `{{ '/store' \| locale_url }}`: URL in the page language |
+| `money`, `money_with_currency`, `money_without_currency` | Formats an amount in the customer's currency |
+| `store_money` | Formats an amount in the store currency (e.g. balance) |
+| `{% section 'type' %}` | Renders a single static section |
+| `{% sections 'group' %}` | Renders a section group |
+| `{% schema %}` | Section schema (not written to the output) |
+| `{% crafter_badge %}` | Where the "Built with Crafter" badge goes in the theme |
+
+`crafter theme check` reports an unknown filter as an error (`liquid_unknown_filter`).
+
+## Output escaping
+
+In v2, `{{ … }}` output is HTML-escaped by default. You can safely print customer data (username, forum title) without writing `escape`.
+
+To print store-owner HTML unescaped on purpose, add `| raw` at the **end** of the chain:
+
+```liquid
+{{ section.settings.description | raw }}
+```
+
+These do not need `raw`: `content_for_header`, `content_for_layout`, `block.crafter_attributes` and the result of `lexical_html`. If one of these goes through another filter, it is escaped again.
+
+<Warning>
+  Never add `| raw` to customer input (username, messages, forum content). It lets scripts run in other users' browsers (XSS).
+</Warning>
+
+Escaping is off in v1 themes; that behavior is unchanged.
+
+## Moving a v1 theme to v2
+
+1. Write `templates/index.json` and delete `templates/index.liquid`.
+2. Turn the header and footer into `sections/header.liquid` and `sections/footer.liquid`, write the `sections/header-group.json` and `sections/footer-group.json` groups, and use `{% sections %}` in the layout.
+3. Split the pages that should be editable into sections and write `templates/<name>.json`.
+4. Move fixed text, images and links into section settings; keep `settings_schema.json` for global settings only (colors, fonts, logo).
+5. Review every place that prints HTML; add `| raw` to store-owner HTML.
+6. Turn repeated items (FAQ questions, feature cards) into blocks and add `{{ block.crafter_attributes }}` to their root tags.
+7. Run `crafter theme check`.

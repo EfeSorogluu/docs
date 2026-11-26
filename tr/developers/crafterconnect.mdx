@@ -1,0 +1,173 @@
+---
+title: "CrafterConnect eklentisi"
+description: "CrafterConnect kurulumu (bağlantı kodu ve /crafter connect), sunucu token'ı, güvenlik ayarları, izinli komut önekleri ve komut kuyruğu."
+---
+
+CrafterConnect, oyun sunucunuzu Crafter mağazanıza bağlayan resmî eklentidir. Satın alınan ürünlerin komutlarını sunucuya iletir, teslimatı onaylar ve oyun içi mağaza ile sandık menülerini çalıştırır.
+
+<Note>
+  Bu sayfa, panelde **Sunucu bağla** ekranıyla ve bağlantı koduyla çalışan **CrafterConnect 2.0** akışını anlatır. Eklentiniz 2.0'dan eskiyse (ayar dosyasına `website-id`, `plugin-secret` ve `server-id` yazıyorsanız) [Minecraft](/tr/game-servers/minecraft) sayfasındaki kurulum geçerlidir. Eski bağlantılar çalışmaya devam eder; geçiş için sayfanın sonundaki "Eski bağlantıdan geçiş" bölümüne bakın.
+</Note>
+
+## Desteklenen platformlar
+
+| Oyun | Platform | Durum |
+|---|---|---|
+| Minecraft | Paper / Spigot, Spigot, Velocity, BungeeCord / Waterfall | Kullanılabilir |
+| Rust, CS2, Garry's Mod, Unturned, ARK, Sons of the Forest, FiveM, MTA:SA, Hytale ve diğerleri | — | Yakında |
+
+Eklentinin en az **2.0.0** sürümü gerekir. Eklentiyi [GitHub Releases](https://github.com/Crafter-CMS/CrafterConnect/releases/latest) sayfasından ya da paneldeki **İndir** düğmesinden alın.
+
+## Kurulum
+
+<Steps>
+  <Step title="Bağlantı ekranını açın">
+    [Panel → Ayarlar → Sunucular](https://app.crafter.net.tr/tr/dashboard/settings/servers) sayfasında **Sunucu bağla**'ya tıklayın ve oyununuzu seçin. Bu seçim yalnızca kurulum adımlarını gösterir; sunucunun oyununu bağlanan eklenti bildirir.
+  </Step>
+  <Step title="Eklentiyi kurun">
+    **Paper / Spigot:** `CrafterConnect.jar` dosyasını sunucunun `plugins/` klasörüne koyun ve sunucuyu yeniden başlatın.
+
+    **Velocity:** `CrafterConnect.jar` dosyasını Velocity proxy'nin `plugins/` klasörüne koyun ve proxy'yi yeniden başlatın.
+
+    **BungeeCord / Waterfall:** `CrafterConnect.jar` dosyasını proxy'nin `plugins/` klasörüne koyun ve proxy'yi yeniden başlatın.
+  </Step>
+  <Step title="Bağlantı kodunu kullanın">
+    Panelde **Bağlantı kodu oluştur**'a tıklayın ve gösterilen komutu sunucu (ya da proxy) konsolunda veya yetkili bir oyuncuyla çalıştırın:
+
+    ```text
+    /crafter connect K7QM-4XPD
+    ```
+
+    Kod **15 dakika** geçerlidir ve **tek kullanımlıktır**. Büyük/küçük harf, tire ve boşluk fark etmez; `O` sıfır, `I` ve `L` bir olarak okunur.
+  </Step>
+  <Step title="Bağlantıyı doğrulayın">
+    Panel bağlantıyı canlı izler ve sunucu bağlanınca **Bağlandı** gösterir. Sunucunun adı, adresi, oyun sürümü ve eklenti sürümü eklentiden gelir. Artık bu sunucuya teslim edilecek ürünler ekleyebilirsiniz.
+  </Step>
+</Steps>
+
+Website ID, gizli anahtar ya da sunucu kimliği elle kopyalanmaz.
+
+### Bağlantı hataları
+
+Eklenti konsolunda görebileceğiniz hata kodları:
+
+| Kod | Anlamı | Ne yapmalı |
+|---|---|---|
+| `link_code_invalid` | Kod yanlış ya da daha önce kullanılmış | Panelden yeni kod oluşturun |
+| `link_code_expired` | 15 dakika doldu | Panelden yeni kod oluşturun |
+| `plan_limit_reached` | Paketinizdeki bağlı sunucu sınırı dolu | Kullanmadığınız bir sunucuyu silin ya da paketinizi yükseltin |
+| `server_not_found` | Yeniden bağlanacak sunucu silinmiş | Yeni sunucu olarak bağlayın |
+| `game_not_supported` | Oyun ya da platform desteklenmiyor | Desteklenen platformlara bakın |
+| `plugin_protocol_unsupported` | Eklenti sürümü çok eski | Eklentiyi güncelleyin (en az 2.0.0) |
+
+Aynı IP'den dakikada en çok 10 bağlantı denemesi yapılabilir. Bir mağazada aynı anda en çok 5 bekleyen kod olabilir; sınıra ulaşırsanız birkaç dakika sonra tekrar deneyin.
+
+## Sunucu token'ı
+
+Kod kullanıldığında Crafter bu sunucuya özel bir **sunucu token'ı** (`cct_…`) üretir. Eklenti token'ı kendi ayar dosyasına kendisi yazar ve sonraki bütün bağlantılarda kullanır.
+
+- Token yalnızca kayıt anında bir kez eklentiye verilir; Crafter onun yalnızca özetini saklar. Panelde tanımanız için yalnızca ilk 8 karakteri (`cct_Ab12` gibi) görünür.
+- Her sunucunun token'ı ayrıdır. Bir sunucunun token'ı sızarsa yalnızca o sunucu etkilenir.
+- **Yeniden bağla** ile aynı sunucu için yeni kod üretip `/crafter connect` çalıştırdığınızda eski token o anda geçersiz olur ve açık bağlantı kapatılır. Sunucunun kimliği, ürünleri ve bekleyen teslimatları aynı kalır. Makine değiştirdiğinizde ya da token'ın sızdığından şüphelendiğinizde bunu kullanın.
+
+<Warning>
+  Sunucu token'ı, sunucunuz adına teslimat komutu almak için yeterlidir. Eklentinin ayar dosyasını kimseyle paylaşmayın, ekran görüntüsünde göstermeyin ve herkese açık bir depoya yüklemeyin. Sızdığını düşünüyorsanız hemen **Yeniden bağla** ile token'ı yenileyin.
+</Warning>
+
+## Güvenlik ayarları
+
+### Paneldeki eklenti gizli anahtarı
+
+[Panel → Ayarlar → Güvenlik](https://app.crafter.net.tr/tr/dashboard/settings/security) sayfasındaki **Sunucu eklentisi** bölümünde **Eklenti eşitlemesini aç** ve **Eklenti gizli anahtarı** bulunur. Bu anahtar mağazanın tamamı için tektir ve şunlar tarafından kullanılır:
+
+- 2.0'dan eski CrafterConnect kurulumları (`website-id` + `plugin-secret` + `server-id`),
+- CrafterAuth ve LimboAuth gibi mağazaya HTTP ile bağlanan Crafter eklentileri.
+
+CrafterConnect 2.0 bu anahtarı kullanmaz; her sunucu kendi token'ıyla bağlanır.
+
+<Warning>
+  Eklenti gizli anahtarı mağazanın tamamına eklenti erişimi verir ve bütün eski sunucularınızda aynıdır. Yalnızca güvendiğiniz sunuculara yazın, kimseyle paylaşmayın. Sızdığını düşünüyorsanız Güvenlik sayfasından yenileyin ve bütün eski kurulumları güncelleyin ya da CrafterConnect 2.0'a geçirin.
+</Warning>
+
+### Oyuncu kimliği ve cracked sunucular
+
+Minecraft'ta teslimat oyuncunun kullanıcı adıyla yapılır. Kullanıcı adı eşlemesi büyük/küçük harf duyarsızdır.
+
+<Warning>
+  Sunucunuz orijinal (premium) hesap doğrulaması yapmıyorsa (cracked) CrafterConnect'i **mutlaka** AuthMe, LimboAuth ya da benzeri bir giriş eklentisiyle birlikte kullanın. Aksi halde bir oyuncu başkasının adıyla girip onun satın aldığı ürünleri ya da sandığını alabilir.
+</Warning>
+
+Mağazada Microsoft ile giriş açık olduğunda, hesabını bağlamış oyuncular için komutlar doğrulanmış Minecraft UUID'siyle gönderilir; oyuncu ad değiştirse de doğru hesaba teslim edilir.
+
+### Komut güvenliği
+
+Teslimat komutları sunucu konsolunda tam yetkiyle çalışır. Bu yüzden Crafter komuta yerleştirilen her değeri kendi biçimine göre doğrular:
+
+- Minecraft kullanıcı adı yalnızca `^[A-Za-z0-9_]{3,16}$` biçiminde olabilir.
+- Kimlikler (Crafter kullanıcı kimliği, Discord kimliği, Minecraft UUID'si) yalnızca kendi biçimlerinde kabul edilir; e-posta boşluk, tırnak ve kontrol karakteri içeremez.
+- Satır sonu ve kontrol karakterleri her durumda reddedilir.
+
+Biçime uymayan değerde komut hiç gönderilmez ve teslimat incelemeye düşer.
+
+### İzinli komut önekleri (`allowed-command-prefixes`)
+
+Eklenti tarafında ikinci bir savunma hattı olarak, çalıştırılabilecek komutları başlangıçlarına göre sınırlayabilirsiniz. CrafterConnect 2.0 ayar dosyasındaki `allowed-command-prefixes` listesi doluysa eklenti yalnızca bu öneklerden biriyle başlayan komutları çalıştırır. Listede olmayan bir komut çalıştırılmaz, Crafter'a reddedildiği bildirilir ve sipariş incelemeye düşer.
+
+Önerilen kullanım: ürünlerinizde gerçekten kullandığınız komutların başlangıçlarını ekleyin (ör. LuckPerms için `lp`, eşya için `give`, ekonomi için `eco`) ve listeyi geniş tutmayın. `op`, `stop`, `whitelist` ya da `execute` gibi yönetim komutlarına izin vermeyin.
+
+<Note>
+  Liste boşsa önek kontrolü yapılmaz. Bu ayar panelden değil, eklentinin ayar dosyasından yönetilir; tam biçimi eklentinin oluşturduğu ayar dosyasındaki açıklamada yer alır.
+</Note>
+
+## Teslimat komutları
+
+Ürün eklerken her teslimat satırı bir hedef sunucu ve komutlardan oluşur. Komutlarda yer tutucular kullanılır:
+
+| Yer tutucu | Değer |
+|---|---|
+| `%username%` | Oyuncunun kullanıcı adı |
+| `%mc_uuid%` | Microsoft ile doğrulanmış Minecraft UUID'si |
+| `%xuid%` | Bedrock oyuncusunun Xbox kimliği |
+| `%uuid%` | Oyuncunun Crafter kullanıcı kimliği |
+| `%discord_id%` | Bağlı Discord hesabının kimliği |
+| `%email%` | Oyuncunun e-posta adresi |
+
+Örnekler:
+
+```text
+lp user %username% parent add vip
+give %username% diamond 16
+eco give %username% 5000
+```
+
+Bir yer tutucunun değeri boşsa (ör. Discord bağlı değilse) yerine boş metin konur; `%mc_uuid%` gibi doğrulanmış kimlik gerektiren yer tutucularda kimlik yoksa komut kurulmaz.
+
+## Komut kuyruğu ve teslimat
+
+Her komut Crafter'da kalıcı olarak kaydedilir ve sunucu başına oluşturulma sırasıyla gönderilir.
+
+1. **Sunucu çevrimdışıysa** komut Crafter'da bekler ve sunucu bağlanınca sırayla gönderilir.
+2. **Gönderilen komut** eklenti tarafından onaylanır. Onay 60 saniye içinde gelmezse komut aynı kimlikle yeniden gönderilir (en çok 5 deneme). Eklenti aynı komutu ikinci kez çalıştırmaz.
+3. **Oyuncu çevrimdışıysa** eklenti komutu kendi kalıcı kuyruğuna alır ve oyuncu girince çalıştırır.
+4. **Komut çalıştırılamazsa** (geçersiz oyuncu, izinli önek dışında komut) eklenti reddeder; sipariş incelemeye düşer ve tekrar denenmez. Deneme sınırı aşılan komut için de aynısı geçerlidir.
+
+Sunucular listesinde her sunucunun **çevrimiçi** durumu ve **bekleyen komut** sayısı görünür. Eklenti 30 saniyede bir durum bildirir; son 90 saniyede bildirim gelmeyen sunucu çevrimdışı görünür.
+
+<Note>
+  Otomatik yeniden gönderim yalnızca CrafterConnect 2.0 bağlantısında yapılır. 2.0'dan eski eklentilerde çift teslimatı önlemek için komut otomatik tekrar gönderilmez.
+</Note>
+
+## Sunucuyu silme ve ürünleri taşıma
+
+- Teslimat hedefi olan bir sunucuyu silerseniz bu ürünler satıştan kalkar ve checkout onları kabul etmez; böylece ödemesi alınıp teslim edilemeyen sipariş oluşmaz. O sunucuda bekleyen teslimatlar başarısız sayılır ve incelemeye düşer.
+- Silmeden önce **Ürünleri taşı** ile ürünleri başka bir CrafterConnect sunucusuna taşıyın; isterseniz bekleyen teslimatlar da taşınır.
+- Farklı oyundaki bir sunucuya taşınan ürünler, komutlarını kontrol edip kaydedene kadar satışa çıkmaz.
+
+## Eski bağlantıdan geçiş
+
+RCON, Websender ya da 2.0'dan eski CrafterConnect ile bağlı bir sunucunuz varsa:
+
+1. Eklentiyi 2.0'a güncelleyin.
+2. Sunucular sayfasında o sunucuda **Yeniden bağla**'ya tıklayın ve verilen komutu çalıştırın.
+
+Sunucunun kimliği ve ürünleri değişmez; eski bağlantı bilgileri kaldırılır.

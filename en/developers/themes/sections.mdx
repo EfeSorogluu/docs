@@ -1,0 +1,175 @@
+---
+title: "Sections and blocks"
+description: "Section files, {% schema %}, setting types, blocks, presets, JSON templates, section groups and the section rendering endpoint."
+---
+
+## Section file
+
+Each section is a `sections/<type>.liquid` file. The file name is the section **type** (`hero.liquid` → `hero`) and may only contain letters, digits, `_` and `-`. The file holds Liquid markup and a `{% schema %}` block:
+
+```liquid sections/hero.liquid
+<div class="hero hero--{{ section.settings.alignment }}">
+  <h1>{{ section.settings.heading }}</h1>
+  {%- for block in section.blocks %}
+    <a class="button" {{ block.crafter_attributes }} href="{{ block.settings.link }}">{{ block.settings.label }}</a>
+  {%- endfor %}
+</div>
+
+{% schema %}
+{
+  "name": "Hero",
+  "tag": "section",
+  "class": "hero-section",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Welcome" },
+    { "type": "select", "id": "alignment", "label": "Alignment", "default": "center",
+      "options": [{ "value": "left", "label": "Left" }, { "value": "center", "label": "Center" }] }
+  ],
+  "blocks": [
+    { "type": "button", "name": "Button", "limit": 2, "settings": [
+      { "type": "text", "id": "label", "label": "Text" },
+      { "type": "url", "id": "link", "label": "Link" }
+    ] }
+  ],
+  "max_blocks": 2,
+  "presets": [{ "name": "Hero", "blocks": [{ "type": "button" }] }]
+}
+{% endschema %}
+```
+
+`{% schema %}` is not written to the output; its content must be valid JSON. A section without a schema does not appear in the editor's catalog.
+
+## Schema fields
+
+| Field | Meaning |
+|---|---|
+| `name` | Name shown in the editor |
+| `settings` | Section settings |
+| `blocks` | Block types that can be added: `type`, `name`, `settings`, optional `limit` (maximum per section) |
+| `max_blocks` | Maximum number of blocks in the section (50 if not set) |
+| `limit` | How many times this section type can be used in one template |
+| `presets` | The editor's "add section" list; each preset has `name` and optional `settings` and `blocks` |
+| `tag` | Wrapper tag: `div` (default), `section`, `header`, `footer`, `aside`, `nav`, `article`, `main` |
+| `class` | Classes added to the wrapper |
+
+## Setting types
+
+Each setting has `type`, `id` and `label`; `default` is optional. `default` is used for settings that are not saved. It is not applied to a value the store owner cleared on purpose (`""` or `null`). `id` may only contain letters, digits, `_` and `-`, and must be unique within a schema.
+
+| Type | Value | Note |
+|---|---|---|
+| `text`, `textarea` | text | `text` up to 5,000, `textarea` up to 50,000 characters |
+| `richtext`, `inline_richtext`, `html` | HTML text | Up to 50,000 characters; needs `\| raw` when printed |
+| `number` | number | |
+| `range` | number | Requires `min` < `max` and a positive `step` |
+| `checkbox` | `true` / `false` | |
+| `select`, `radio` | text | One of `options: [{ "value", "label" }]` |
+| `color` | `#rgb`, `#rrggbb`, `#rrggbbaa` or empty | |
+| `url` | `/path` or `http(s)://…` | `javascript:` and `//host` are rejected |
+| `image_picker`, `video_url` | URL | |
+| `font` | font | |
+| `product`, `category`, `server`, `page` | id or slug | The editor shows a picker; templates receive a data object (e.g. `section.settings.product.url`) |
+| `header`, `paragraph` | no value | Only show information in the editor; no `id` needed |
+
+Global settings in `config/settings_schema.json` also accept `image`, `category_picker` and `array`. Unknown types are treated as short text and `crafter theme check` warns.
+
+## Section and block variables
+
+| Variable | Content |
+|---|---|
+| `section.id` | Instance id (the key in the JSON template, e.g. `hero`) |
+| `section.type` | Section type (file name) |
+| `section.settings` | Settings (merged with defaults) |
+| `section.blocks` | Enabled blocks in `block_order` order |
+| `section.location` | `template` or the group name (`header-group`) |
+| `section.index` | Position on the page (starts at 1) |
+| `block.id`, `block.type`, `block.settings` | Block information |
+| `block.crafter_attributes` | Editor markers; put them on the block's root tag. Empty in the live store |
+
+Pass a block to a snippet with `{% render 'card', block: block %}`.
+
+<Tip>
+  Use `section.index` to tell the first section apart: the first section on the page can use `h1` and a priority-loaded image, the rest `h2`.
+</Tip>
+
+## JSON templates
+
+`templates/<name>.json` defines a page's sections and their order:
+
+```json templates/index.json
+{
+  "sections": {
+    "hero": { "type": "hero", "settings": { "heading": "Welcome to our server" } },
+    "faq": {
+      "type": "faq",
+      "blocks": {
+        "q1": { "type": "question", "settings": { "question": "How long does delivery take?" } }
+      },
+      "block_order": ["q1"]
+    }
+  },
+  "order": ["hero", "faq"]
+}
+```
+
+- `sections`: instance id → `type`, `settings`, `blocks`, `block_order`, optional `disabled: true`.
+- `order`: render order; every section appears in `order` exactly once.
+- Ids may only contain letters, digits, `_` and `-` (up to 64 characters). A template can hold up to 25 sections. A file can be at most 512 KB.
+
+The file in the theme is the **default**. Once the store owner saves the template in the editor, the storefront uses the store's data. To bring editor changes back into code:
+
+```bash
+crafter theme pull --theme development --only "templates/*.json" --only "sections/*.json"
+```
+
+## Section groups
+
+Areas shown on every page, such as the header and footer, are `sections/<group>.json` files. The format is the same as a JSON template, plus `type` and `name`:
+
+```json sections/header-group.json
+{
+  "type": "header",
+  "name": "Header",
+  "sections": {
+    "announcement": { "type": "announcement-bar" },
+    "header": { "type": "header" }
+  },
+  "order": ["announcement", "header"]
+}
+```
+
+Call it in the layout with `{% sections 'header-group' %}`. `{% section 'cookie-banner' %}` renders a single static section: its data comes from a section group with the same name, otherwise from the schema's first preset and defaults. The tag argument must be a quoted name.
+
+## Wrapper and errors
+
+Each section is wrapped like this:
+
+```html
+<div id="crafter-section-hero" class="crafter-section">…</div>
+```
+
+The tag and class come from the schema's `tag` and `class`. In the editor preview the wrapper also gets `data-crafter-section-id` and `data-crafter-section-type` (and `data-crafter-section-group` in a group); the live store has none of these attributes.
+
+A broken section does not take the page down: it renders empty in the live store and shows as an HTML comment in the editor preview.
+
+## Section rendering endpoint
+
+Adding `?section_id=<id>` to any page path returns only that section's wrapped HTML (`&section_group=<group>` for a section in a group). For several sections use `?sections=hero,header-group:announcement`. For partial updates such as filter forms and the cart, use the SDK instead of calling this directly:
+
+```js assets/theme.js
+document.addEventListener('crafter:ready', () => {
+  document.querySelectorAll('form[data-section-filter]').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const url = `${location.pathname}?${new URLSearchParams(new FormData(form))}`;
+      await Crafter.sections.render([form.dataset.sectionFilter], { url });
+    });
+  });
+});
+```
+
+When the editor re-renders a saved section, it dispatches `crafter:section:unload` (old element) and `crafter:section:load` (new element) on `document`; `event.detail.sectionId` is the section id. Listen to these if your section is initialized with JS.
+
+## App blocks (`@app`)
+
+`@app` blocks are not supported yet. A `"type": "@app"` block in a schema is treated as a normal block and `crafter theme check` reports the `app_blocks_unsupported` warning.

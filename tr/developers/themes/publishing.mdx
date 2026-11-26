@@ -1,0 +1,104 @@
+---
+title: "Yayınlama ve inceleme"
+description: "Temayı mağazada canlıya almak, pazar yerinde tema oluşturmak, sürümü incelemeye göndermek ve inceleme süreci."
+---
+
+Bir temayı yayınlamanın iki anlamı vardır:
+
+- **Mağazada canlıya almak:** Kendi mağazanızda bir temayı müşterilerin gördüğü tema yapmak.
+- **Pazar yerinde yayımlamak:** Temanızı bütün Crafter mağazalarının kurabileceği şekilde pazar yerine göndermek. Her sürüm incelemeden geçer.
+
+## Mağazada canlıya alma
+
+```bash
+crafter login --scope themes:read themes:write themes:publish
+crafter theme push --create "Yeni tasarım"   # yayında olmayan yeni bir tema oluşturup gönderir
+crafter theme list
+crafter theme publish --theme "Yeni tasarım"
+```
+
+Canlı temaya doğrudan yazmak yerine önce yayında olmayan bir temaya gönderin, editörde (`crafter theme open --theme <…>`) kontrol edin, sonra `theme publish` ile canlıya alın. Canlı temaya `push` yalnızca `--allow-live` ve onayla yapılır.
+
+Mağaza sahibinin editörde yaptığı bölüm düzenlemeleri tema kodundan ayrı saklanır; temayı güncellemek bu düzenlemeleri silmez.
+
+## Pazar yerinde yayımlama
+
+Pazar yeri temalarınız panelde **Geliştirici → Temalarım** ekranındadır ([app.crafter.net.tr/tr/developer/themes](https://app.crafter.net.tr/tr/developer/themes)).
+
+<Steps>
+  <Step title="Temayı oluşturun">
+    **Yeni tema** ile ad, kategori, açıklama, fiyat (ücretsiz tema için `0`), etiketler, kapak görseli (en çok 5 MB) ve galeri (en çok 10 görsel) girin. Tema, ilk sürümü incelemeden geçene kadar yayımlanmaz.
+  </Step>
+  <Step title="Dosyaları yükleyin">
+    Tema detayında **Dosyalar** sekmesinden ZIP yükleyin. ZIP çalışma kopyasının tamamını değiştirir: ZIP'te olmayan dosyalar silinir. ZIP en çok 50 MB, dosya başına en çok 10 MB olabilir; izin verilmeyen dosya türleri atlanır. Yayındaki sürümler bundan etkilenmez.
+  </Step>
+  <Step title="Denetleyin">
+    Göndermeden önce temayı yerelde denetleyin:
+
+    ```bash
+    crafter theme check --fail-level warning
+    ```
+  </Step>
+  <Step title="Sürümü incelemeye gönderin">
+    **Sürümler** sekmesinde **Yeni sürüm gönder** ile sürüm numarasını (semver önerilir, ör. `1.2.0`; son sürümden büyük olmalı, yalnızca harf, rakam ve `. _ + -`, en çok 64 karakter) ve sürüm notlarını girip **İncelemeye gönder**'e basın. Çalışma kopyasının o anki anlık kopyası incelemeye alınır.
+  </Step>
+</Steps>
+
+<Note>
+  Pazar yerine CLI'dan gönderim (`crafter theme submit`) sonraki bir CLI sürümünde gelecek. Şimdilik sürümleri panelden gönderin.
+</Note>
+
+## İnceleme
+
+| Durum | Anlamı |
+|---|---|
+| Taslak | Tema oluşturuldu, henüz yayımlanmış sürümü yok |
+| İncelemede | Gönderilen sürüm inceleniyor |
+| Yayında | Sürüm onaylandı ve pazar yerinde |
+| Reddedildi | Sürüm reddedildi; ret gerekçesi **Sürümler** sekmesinde görünür |
+| Kullanımdan kalktı | Tema artık yeni kurulum için sunulmuyor |
+
+- Sonuç (onay ya da ret ve varsa inceleme notu) size e-postayla da bildirilir.
+- Reddedilen sürümü düzeltip **yeni bir sürüm numarasıyla** tekrar gönderin; kullanılmış sürüm numarası tekrar kullanılamaz.
+- Onaylanan sürüm, bu temayı kullanan mağazalara kendiliğinden uygulanır. Mağazaların editör düzenlemeleri korunur; bu yüzden bölüm tiplerini, ayar kimliklerini ve blok tiplerini sürümler arasında koruyun.
+- Gönderilen dosyalar, pazar yerindeki ücretli temaların kopyası olup olmadığı açısından otomatik taranır; kopya olduğu anlaşılan sürüm kabul edilmez.
+
+### Gönderim öncesi kontrol listesi
+
+- `crafter theme check --fail-level warning` hatasız ve uyarısız geçiyor.
+- `config/settings_schema.json` içinde `theme_info` alanları dolu, destek adresi çalışıyor.
+- Bütün arayüz metinleri dil dosyalarında ve desteklediğiniz her dilde çevrilmiş (`locale_key_untranslated` uyarısı yok).
+- Para tutarları `money` filtreleriyle basılıyor, sepet ve checkout SDK ile yapılıyor.
+- Müşteri verisinde `| raw` yok.
+- Pakette gizli anahtar, token ya da gerçek kişi verisi yok.
+
+## Pazar yeri önizlemesi
+
+Pazar yerindeki temalar gerçek bir mağazaya bağlı olmadan, örnek bir veri setiyle önizlenir. Önizleme salt okunurdur: sepet, giriş ve ödeme çalışmaz. Yerleşik setler: `minecraft` (varsayılan), `fivem`, `rust`, `cs2`, `digital_goods`.
+
+Tema kendi örnek verisini `preview/data.json` dosyasıyla getirebilir; bu set seçicide ilk sırada görünür ve varsayılan olur. Varsayılan seti `crafter-manifest.json` ile de seçebilirsiniz:
+
+```json crafter-manifest.json
+{
+  "preview": { "defaultDataset": "digital_goods" }
+}
+```
+
+```json preview/data.json
+{
+  "label": { "tr": "Örnek mağaza", "en": "Sample store" },
+  "website": { "name": "Örnek Ağ", "description": "Örnek açıklama", "logo": "https://cdn.example.com/logo.png" },
+  "categories": [{ "id": "c1", "name": "Rütbeler", "slug": "rutbeler", "image": "assets/rank.png" }],
+  "products": [{ "id": "p1", "name": "VIP", "slug": "vip", "price": 99.9, "discount_price": null, "price_usd": 4.99,
+                 "category": "c1", "images": ["assets/vip.png"], "description": "Örnek ürün" }],
+  "servers": [{ "id": "s1", "name": "Survival", "slug": "survival", "game": "minecraft", "online": 128, "max": 500 }],
+  "posts": [{ "id": "n1", "title": "Duyuru", "slug": "duyuru", "excerpt": "Örnek duyuru", "createdAt": "2026-11-01T00:00:00Z" }],
+  "stats": { "totalMembers": 1420, "totalSales": 489 }
+}
+```
+
+Kurallar: dosya en çok 512 KB ve en çok 30 görsel. Görseller `https://` adresi ya da tema varlığı (`assets/…`) olmalı. `id` ve `slug` yalnızca harf, rakam, `-` ve `_` içerir; ürünün `category` alanı var olan bir kategoriye bakar. Metinler düz metin ya da `{ "tr": "…", "en": "…" }` olabilir. Dosya geçersizse yayın engellenmez, önizleme yerleşik setle açılır.
+
+<Warning>
+  `preview/data.json` içine gerçek kişi verisi koymayın. E-posta gerekiyorsa `example.com` gibi uydurma adresler kullanın.
+</Warning>

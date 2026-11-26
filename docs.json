@@ -144,7 +144,20 @@
           {
             "group": "Geliştiriciler için",
             "pages": [
-              "tr/development"
+              "tr/development",
+              {
+                "group": "Tema geliştirme",
+                "pages": [
+                  "tr/developers/themes/structure",
+                  "tr/developers/themes/sections",
+                  "tr/developers/themes/localization",
+                  "tr/developers/themes/cli",
+                  "tr/developers/themes/theme-check",
+                  "tr/developers/themes/publishing"
+                ]
+              },
+              "tr/developers/sdk",
+              "tr/developers/crafterconnect"
             ]
           }
         ]
@@ -283,7 +296,20 @@
           {
             "group": "For Developers",
             "pages": [
-              "en/development"
+              "en/development",
+              {
+                "group": "Theme development",
+                "pages": [
+                  "en/developers/themes/structure",
+                  "en/developers/themes/sections",
+                  "en/developers/themes/localization",
+                  "en/developers/themes/cli",
+                  "en/developers/themes/theme-check",
+                  "en/developers/themes/publishing"
+                ]
+              },
+              "en/developers/sdk",
+              "en/developers/crafterconnect"
             ]
           }
         ]

@@ -1,0 +1,173 @@
+---
+title: "CrafterConnect plugin"
+description: "Setting up CrafterConnect (connection code and /crafter connect), the server token, security settings, allowed command prefixes and the command queue."
+---
+
+CrafterConnect is the official plugin that connects your game server to your Crafter store. It delivers the commands of purchased products to the server, confirms delivery and runs the in-game shop and chest menus.
+
+<Note>
+  This page covers the **CrafterConnect 2.0** flow, which works with the **Connect a server** screen in the dashboard and a connection code. If your plugin is older than 2.0 (you put `website-id`, `plugin-secret` and `server-id` into its config file), the setup on the [Minecraft](/en/game-servers/minecraft) page applies. Old connections keep working; see "Moving from an old connection" at the end of this page to switch.
+</Note>
+
+## Supported platforms
+
+| Game | Platform | Status |
+|---|---|---|
+| Minecraft | Paper / Spigot, Spigot, Velocity, BungeeCord / Waterfall | Available |
+| Rust, CS2, Garry's Mod, Unturned, ARK, Sons of the Forest, FiveM, MTA:SA, Hytale and others | — | Coming soon |
+
+The plugin must be at least version **2.0.0**. Get it from [GitHub Releases](https://github.com/Crafter-CMS/CrafterConnect/releases/latest) or the **Download** button in the dashboard.
+
+## Setup
+
+<Steps>
+  <Step title="Open the connection screen">
+    On [Dashboard → Settings → Servers](https://app.crafter.net.tr/en/dashboard/settings/servers), click **Connect a server** and pick your game. This choice only shows the setup steps; the connecting plugin reports the server's game.
+  </Step>
+  <Step title="Install the plugin">
+    **Paper / Spigot:** put `CrafterConnect.jar` in the server's `plugins/` folder and restart the server.
+
+    **Velocity:** put `CrafterConnect.jar` in the Velocity proxy's `plugins/` folder and restart the proxy.
+
+    **BungeeCord / Waterfall:** put `CrafterConnect.jar` in the proxy's `plugins/` folder and restart the proxy.
+  </Step>
+  <Step title="Use the connection code">
+    Click **Create connection code** in the dashboard and run the command it shows in the server (or proxy) console, or as an authorized player:
+
+    ```text
+    /crafter connect K7QM-4XPD
+    ```
+
+    The code is valid for **15 minutes** and works **once**. Case, dashes and spaces do not matter; `O` reads as zero, `I` and `L` as one.
+  </Step>
+  <Step title="Confirm the connection">
+    The dashboard watches the connection live and shows **Connected** once the server is linked. The server's name, address, game version and plugin version come from the plugin. You can now add products delivered to this server.
+  </Step>
+</Steps>
+
+You never copy a website ID, a secret key or a server ID by hand.
+
+### Connection errors
+
+Error codes you may see in the plugin console:
+
+| Code | Meaning | What to do |
+|---|---|---|
+| `link_code_invalid` | The code is wrong or already used | Create a new code in the dashboard |
+| `link_code_expired` | The 15 minutes are over | Create a new code in the dashboard |
+| `plan_limit_reached` | Your plan's connected server limit is reached | Delete a server you no longer use or upgrade your plan |
+| `server_not_found` | The server being reconnected was deleted | Connect it as a new server |
+| `game_not_supported` | The game or platform is not supported | See the supported platforms |
+| `plugin_protocol_unsupported` | The plugin version is too old | Update the plugin (2.0.0 or later) |
+
+At most 10 connection attempts per minute are allowed from the same IP. A store can have at most 5 pending codes at a time; if you reach that, try again in a few minutes.
+
+## Server token
+
+When the code is used, Crafter creates a **server token** (`cct_…`) for that server. The plugin writes the token into its own config file and uses it for every later connection.
+
+- The token is handed to the plugin only once, at registration; Crafter stores only a hash of it. The dashboard shows only its first 8 characters (like `cct_Ab12`) so you can recognize it.
+- Every server has its own token. If one server's token leaks, only that server is affected.
+- When you create a new code for the same server with **Reconnect** and run `/crafter connect`, the old token stops working immediately and the open connection is closed. The server's id, products and pending deliveries stay the same. Use this when you move to another machine or suspect the token has leaked.
+
+<Warning>
+  A server token is enough to receive delivery commands on behalf of your server. Never share the plugin's config file, never show it in screenshots and never upload it to a public repository. If you think it has leaked, renew the token right away with **Reconnect**.
+</Warning>
+
+## Security settings
+
+### The plugin secret key in the dashboard
+
+The **Server plugin** section on [Dashboard → Settings → Security](https://app.crafter.net.tr/en/dashboard/settings/security) has **Enable plugin sync** and the **Plugin secret key**. This key is the same for the whole store and is used by:
+
+- CrafterConnect installs older than 2.0 (`website-id` + `plugin-secret` + `server-id`),
+- Crafter plugins that talk to the store over HTTP, such as CrafterAuth and LimboAuth.
+
+CrafterConnect 2.0 does not use this key; each server connects with its own token.
+
+<Warning>
+  The plugin secret key gives plugin access to the whole store and is the same on all your old servers. Only put it on servers you trust and never share it. If you think it has leaked, renew it on the Security page and update every old install, or move them to CrafterConnect 2.0.
+</Warning>
+
+### Player identity and cracked servers
+
+On Minecraft, delivery uses the player's username. Username matching is case-insensitive.
+
+<Warning>
+  If your server does not verify original (premium) accounts (cracked), you **must** run CrafterConnect together with AuthMe, LimboAuth or a similar login plugin. Otherwise a player can join with someone else's name and take the products or chest items that person bought.
+</Warning>
+
+When Microsoft sign-in is enabled in the store, commands for players who linked their account are sent with their verified Minecraft UUID, so delivery reaches the right account even if the player changes their name.
+
+### Command safety
+
+Delivery commands run in the server console with full permissions. That is why Crafter validates every value placed into a command against its own format:
+
+- A Minecraft username can only match `^[A-Za-z0-9_]{3,16}$`.
+- Ids (Crafter user id, Discord id, Minecraft UUID) are only accepted in their own format; an email cannot contain spaces, quotes or control characters.
+- Line breaks and control characters are always rejected.
+
+If a value does not match, the command is not sent at all and the delivery goes to review.
+
+### Allowed command prefixes (`allowed-command-prefixes`)
+
+As a second line of defense on the plugin side, you can limit which commands may run by how they start. If the `allowed-command-prefixes` list in the CrafterConnect 2.0 config file is not empty, the plugin only runs commands that start with one of these prefixes. A command that is not on the list is not run, Crafter is told it was rejected and the order goes to review.
+
+Recommended use: add the starts of the commands your products actually use (for example `lp` for LuckPerms, `give` for items, `eco` for economy) and keep the list short. Do not allow admin commands such as `op`, `stop`, `whitelist` or `execute`.
+
+<Note>
+  An empty list means no prefix check. This setting is managed in the plugin's config file, not in the dashboard; its exact format is described in the comments of the config file the plugin generates.
+</Note>
+
+## Delivery commands
+
+When you add a product, each delivery line is a target server plus commands. Commands use placeholders:
+
+| Placeholder | Value |
+|---|---|
+| `%username%` | The player's username |
+| `%mc_uuid%` | The Minecraft UUID verified through Microsoft |
+| `%xuid%` | The Xbox id of a Bedrock player |
+| `%uuid%` | The player's Crafter user id |
+| `%discord_id%` | The id of the linked Discord account |
+| `%email%` | The player's email address |
+
+Examples:
+
+```text
+lp user %username% parent add vip
+give %username% diamond 16
+eco give %username% 5000
+```
+
+If a placeholder has no value (for example no linked Discord), it is replaced with empty text; for placeholders that need a verified identity, such as `%mc_uuid%`, the command is not built when the identity is missing.
+
+## Command queue and delivery
+
+Every command is stored durably in Crafter and sent per server in the order it was created.
+
+1. **If the server is offline,** the command waits in Crafter and is sent in order when the server connects.
+2. **A sent command** is acknowledged by the plugin. If no acknowledgement arrives within 60 seconds, the command is sent again with the same id (at most 5 attempts). The plugin never runs the same command twice.
+3. **If the player is offline,** the plugin puts the command in its own durable queue and runs it when the player joins.
+4. **If the command cannot run** (invalid player, a command outside the allowed prefixes), the plugin rejects it; the order goes to review and is not retried. The same applies when the attempt limit is reached.
+
+The servers list shows each server's **online** status and **pending command** count. The plugin reports its status every 30 seconds; a server with no report in the last 90 seconds shows as offline.
+
+<Note>
+  Automatic resending only happens on a CrafterConnect 2.0 connection. With plugins older than 2.0, commands are not resent automatically, to avoid double delivery.
+</Note>
+
+## Deleting a server and moving products
+
+- If you delete a server that is a delivery target, those products are taken off sale and checkout does not accept them, so no order is paid without a way to deliver it. Pending deliveries on that server count as failed and go to review.
+- Before deleting, use **Move products** to move them to another CrafterConnect server; pending deliveries can move too.
+- Products moved to a server of a different game stay off sale until you check and save their commands.
+
+## Moving from an old connection
+
+If a server is connected with RCON, Websender or a CrafterConnect version older than 2.0:
+
+1. Update the plugin to 2.0.
+2. On the Servers page, click **Reconnect** on that server and run the command shown.
+
+The server's id and products do not change; the old connection details are removed.

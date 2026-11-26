@@ -1,0 +1,147 @@
+---
+title: "Languages, translations and currency"
+description: "locales/ files, the t filter, schema translations, default content translations, locale_url, language and currency selectors and money filters."
+---
+
+In the dashboard the store picks a default language and its enabled languages. The default language is served without a prefix (`/store`), the others with a prefix (`/en/store`). The theme works in all of them with the same files.
+
+## Locale files
+
+| File | Content |
+|---|---|
+| `locales/<lang>.default.json` | Storefront strings in the theme's default language (exactly one `.default` file) |
+| `locales/<lang>.json` | Storefront strings in other languages |
+| `locales/<lang>.default.schema.json` | Default language of the editor strings (schema labels) |
+| `locales/<lang>.schema.json` | Other languages of the editor strings |
+
+Files are JSON objects with nested keys:
+
+```json locales/en.default.json
+{
+  "cart": {
+    "title": "Your cart",
+    "items": { "one": "{{ count }} item", "other": "{{ count }} items" }
+  },
+  "general": { "hello": "Hello, {{ name }}" }
+}
+```
+
+```json locales/tr.json
+{
+  "cart": {
+    "title": "Sepetin",
+    "items": { "one": "{{ count }} ürün", "other": "{{ count }} ürün" }
+  },
+  "general": { "hello": "Merhaba, {{ name }}" }
+}
+```
+
+## The `t` filter
+
+```liquid
+<h1>{{ 'cart.title' | t }}</h1>
+<p>{{ 'cart.items' | t: count: cart.item_count }}</p>
+<p>{{ 'general.hello' | t: name: customer.username }}</p>
+```
+
+- Lookup order: page language → its base language (`pt-BR` → `pt`) → the store's default language → `en`. If none has it, the key is printed.
+- Variables: `{{ name }}`. Plurals: `{ "zero"?, "one", "other" }` (`few`/`many` depending on the language) with `count`.
+- Output is escaped. Keys ending in `_html` may contain HTML; their variables are still escaped.
+- If you need a fallback, `assign` first: `{%- assign default_heading = 'store.title' | t -%}` then `{{ section.settings.heading | default: default_heading }}`.
+
+<Tip>
+  Put the strings your JS needs into a JSON block in the layout and read them from there. `crafter theme check` warns about text written directly in `assets/*.js`.
+</Tip>
+
+```liquid layout/theme.liquid
+<script type="application/json" id="theme-strings">
+  {"addedToCart": {{ 'cart.added' | t | json }}}
+</script>
+```
+
+## Schema translations
+
+A schema's `label`, `info` and `name` values can be keys starting with `t:`. The translation lives in the `*.schema.json` file and the dashboard resolves it in its own language:
+
+```json
+{ "type": "text", "id": "heading", "label": "t:sections.hero.settings.heading.label" }
+```
+
+```json locales/en.default.schema.json
+{ "sections": { "hero": { "settings": { "heading": { "label": "Heading" } } } } }
+```
+
+## Default content translations
+
+In JSON templates, section groups, presets and schema `default` values, text settings (`text`, `textarea`, `richtext`, `inline_richtext`, `html`) can be `"t:<key>"`. The key lives in the **storefront** locale file (`locales/<lang>.json`), not the schema file:
+
+```json templates/index.json
+{
+  "sections": {
+    "hero": { "type": "hero", "settings": { "heading": "t:content.hero.heading" } }
+  },
+  "order": ["hero"]
+}
+```
+
+Untouched content shows in each visitor's language. If the store owner changes the text in the editor, their text is saved as plain text and translated to other languages with the store's translations.
+
+## Links per language
+
+Write in-theme links with `locale_url`:
+
+```liquid
+<a href="{{ '/store' | locale_url }}">{{ 'store.title' | t }}</a>
+```
+
+For a specific language, pass its code: `{{ '/store' | locale_url: 'de' }}` → `/de/store`.
+
+The `routes` object also gives URLs in the page language (`routes.store_url`, `routes.cart_url` …). In a multi-language store, `content_for_header` adds the `hreflang` links itself.
+
+<Warning>
+  Do not apply `locale_url` to the checkout URL: checkout has no language prefix. `crafter theme check` reports this as an error (`checkout_locale_url`).
+</Warning>
+
+## Language and currency selector
+
+The `POST /localization` form works without JS. Fields: `language`, `currency` and `return_to` (an in-app path). The choice is stored in a cookie and the visitor returns to the same page in the chosen language.
+
+```liquid snippets/localization-form.liquid
+{%- if localization.available_languages.size > 1 -%}
+  <form method="post" action="{{ localization.form_action }}">
+    <input type="hidden" name="return_to" value="{{ localization.return_to }}">
+    {%- for language in localization.available_languages -%}
+      <button type="submit" name="language" value="{{ language.iso_code }}" {% if language.current %}aria-current="true"{% endif %}>
+        {{ language.name }}
+      </button>
+    {%- endfor -%}
+  </form>
+{%- endif -%}
+```
+
+| Object | Content |
+|---|---|
+| `request.locale` | Page language: `iso_code`, `name` (in its own language), `primary`, `root_url` |
+| `localization.available_languages` | Enabled languages; each has `iso_code`, `name`, `url`, `current` |
+| `localization.currency` | The customer's currency |
+| `localization.available_currencies` | Selectable currencies: `iso_code`, `symbol`, `name`, `current`, `rate` |
+| `localization.form_action`, `localization.return_to` | Form action and return path |
+
+To switch with JS, use `Crafter.localization.set({ language })` or `({ currency })` ([Crafter SDK](/en/developers/sdk)). For right-to-left languages (ar, he, fa, ur), print `<html dir="rtl">` and use logical CSS properties (`margin-inline-start`, `inset-inline`).
+
+## Currency and amounts
+
+Amounts reach the theme in the store currency. The filters convert them to the customer currency chosen by the server and format them in the page language:
+
+| Filter | Sample output |
+|---|---|
+| `{{ product.price \| money }}` | `€15,99` |
+| `{{ product.price \| money_with_currency }}` | `€15,99 EUR` |
+| `{{ product.price \| money_without_currency }}` | `15,99` |
+| `{{ amount \| store_money }}` | In the store currency, not converted (e.g. balance) |
+
+Keep money formatting in one snippet (`snippets/money.liquid` in the starter theme) and never hardcode a currency symbol; `crafter theme check` warns about a hardcoded `₺` (`money_hardcoded`). For amounts calculated in the browser use `Crafter.money.format(amount)`; formatting money with `Intl.NumberFormat` in JS triggers a warning (`money_reimplemented`).
+
+<Note>
+  If the customer uses a different currency, amounts shown in the browser are estimates; the final amount is set at payment.
+</Note>
