@@ -12,7 +12,7 @@ crafter theme check --json                  # machine-readable output
 ```
 
 - Exits with code 1 when there are errors. `--fail-level warning` also fails on warnings.
-- `crafter-manifest.json` is not required; whether the theme is v2 is inferred from its JSON templates. v2-only rules (text, SDK, JSON templates) run only on v2 themes.
+- `crafter-manifest.json` is not required; whether the theme is v2 is inferred from its JSON templates. v2-only rules (text, SDK, JSON templates) run only on v2 themes; the security and size rules run on both.
 - Uses no network and needs no login.
 
 Output is grouped by file; each line shows the line number, level, message and rule code.
@@ -98,6 +98,20 @@ In themes, cart, money and checkout go through the [Crafter SDK](/en/developers/
 | `checkout_without_sdk` | warning | JS navigates to `/checkout` by itself; use `Crafter.checkout({ purpose: 'cart' })` |
 | `money_reimplemented` | warning | JS formats money with `Intl`; use `Crafter.money.format` |
 
+### Security and size (v1 and v2)
+
+These rules run on v1 and v2 themes; the same check is used in marketplace review.
+
+| Code | Level | When |
+|---|---|---|
+| `secret_embedded` | error | The theme contains a secret key or token: a Crafter CLI/developer token (`crft_pat_…`), a server token (`cct_…`), a payment secret key, a webhook secret, an AWS key, a GitHub or Slack token, a Discord webhook URL, a private key (`-----BEGIN … PRIVATE KEY-----`). The message names only the kind, never the value |
+| `script_untrusted_source` | warning | `<script src>`, dynamic `import()`, `importScripts` or `.src = '….js'` loads from a host that is not allowed. Allowed: `cdnjs.cloudflare.com`, `cdn.jsdelivr.net`, `unpkg.com`, Turnstile (`challenges.cloudflare.com`) and Crafter domains. Put other files under `assets/` |
+| `external_request` | warning | `fetch`, `axios`, XHR, `sendBeacon`, `WebSocket`, `EventSource` or a form `action` goes to a non-Crafter address. Marketplace review asks for a reason; customer data must not be sent |
+| `asset_too_large` | warning | A file under `assets/` is larger than 1 MB (slows page loads; compress images) |
+| `theme_too_large` | warning | The theme is larger than 50 MB in total (the ZIP upload limit) |
+
+Relative URLs and URLs built with Liquid are not checked by these rules.
+
 ## Using it in CI
 
 ```yaml .github/workflows/theme-check.yml
@@ -114,4 +128,4 @@ jobs:
       - run: npx @crafter-cms/cli theme check --fail-level warning
 ```
 
-With `--json`, findings come back as an `offenses` array; each finding has `severity`, `code`, `file`, optional `line` and `message`.
+The `--json` output has `files` (number of files checked), `themeVersion` (`1` or `2`), `errors`, `warnings` and `offenses`. Each finding has `severity`, `code`, `file`, optional `line` and `message`. When the check fails, the error code is `theme_check_failed` and the findings are in `details.offenses`.

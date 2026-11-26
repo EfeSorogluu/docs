@@ -17,7 +17,7 @@ crafter --version
 You can also run it without installing: `npx @crafter-cms/cli <command>`.
 
 <Note>
-  The `crafter theme …` commands on this page ship with CLI **2.x**. The 1.x `crafter dev` and `crafter pack` keep working with a warning for one major version; `crafter publish` does nothing in 2.x and explains the new commands.
+  The `crafter theme …` commands on this page ship with CLI **2.0.0** and later. The 1.x `crafter dev` and `crafter pack` keep working with a warning for one major version; `crafter publish` does nothing in 2.x and explains the new commands.
 </Note>
 
 ## Quick start
@@ -56,7 +56,7 @@ The default scopes are `themes:read themes:write`. To make a theme live:
 crafter login --scope themes:read themes:write themes:publish
 ```
 
-Login runs in the browser with PKCE; the CLI receives a scoped, revocable CLI token, not a full session token. The token is stored in the OS keychain (macOS Keychain, Windows Credential Manager, Linux Secret Service), or in `~/.crafter/credentials.json` (mode 0600) if there is no keychain. You can see and close your open sessions in the dashboard under **Developer → CLI sessions**. After a password reset, "revoke all sessions" or a 2FA reset, the session ends; sign in again with `crafter login`.
+Login runs in the browser with PKCE; the CLI receives a scoped, revocable CLI token, not a full session token. Secrets (access and refresh token) are stored in the OS keychain (macOS Keychain, Windows Credential Manager, Linux Secret Service); if there is no working keychain they go to a file with mode 0600. Non-secret details (expiry times, user, stores) are always in `~/.crafter/credentials.json` (mode 0600). Sessions are kept per API address. You can see and close your open sessions in the dashboard under **Developer → CLI sessions**. After a password reset, "revoke all sessions" or a 2FA reset, the session ends; sign in again with `crafter login`.
 
 ## Theme commands
 
@@ -66,7 +66,7 @@ Login runs in the browser with PKCE; the CLI receives a scoped, revocable CLI to
 |---|---|
 | `crafter theme init [dir] --v2 [--name <name>] [--force]` | Copies the theme v2 starter theme; a non-empty folder needs `--force` |
 | `crafter theme check [dir] [--fail-level error\|warning]` | Checks the theme without uploading it ([Theme check](/en/developers/themes/theme-check)) |
-| `crafter theme dev [--store] [--port 9292] [--open] [--ignore …]` | Live preview in your private development theme |
+| `crafter theme dev --store <id> [--port 9292] [--open] [--ignore …]` | Live preview in your private development theme |
 | `crafter theme push --theme <…> [--only …] [--ignore …] [--nodelete] [--allow-live] [--create <name>]` | Pushes local files to a store theme (changed files only) |
 | `crafter theme pull --theme <…> [--only …] [--ignore …] [--delete]` | Downloads files from the server |
 | `crafter theme list` | The store's themes and your development theme |
@@ -112,9 +112,27 @@ store = "<websiteId>"
 theme = "<themeId>"          # default theme for push/pull (optional)
 ignore = ["assets/*.map"]
 port = 9393
+
+[environments.dev]
+api = "https://dev-api.crafter.net.tr"   # API address
+site = "https://dev.crafter.net.tr"      # site address (derived from the API address if not set)
+# auth_url = "https://…/auth/cli"        # full login page URL
+# app = "https://…"                      # dashboard (theme open)
+store = "<websiteId>"
 ```
 
 Environment selection: `--env` > `CRAFTER_ENV` > the environment named `default` > the only environment.
+
+| Key | Description |
+|---|---|
+| `store` | Store id (`websiteId`) |
+| `theme` | Default theme for `push`/`pull` |
+| `ignore` | Extra ignore patterns |
+| `port` | Local port for `theme dev` |
+| `api` | API address (default `https://api.crafter.net.tr`) |
+| `site` | Site address; derived from the API address if not set |
+| `auth_url` | Full login page URL; otherwise taken from the API, falling back to `<site>/<lang>/auth/cli` |
+| `app` | Dashboard address (`theme open`) |
 
 ### `.crafterignore`
 
@@ -128,6 +146,22 @@ assets/*.map
 ### `crafter-manifest.json`
 
 Optional. The CLI only reads this file; if it needs to change it, it asks first.
+
+## Global configuration and environment variables
+
+| Command | Description |
+|---|---|
+| `crafter config list` | Lists the current configuration |
+| `crafter config set <key> <value>` | Changes `apiUrl` or `storefrontUrl` |
+| `crafter config reset` | Resets the configuration to defaults |
+
+| Variable | Description |
+|---|---|
+| `CRAFTER_TOKEN` | Developer token; no login needed (CI) |
+| `CRAFTER_ENV` | Environment from `crafter.theme.toml` |
+| `CRAFTER_AUTH_URL` | Full login page URL (same as `auth_url`) |
+| `CRAFTER_CONFIG_DIR` | Configuration folder (default `~/.crafter`) |
+| `CRAFTER_TOKEN_STORAGE` | Where tokens are stored: `keychain` or `file` (default: automatic) |
 
 ## CI
 

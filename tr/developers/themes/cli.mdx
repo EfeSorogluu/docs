@@ -17,7 +17,7 @@ crafter --version
 Kurmadan çalıştırmak için `npx @crafter-cms/cli <komut>` da kullanılabilir.
 
 <Note>
-  Bu sayfadaki `crafter theme …` komutları CLI **2.x** ile gelir. 1.x'teki `crafter dev` ve `crafter pack` bir ana sürüm boyunca uyarıyla çalışır; `crafter publish` 2.x'te hiçbir işlem yapmaz ve yeni komutları anlatır.
+  Bu sayfadaki `crafter theme …` komutları CLI **2.0.0** ve üstüyle gelir. 1.x'teki `crafter dev` ve `crafter pack` bir ana sürüm boyunca uyarıyla çalışır; `crafter publish` 2.x'te hiçbir işlem yapmaz ve yeni komutları anlatır.
 </Note>
 
 ## Hızlı başlangıç
@@ -56,7 +56,7 @@ Varsayılan kapsamlar `themes:read themes:write`. Temayı canlıya almak için:
 crafter login --scope themes:read themes:write themes:publish
 ```
 
-Giriş tarayıcıda PKCE ile yapılır; CLI'a tam oturum token'ı değil, kapsamlı ve iptal edilebilir bir CLI token'ı verilir. Token işletim sisteminin anahtar zincirinde (macOS Keychain, Windows Credential Manager, Linux Secret Service), yoksa `~/.crafter/credentials.json` dosyasında (0600 izinli) saklanır. Açık oturumlarınızı panelde **Geliştirici → CLI oturumları** ekranında görüp kapatabilirsiniz. Şifre sıfırlama, "tüm oturumları kapat" ya da 2FA sıfırlamadan sonra oturum kapanır; `crafter login` ile yeniden girin.
+Giriş tarayıcıda PKCE ile yapılır; CLI'a tam oturum token'ı değil, kapsamlı ve iptal edilebilir bir CLI token'ı verilir. Gizli değerler (erişim ve yenileme token'ı) işletim sisteminin anahtar zincirinde (macOS Keychain, Windows Credential Manager, Linux Secret Service) saklanır; anahtar zinciri yoksa ya da çalışmıyorsa 0600 izinli dosyaya yazılır. Gizli olmayan bilgiler (süreler, kullanıcı, mağazalar) her zaman 0600 izinli `~/.crafter/credentials.json` dosyasındadır. Oturumlar API adresine göre ayrı tutulur. Açık oturumlarınızı panelde **Geliştirici → CLI oturumları** ekranında görüp kapatabilirsiniz. Şifre sıfırlama, "tüm oturumları kapat" ya da 2FA sıfırlamadan sonra oturum kapanır; `crafter login` ile yeniden girin.
 
 ## Tema komutları
 
@@ -66,7 +66,7 @@ Giriş tarayıcıda PKCE ile yapılır; CLI'a tam oturum token'ı değil, kapsam
 |---|---|
 | `crafter theme init [klasör] --v2 [--name <ad>] [--force]` | Tema v2 başlangıç temasını kopyalar; klasör boş değilse `--force` gerekir |
 | `crafter theme check [klasör] [--fail-level error\|warning]` | Temayı göndermeden denetler ([Theme check](/tr/developers/themes/theme-check)) |
-| `crafter theme dev [--store] [--port 9292] [--open] [--ignore …]` | Size özel geliştirme temasında canlı önizleme |
+| `crafter theme dev --store <id> [--port 9292] [--open] [--ignore …]` | Size özel geliştirme temasında canlı önizleme |
 | `crafter theme push --theme <…> [--only …] [--ignore …] [--nodelete] [--allow-live] [--create <ad>]` | Yerel dosyaları bir mağaza temasına gönderir (yalnızca değişenler) |
 | `crafter theme pull --theme <…> [--only …] [--ignore …] [--delete]` | Sunucudaki dosyaları indirir |
 | `crafter theme list` | Mağazanın temaları ve geliştirme temanız |
@@ -112,9 +112,27 @@ store = "<websiteId>"
 theme = "<themeId>"          # push/pull için varsayılan tema (isteğe bağlı)
 ignore = ["assets/*.map"]
 port = 9393
+
+[environments.dev]
+api = "https://dev-api.crafter.net.tr"   # API adresi
+site = "https://dev.crafter.net.tr"      # site adresi (verilmezse API adresinden türetilir)
+# auth_url = "https://…/auth/cli"        # giriş sayfasının tam adresi
+# app = "https://…"                      # yönetim paneli (theme open)
+store = "<websiteId>"
 ```
 
 Ortam seçimi: `--env` > `CRAFTER_ENV` > `default` adlı ortam > tek ortam.
+
+| Anahtar | Açıklama |
+|---|---|
+| `store` | Mağaza kimliği (`websiteId`) |
+| `theme` | `push`/`pull` için varsayılan tema |
+| `ignore` | Ek yok sayma desenleri |
+| `port` | `theme dev` yerel portu |
+| `api` | API adresi (varsayılan `https://api.crafter.net.tr`) |
+| `site` | Site adresi; verilmezse API adresinden türetilir |
+| `auth_url` | Giriş sayfasının tam adresi; verilmezse API'den alınır, o da olmazsa `<site>/<dil>/auth/cli` |
+| `app` | Yönetim paneli adresi (`theme open`) |
 
 ### `.crafterignore`
 
@@ -128,6 +146,22 @@ assets/*.map
 ### `crafter-manifest.json`
 
 İsteğe bağlıdır. CLI bu dosyayı yalnızca okur; değiştirmesi gerekirse önce onay ister.
+
+## Genel yapılandırma ve ortam değişkenleri
+
+| Komut | Açıklama |
+|---|---|
+| `crafter config list` | Mevcut yapılandırmayı listeler |
+| `crafter config set <anahtar> <değer>` | `apiUrl` ya da `storefrontUrl` değerini değiştirir |
+| `crafter config reset` | Yapılandırmayı varsayılanlara döndürür |
+
+| Değişken | Açıklama |
+|---|---|
+| `CRAFTER_TOKEN` | Geliştirici token'ı; giriş gerekmez (CI) |
+| `CRAFTER_ENV` | `crafter.theme.toml` ortamı |
+| `CRAFTER_AUTH_URL` | Giriş sayfasının tam adresi (`auth_url` ile aynı) |
+| `CRAFTER_CONFIG_DIR` | Yapılandırma klasörü (varsayılan `~/.crafter`) |
+| `CRAFTER_TOKEN_STORAGE` | Token saklama yeri: `keychain` ya da `file` (varsayılan: otomatik) |
 
 ## CI
 

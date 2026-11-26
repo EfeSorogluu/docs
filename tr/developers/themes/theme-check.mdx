@@ -12,7 +12,7 @@ crafter theme check --json                  # makine okunur çıktı
 ```
 
 - Hata varsa 1 koduyla çıkar. `--fail-level warning` uyarıda da hata koduyla çıkar.
-- `crafter-manifest.json` gerekmez; temanın v2 olup olmadığı JSON şablonlardan anlaşılır. v2'ye özel kurallar (metin, SDK, JSON şablonlar) yalnızca v2 temalarda çalışır.
+- `crafter-manifest.json` gerekmez; temanın v2 olup olmadığı JSON şablonlardan anlaşılır. v2'ye özel kurallar (metin, SDK, JSON şablonlar) yalnızca v2 temalarda çalışır; güvenlik ve boyut kuralları her iki sürümde çalışır.
 - Ağ kullanmaz, giriş gerektirmez.
 
 Çıktı dosya başına gruplanır; her satırda satır numarası, seviye, mesaj ve kural kodu yer alır.
@@ -98,6 +98,20 @@ Temalarda sepet, para ve checkout [Crafter SDK](/tr/developers/sdk) ile yapılı
 | `checkout_without_sdk` | uyarı | JS `/checkout` adresine kendisi gidiyor; `Crafter.checkout({ purpose: 'cart' })` kullanın |
 | `money_reimplemented` | uyarı | JS'te `Intl` ile para biçimleniyor; `Crafter.money.format` kullanın |
 
+### Güvenlik ve boyut (v1 ve v2)
+
+Bu kurallar v1 ve v2 temalarda çalışır; aynı denetim pazar yeri incelemesinde de kullanılır.
+
+| Kod | Seviye | Ne zaman |
+|---|---|---|
+| `secret_embedded` | hata | Temada gizli anahtar ya da token var: Crafter CLI/geliştirici token'ı (`crft_pat_…`), sunucu token'ı (`cct_…`), ödeme gizli anahtarı, webhook gizli anahtarı, AWS anahtarı, GitHub ya da Slack token'ı, Discord webhook adresi, özel anahtar (`-----BEGIN … PRIVATE KEY-----`). Mesajda yalnızca türü yazılır, değer yazılmaz |
+| `script_untrusted_source` | uyarı | `<script src>`, dinamik `import()`, `importScripts` ya da `.src = '….js'` izinli olmayan bir alan adından yükleniyor. İzinli: `cdnjs.cloudflare.com`, `cdn.jsdelivr.net`, `unpkg.com`, Turnstile (`challenges.cloudflare.com`) ve Crafter alan adları. Diğer dosyaları `assets/` altına koyun |
+| `external_request` | uyarı | `fetch`, `axios`, XHR, `sendBeacon`, `WebSocket`, `EventSource` ya da form `action` Crafter dışı bir adrese gidiyor. Pazar yeri incelemesinde gerekçe sorulur; müşteri verisi gönderilmemelidir |
+| `asset_too_large` | uyarı | `assets/` altında 1 MB'tan büyük dosya (sayfa yüklenmesini yavaşlatır; görselleri sıkıştırın) |
+| `theme_too_large` | uyarı | Temanın toplam boyutu 50 MB'ı aşıyor (ZIP yükleme sınırı) |
+
+Göreli adresler ve Liquid ile kurulan adresler bu kurallarda denetlenmez.
+
 ## CI'da kullanım
 
 ```yaml .github/workflows/theme-check.yml
@@ -114,4 +128,4 @@ jobs:
       - run: npx @crafter-cms/cli theme check --fail-level warning
 ```
 
-`--json` ile bulgular `offenses` dizisi olarak döner; her bulguda `severity`, `code`, `file`, isteğe bağlı `line` ve `message` alanları vardır.
+`--json` çıktısında `files` (denetlenen dosya sayısı), `themeVersion` (`1` ya da `2`), `errors`, `warnings` ve `offenses` alanları vardır. Her bulguda `severity`, `code`, `file`, isteğe bağlı `line` ve `message` bulunur. Denetim geçmezse hata kodu `theme_check_failed` olur ve bulgular `details.offenses` içinde döner.
