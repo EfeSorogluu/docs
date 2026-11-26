@@ -81,29 +81,32 @@ Hata yanıtı her zaman aynı biçimdedir:
 
 ### Hata tipleri
 
-| HTTP | `type` | Anlamı |
-| --- | --- | --- |
-| 400 | `validation_failed` | Gövde doğrulanamadı. `details.errors` alan → kural eşlemesi verir; bilinmeyen alan `should_not_exist` olarak gelir. |
-| 400 | `checkout_line_items_invalid` | Bir ya da daha fazla satır satılamıyor. `details.errors[]`: `{ index, code }`, `code`: `not_found`, `inactive`, `out_of_stock`, `quantity_exceeded`, `not_for_sale_headless`. |
-| 400 | `checkout_player_invalid` | Oyuncu kimliği geçersiz. `details.reason`: `unsupported_type` ya da `pattern`. |
-| 400 | `checkout_return_url_not_allowed` | `successUrl` / `cancelUrl` izinli adreslerde değil. `details.field`, `details.origin`. |
-| 400 | `checkout_metadata_invalid` | Metadata kurallara uymuyor. `details.key`, `details.reason`: `too_many`, `invalid_key`, `too_long`, `not_string`, `card_number_detected`. |
-| 400 | `idempotency_key_required` | `Idempotency-Key` yok ya da geçersiz. |
-| 400 | `crafter_version_unsupported` | `Crafter-Version` desteklenmiyor. |
-| 401 | `api_key_invalid` | Anahtar yok, biçimi yanlış ya da iptal edilmiş. |
-| 403 | `api_key_wrong_type` | Bu uç nokta diğer anahtar türünü ister. `details.expected`. |
-| 403 | `api_key_exposed` | Gizli anahtar tarayıcıdan (`Origin` başlığıyla) kullanıldı. |
-| 403 | `checkout_origin_not_allowed` | `/public` okumasında `Origin` izinli değil. |
-| 403 | `plan_feature_unavailable` | Özellik paketinizde yok (ör. gömülü mod). |
-| 403 | `plan_limit_reached` | Paketinizin aylık oturum kotası doldu. |
-| 404 | `checkout_session_not_found` | Oturum yok, başka mağazanın ya da diğer modun oturumu, ya da `X-Client-Secret` yanlış. |
-| 404 | `not_found` | Uç nokta yok ya da mağazanızda headless ödeme açık değil. |
-| 409 | `idempotency_key_reused` | Aynı anahtar farklı gövdeyle kullanıldı. |
-| 409 | `idempotency_in_progress` | Aynı anahtarlı istek hâlâ işleniyor. |
-| 409 | `checkout_session_not_open` | Oturum iptal edilemez (tamamlandı ya da süresi doldu). `details.status`. |
-| 409 | `checkout_payment_in_progress` | Ödeme işleniyor; oturum şu an iptal edilemez. |
-| 429 | `too_many_requests` | Dakikalık istek sınırı aşıldı. `details.limit`, `details.windowSeconds`, `Retry-After`. |
-| 500 | `internal_server_error` | Beklenmeyen hata. |
+| HTTP | `type` | Anlamı | Mesaj (`message`) |
+| --- | --- | --- | --- |
+| 400 | `validation_failed` | Gövde doğrulanamadı. `details.errors` alan → kural eşlemesi verir; bilinmeyen alan `should_not_exist` olarak gelir. | Invalid request parameters. See param and details. |
+| 400 | `checkout_line_items_invalid` | Bir ya da daha fazla satır satılamıyor. `details.errors[]`: `{ index, code }`, `code`: `not_found`, `inactive`, `out_of_stock`, `quantity_exceeded`, `not_for_sale_headless`. | One or more line items cannot be purchased. See details.errors. |
+| 400 | `checkout_player_invalid` | Oyuncu kimliği geçersiz. `details.reason`: `unsupported_type` ya da `pattern`. | The player identity is not valid for delivery. |
+| 400 | `checkout_return_url_not_allowed` | `successUrl` / `cancelUrl` izinli adreslerde değil. `details.field`, `details.origin`. | The return URL is not in the allowed origins of the store. |
+| 400 | `checkout_metadata_invalid` | Metadata kurallara uymuyor. `details.key`, `details.reason`: `too_many`, `invalid_key`, `too_long`, `not_string`, `card_number_detected`. | The metadata is invalid. See details. |
+| 400 | `idempotency_key_required` | `Idempotency-Key` yok ya da geçersiz. | The Idempotency-Key header is required (1-255 characters). |
+| 400 | `crafter_version_unsupported` | `Crafter-Version` desteklenmiyor. | Unsupported Crafter-Version. See details.supported. |
+| 401 | `api_key_invalid` | Anahtar yok, biçimi yanlış ya da iptal edilmiş. | Invalid API key provided, or the key has been revoked. |
+| 403 | `api_key_wrong_type` | Bu uç nokta diğer anahtar türünü ister. `details.expected`. | This endpoint requires a different API key type. Check details.expected. |
+| 403 | `api_key_exposed` | Gizli anahtar tarayıcıdan (`Origin` başlığıyla) kullanıldı. | Secret keys cannot be used from a browser. The key may be exposed; create a new key in the dashboard. |
+| 403 | `checkout_origin_not_allowed` | `/public` okumasında `Origin` izinli değil. | This origin is not allowed to access the checkout session. |
+| 403 | `plan_feature_unavailable` | Özellik paketinizde yok (ör. gömülü mod). | This feature is not available on the current plan. See details.requiredPlan. |
+| 403 | `plan_limit_reached` | Paketinizin aylık oturum kotası doldu. | The plan limit for this feature has been reached. See details.limit. |
+| 404 | `checkout_session_not_found` | Oturum yok, başka mağazanın ya da diğer modun oturumu, ya da `X-Client-Secret` yanlış. | No such checkout session. |
+| 404 | `not_found` | Uç nokta yok ya da mağazanızda headless ödeme açık değil. | Not found. |
+| 409 | `idempotency_key_reused` | Aynı anahtar farklı gövdeyle kullanıldı. | This Idempotency-Key was already used with a different request body. |
+| 409 | `idempotency_in_progress` | Aynı anahtarlı istek hâlâ işleniyor. | A request with the same Idempotency-Key is still being processed. |
+| 409 | `checkout_session_not_open` | Oturum iptal edilemez (tamamlandı ya da süresi doldu). `details.status`. | This checkout session is no longer open. |
+| 409 | `checkout_payment_in_progress` | Ödeme işleniyor; oturum şu an iptal edilemez. | A payment for this checkout session is being processed. Try again shortly. |
+| 409 | `checkout_already_paid` | Oturum zaten ödenmiş; iptal edilemez. | This checkout session has already been paid. |
+| 429 | `too_many_requests` | Dakikalık istek sınırı aşıldı. `details.limit`, `details.windowSeconds`, `Retry-After`. | Too many requests. Retry after the Retry-After delay. |
+| 500 | `internal_server_error` | Beklenmeyen hata. | An internal error occurred. |
+
+Hata mesajları (`message`) her zaman İngilizcedir ve `type`'tan üretilir; henüz özel metni olmayan yeni bir tipte mesaj `An error occurred.` olur. Kodunuzu `message`'a değil `type`'a göre yazın.
 
 ## Sınırlar
 

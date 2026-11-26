@@ -81,29 +81,32 @@ Error responses always have the same shape:
 
 ### Error types
 
-| HTTP | `type` | Meaning |
-| --- | --- | --- |
-| 400 | `validation_failed` | The body failed validation. `details.errors` maps field → rule; an unknown field shows as `should_not_exist`. |
-| 400 | `checkout_line_items_invalid` | One or more lines cannot be sold. `details.errors[]`: `{ index, code }`, `code`: `not_found`, `inactive`, `out_of_stock`, `quantity_exceeded`, `not_for_sale_headless`. |
-| 400 | `checkout_player_invalid` | Invalid player identity. `details.reason`: `unsupported_type` or `pattern`. |
-| 400 | `checkout_return_url_not_allowed` | `successUrl` / `cancelUrl` is not on an allowed origin. `details.field`, `details.origin`. |
-| 400 | `checkout_metadata_invalid` | Metadata breaks the rules. `details.key`, `details.reason`: `too_many`, `invalid_key`, `too_long`, `not_string`, `card_number_detected`. |
-| 400 | `idempotency_key_required` | `Idempotency-Key` is missing or invalid. |
-| 400 | `crafter_version_unsupported` | `Crafter-Version` is not supported. |
-| 401 | `api_key_invalid` | The key is missing, malformed or revoked. |
-| 403 | `api_key_wrong_type` | This endpoint needs the other key type. `details.expected`. |
-| 403 | `api_key_exposed` | A secret key was used from a browser (with an `Origin` header). |
-| 403 | `checkout_origin_not_allowed` | The `Origin` of a `/public` read is not allowed. |
-| 403 | `plan_feature_unavailable` | The feature is not in your plan (for example embedded mode). |
-| 403 | `plan_limit_reached` | Your plan's monthly session quota is used up. |
-| 404 | `checkout_session_not_found` | No such session, a session of another store or the other mode, or a wrong `X-Client-Secret`. |
-| 404 | `not_found` | No such endpoint, or headless payments are not available for your store. |
-| 409 | `idempotency_key_reused` | The same key was used with a different body. |
-| 409 | `idempotency_in_progress` | A request with the same key is still being processed. |
-| 409 | `checkout_session_not_open` | The session cannot be canceled (complete or expired). `details.status`. |
-| 409 | `checkout_payment_in_progress` | A payment is being processed; the session cannot be canceled right now. |
-| 429 | `too_many_requests` | Per-minute request limit exceeded. `details.limit`, `details.windowSeconds`, `Retry-After`. |
-| 500 | `internal_server_error` | Unexpected error. |
+| HTTP | `type` | Meaning | Message |
+| --- | --- | --- | --- |
+| 400 | `validation_failed` | The body failed validation. `details.errors` maps field → rule; an unknown field shows as `should_not_exist`. | Invalid request parameters. See param and details. |
+| 400 | `checkout_line_items_invalid` | One or more lines cannot be sold. `details.errors[]`: `{ index, code }`, `code`: `not_found`, `inactive`, `out_of_stock`, `quantity_exceeded`, `not_for_sale_headless`. | One or more line items cannot be purchased. See details.errors. |
+| 400 | `checkout_player_invalid` | Invalid player identity. `details.reason`: `unsupported_type` or `pattern`. | The player identity is not valid for delivery. |
+| 400 | `checkout_return_url_not_allowed` | `successUrl` / `cancelUrl` is not on an allowed origin. `details.field`, `details.origin`. | The return URL is not in the allowed origins of the store. |
+| 400 | `checkout_metadata_invalid` | Metadata breaks the rules. `details.key`, `details.reason`: `too_many`, `invalid_key`, `too_long`, `not_string`, `card_number_detected`. | The metadata is invalid. See details. |
+| 400 | `idempotency_key_required` | `Idempotency-Key` is missing or invalid. | The Idempotency-Key header is required (1-255 characters). |
+| 400 | `crafter_version_unsupported` | `Crafter-Version` is not supported. | Unsupported Crafter-Version. See details.supported. |
+| 401 | `api_key_invalid` | The key is missing, malformed or revoked. | Invalid API key provided, or the key has been revoked. |
+| 403 | `api_key_wrong_type` | This endpoint needs the other key type. `details.expected`. | This endpoint requires a different API key type. Check details.expected. |
+| 403 | `api_key_exposed` | A secret key was used from a browser (with an `Origin` header). | Secret keys cannot be used from a browser. The key may be exposed; create a new key in the dashboard. |
+| 403 | `checkout_origin_not_allowed` | The `Origin` of a `/public` read is not allowed. | This origin is not allowed to access the checkout session. |
+| 403 | `plan_feature_unavailable` | The feature is not in your plan (for example embedded mode). | This feature is not available on the current plan. See details.requiredPlan. |
+| 403 | `plan_limit_reached` | Your plan's monthly session quota is used up. | The plan limit for this feature has been reached. See details.limit. |
+| 404 | `checkout_session_not_found` | No such session, a session of another store or the other mode, or a wrong `X-Client-Secret`. | No such checkout session. |
+| 404 | `not_found` | No such endpoint, or headless payments are not available for your store. | Not found. |
+| 409 | `idempotency_key_reused` | The same key was used with a different body. | This Idempotency-Key was already used with a different request body. |
+| 409 | `idempotency_in_progress` | A request with the same key is still being processed. | A request with the same Idempotency-Key is still being processed. |
+| 409 | `checkout_session_not_open` | The session cannot be canceled (complete or expired). `details.status`. | This checkout session is no longer open. |
+| 409 | `checkout_payment_in_progress` | A payment is being processed; the session cannot be canceled right now. | A payment for this checkout session is being processed. Try again shortly. |
+| 409 | `checkout_already_paid` | The session was already paid; it cannot be canceled. | This checkout session has already been paid. |
+| 429 | `too_many_requests` | Per-minute request limit exceeded. `details.limit`, `details.windowSeconds`, `Retry-After`. | Too many requests. Retry after the Retry-After delay. |
+| 500 | `internal_server_error` | Unexpected error. | An internal error occurred. |
+
+Error messages are always in English. `message` is derived from `type`; if a new type has no specific text yet, the message is `An error occurred.`. Always branch on `type`, not on `message`.
 
 ## Limits
 

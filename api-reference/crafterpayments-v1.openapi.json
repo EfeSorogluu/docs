@@ -271,7 +271,7 @@
             "required": ["type", "message"],
             "properties": {
               "type": { "type": "string", "description": "Stable, machine-readable error type. Branch on this field.", "example": "checkout_line_items_invalid" },
-              "message": { "type": "string", "description": "Human-readable text. It can change; do not parse it." },
+              "message": { "type": "string", "description": "Human-readable English text derived from type. It can change; do not parse it." },
               "param": { "type": "string", "description": "The field that caused the error, when there is one." },
               "details": { "type": "object", "additionalProperties": true },
               "requestId": { "type": "string", "example": "req_4f1c…" }
