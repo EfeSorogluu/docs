@@ -167,13 +167,27 @@ Mağaza sahibinin yazdığı HTML'i bilerek ham basmak için zincirin **sonuna**
 {{ section.settings.description | raw }}
 ```
 
-Şunlar `raw` gerektirmez: `content_for_header`, `content_for_layout`, `block.crafter_attributes` ve `lexical_html` sonucu. Bu değerler başka bir filtreden geçerse yeniden kaçışlanır.
+Şunlar `raw` gerektirmez: `content_for_header`, `content_for_layout`, `{% section %}` / `{% sections %}` ve `{% render %}` çıktısı, `block.crafter_attributes`, `lexical_html` sonucu ve `_html` ile biten çeviri anahtarları. Bunlar Crafter'ın ürettiği güvenli HTML'dir ve çift kaçışlanmaz. `| default` bu değerleri korur; başka bir filtreden (`append`, `upcase` …) geçerlerse yeniden kaçışlanır.
+
+Sık karşılaşılan durumlar:
+
+| Yazım | v2 çıktısı |
+|---|---|
+| `{{ customer.username }}` | Kaçışlı (doğru kullanım) |
+| `{{ x \| escape }}` | Bir kez kaçışlı; çift kaçış olmaz (v1 temalardan taşınan kod için) |
+| `{{ section.settings.text \| raw }}` | `richtext` / `inline_richtext` / `html` ayarı ham basılır |
+| `{{ product.description \| lexical_html }}` | Zengin metin HTML'e çevrilir, `raw` gerekmez |
+| `{{ text \| escape \| newline_to_br \| raw }}` | Önce kaçışlanır, `<br>` etiketleri korunur |
+| `{% capture c %}<li>…</li>{% endcapture %}{{ c \| raw }}` | `capture` sonucu düz metindir; HTML içeriyorsa `raw` gerekir (içindeki `{{ }}` zaten kaçışlandı) |
+| `<script>const d = {{ x \| json \| replace: '<', '\\u003c' \| raw }};</script>` | JSON'u betiğe ham basmak için; `raw` olmadan tırnaklar `&#34;` olur |
+
+`crafter theme check` v2 temalarda iki uyarı verir: `raw_missing` (HTML ayarı ya da HTML içeren `capture` `| raw` olmadan, Lexical zengin metin `| lexical_html` olmadan basılıyor) ve `raw_customer_data` (müşteri verisi önce kaçışlanmadan `| raw` ile basılıyor).
 
 <Warning>
   Müşterinin girdiği veriye (kullanıcı adı, mesaj, forum içeriği) asla `| raw` eklemeyin. Bu, başka kullanıcıların tarayıcısında betik çalıştırılmasına (XSS) yol açar.
 </Warning>
 
-v1 temalarda kaçış kapalıdır; davranış değişmedi.
+v1 temalarda kaçış kapalıdır; davranış değişmedi. v1 desteği ileride kaldırılacak; yeni temaları v2 olarak yazın.
 
 ## v1 temayı v2'ye taşıma
 

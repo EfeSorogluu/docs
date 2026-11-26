@@ -167,13 +167,27 @@ To print store-owner HTML unescaped on purpose, add `| raw` at the **end** of th
 {{ section.settings.description | raw }}
 ```
 
-These do not need `raw`: `content_for_header`, `content_for_layout`, `block.crafter_attributes` and the result of `lexical_html`. If one of these goes through another filter, it is escaped again.
+These do not need `raw`: `content_for_header`, `content_for_layout`, the output of `{% section %}` / `{% sections %}` and `{% render %}`, `block.crafter_attributes`, the result of `lexical_html` and translation keys ending in `_html`. They are safe HTML produced by Crafter and are never escaped twice. `| default` keeps them as they are; if they go through another filter (`append`, `upcase` …) they are escaped again.
+
+Common cases:
+
+| Code | v2 output |
+|---|---|
+| `{{ customer.username }}` | Escaped (the right way) |
+| `{{ x \| escape }}` | Escaped once; no double escaping (for code moved from v1 themes) |
+| `{{ section.settings.text \| raw }}` | A `richtext` / `inline_richtext` / `html` setting printed as is |
+| `{{ product.description \| lexical_html }}` | Rich text turned into HTML, no `raw` needed |
+| `{{ text \| escape \| newline_to_br \| raw }}` | Escaped first, `<br>` tags kept |
+| `{% capture c %}<li>…</li>{% endcapture %}{{ c \| raw }}` | A `capture` result is plain text; it needs `raw` if it holds HTML (the `{{ }}` inside were already escaped) |
+| `<script>const d = {{ x \| json \| replace: '<', '\\u003c' \| raw }};</script>` | To print JSON into a script; without `raw`, quotes become `&#34;` |
+
+`crafter theme check` gives two warnings in v2 themes: `raw_missing` (an HTML setting or a `capture` holding HTML printed without `| raw`, or Lexical rich text printed without `| lexical_html`) and `raw_customer_data` (customer data printed with `| raw` without being escaped first).
 
 <Warning>
   Never add `| raw` to customer input (username, messages, forum content). It lets scripts run in other users' browsers (XSS).
 </Warning>
 
-Escaping is off in v1 themes; that behavior is unchanged.
+Escaping is off in v1 themes; that behavior is unchanged. v1 support will be removed later; write new themes as v2.
 
 ## Moving a v1 theme to v2
 
