@@ -1,0 +1,131 @@
+---
+title: "Verifying store webhook signatures"
+description: "X-Crafter-Signature verification for store webhooks: the new format (2026-12) and the legacy format (sha256=), Node and PHP examples, and the switch timeline."
+---
+
+Crafter signs every store webhook (order events and webhook delivery) it sends to your server. Verify the signature on every request to make sure it came from Crafter and was not changed on the way. The signing secret is shown **only once** in the panel, on the store webhooks screen, when you create an endpoint or rotate its secret.
+
+<Warning>
+Compute the signature over the raw body. If you parse the JSON and turn it back into text, the bytes can change and the signature will not match.
+</Warning>
+
+## New format (2026-12)
+
+| Header | Value |
+| --- | --- |
+| `X-Crafter-Event` | `order.paid`, `order.refunded`, `order.delivery_failed`, `delivery.requested` |
+| `X-Crafter-Delivery` | Delivery id (`whd_…`). It stays the same on retries; do not process the same id twice. |
+| `X-Crafter-Timestamp` | Unix time (seconds) |
+| `X-Crafter-Signature` | `t=<time>,v1=<hex hmac_sha256(secret, time + "." + body)>` |
+| `X-Crafter-Webhook-Version` | `2026-12` |
+
+Steps:
+
+1. Split `t` and `v1` out of the `X-Crafter-Signature` header.
+2. Check that `t` is within 5 minutes of the current time. This blocks replays of old requests.
+3. Compute HMAC-SHA256 of `t + "." + raw body` with your secret and compare it to `v1` in constant time.
+4. Respond with a 2xx status. Any other response counts as a failure and is retried (6 attempts in total: right away, +1 min, +5 min, +30 min, +2 h, +6 h).
+
+<CodeGroup>
+
+```js Node.js (Express)
+const crypto = require('crypto');
+const express = require('express');
+const app = express();
+
+const SECRET = process.env.CRAFTER_WEBHOOK_SECRET; // whsec_…
+
+app.post('/crafter/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  const rawBody = req.body.toString('utf8');
+  const header = req.get('X-Crafter-Signature') || '';
+  const parts = Object.fromEntries(header.split(',').map((p) => p.trim().split('=')));
+  const t = Number(parts.t);
+  if (!parts.v1 || !Number.isFinite(t) || Math.abs(Date.now() / 1000 - t) > 300) {
+    return res.status(400).send('invalid signature');
+  }
+  const expected = crypto.createHmac('sha256', SECRET).update(`${t}.${rawBody}`).digest();
+  const given = Buffer.from(parts.v1, 'hex');
+  if (given.length !== expected.length || !crypto.timingSafeEqual(given, expected)) {
+    return res.status(400).send('invalid signature');
+  }
+  const event = JSON.parse(rawBody);
+  // Deduplicate on X-Crafter-Delivery, then handle the event
+  res.sendStatus(200);
+});
+```
+
+```php PHP
+<?php
+$secret = getenv('CRAFTER_WEBHOOK_SECRET'); // whsec_…
+$rawBody = file_get_contents('php://input');
+$header = $_SERVER['HTTP_X_CRAFTER_SIGNATURE'] ?? '';
+
+$parts = [];
+foreach (explode(',', $header) as $pair) {
+    [$key, $value] = array_pad(explode('=', trim($pair), 2), 2, '');
+    $parts[$key] = $value;
+}
+$t = isset($parts['t']) ? (int) $parts['t'] : 0;
+if (empty($parts['v1']) || abs(time() - $t) > 300) {
+    http_response_code(400);
+    exit('invalid signature');
+}
+$expected = hash_hmac('sha256', $t . '.' . $rawBody, $secret);
+if (!hash_equals($expected, $parts['v1'])) {
+    http_response_code(400);
+    exit('invalid signature');
+}
+$event = json_decode($rawBody, true);
+// Deduplicate on X-Crafter-Delivery, then handle the event
+http_response_code(200);
+```
+
+</CodeGroup>
+
+## Legacy format
+
+The single webhook address in the CrafterPayments settings (`storeWebhookUrl`) received deliveries in the legacy format. These addresses move to store webhooks as **legacy-format endpoints**, and the panel shows "Legacy format — switches to the new format on {date}". A moved address keeps receiving the same body and the same signature, and the signing secret does not change. The address never receives the same event twice.
+
+| Header | Value |
+| --- | --- |
+| `X-Crafter-Event` | `order.paid`, `order.refunded`, `order.delivery_failed` |
+| `X-Crafter-Signature` | `sha256=<hex hmac_sha256(secret, body)>` (no timestamp) |
+| `X-Crafter-Delivery` | Delivery id on moved endpoints (for deduplication) |
+
+<CodeGroup>
+
+```js Node.js
+const expected = crypto.createHmac('sha256', SECRET).update(rawBody).digest('hex');
+const given = (req.get('X-Crafter-Signature') || '').replace(/^sha256=/, '');
+const ok = given.length === expected.length &&
+  crypto.timingSafeEqual(Buffer.from(given), Buffer.from(expected));
+```
+
+```php PHP
+$expected = hash_hmac('sha256', $rawBody, $secret);
+$given = preg_replace('/^sha256=/', '', $_SERVER['HTTP_X_CRAFTER_SIGNATURE'] ?? '');
+$ok = hash_equals($expected, $given);
+```
+
+</CodeGroup>
+
+## Legacy vs. new format
+
+| | Legacy | New (2026-12) |
+| --- | --- | --- |
+| Signature | `sha256=<hmac(body)>` | `t=<time>,v1=<hmac(time + "." + body)>` |
+| Replay protection | None | Timestamp (5 min tolerance recommended) |
+| Body | `{ event, timestamp, data: { orderId (order number), paymentId, … customer: { userId, name, email, phone, address }, licenses: [{ itemName, licenseKey, quantity }] } }` | `{ event, id, version: "2026-12", createdAt, data: { orderId, paymentId, websiteId, amount, currency, customer: { id, name, email }, basket, deliveryStatus, licenses: [{ id, productId, type, licenseKey }], invoice } }` |
+| Customer phone and address | Included | Not included |
+| Licenses | Keys generated at send time | Real license records (verifiable with the license verification API) |
+| Events | Order events | Order events and `delivery.requested` (webhook delivery) |
+| Retries and delivery history | Yes, on moved endpoints | Yes |
+
+## Switch timeline
+
+1. **Move day:** The old address shows up in store webhooks as a legacy-format endpoint. Deliveries continue with the same body and signature.
+2. **30 days before the switch date:** The store owner gets an email and a panel notification.
+3. **7 days before the switch date:** A second reminder is sent.
+4. **Switch date** (about 90 days after the move; the panel and the emails show the date): The endpoint switches to the new format. The signing secret stays the same, and the signature and body arrive in the new format. A notification is sent.
+
+You can switch earlier when you are ready. On the store webhooks screen, press **Switch to the new format now**. This rotates the signing secret, and the new secret is shown only once. Before the switch, you can make your verification code accept both formats: run the legacy check when the header starts with `sha256=` and the new check when it starts with `t=`.

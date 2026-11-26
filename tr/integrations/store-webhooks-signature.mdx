@@ -1,0 +1,131 @@
+---
+title: "Mağaza webhook imzasını doğrulama"
+description: "Mağaza webhook'larında X-Crafter-Signature doğrulaması: yeni biçim (2026-12) ve eski biçim (sha256=), Node ve PHP örnekleri, geçiş takvimi."
+---
+
+Crafter, mağaza webhook'larını (sipariş olayları ve webhook ile teslimat) sizin sunucunuza imzalı olarak gönderir. İsteğin Crafter'dan geldiğini ve yolda değişmediğini anlamak için her istekte imzayı doğrulayın. Gizli anahtar panelde, mağaza webhook'ları ekranında uç noktası oluşturulurken ya da anahtar yenilenirken **yalnızca bir kez** gösterilir.
+
+<Warning>
+İmzayı ham gövde üzerinden hesaplayın. Gövdeyi JSON olarak ayrıştırıp yeniden metne çevirirseniz baytlar değişebilir ve imza tutmaz.
+</Warning>
+
+## Yeni biçim (2026-12)
+
+| Başlık | Değer |
+| --- | --- |
+| `X-Crafter-Event` | `order.paid`, `order.refunded`, `order.delivery_failed`, `delivery.requested` |
+| `X-Crafter-Delivery` | Gönderim kimliği (`whd_…`). Tekrar denemede değişmez; aynı kimliği ikinci kez işlemeyin. |
+| `X-Crafter-Timestamp` | Unix zamanı (saniye) |
+| `X-Crafter-Signature` | `t=<zaman>,v1=<hex hmac_sha256(anahtar, zaman + "." + gövde)>` |
+| `X-Crafter-Webhook-Version` | `2026-12` |
+
+Doğrulama adımları:
+
+1. `X-Crafter-Signature` başlığından `t` ve `v1` değerlerini ayırın.
+2. `t` değerinin şimdiki zamandan en fazla 5 dakika uzak olduğunu kontrol edin. Böylece eski bir isteğin tekrar gönderilmesi engellenir.
+3. `t + "." + ham gövde` metninin HMAC-SHA256 değerini gizli anahtarla hesaplayın ve `v1` ile sabit zamanlı karşılaştırın.
+4. 2xx yanıt dönün. Başka her yanıt başarısız sayılır ve tekrar denenir (toplam 6 deneme: hemen, +1 dk, +5 dk, +30 dk, +2 sa, +6 sa).
+
+<CodeGroup>
+
+```js Node.js (Express)
+const crypto = require('crypto');
+const express = require('express');
+const app = express();
+
+const SECRET = process.env.CRAFTER_WEBHOOK_SECRET; // whsec_…
+
+app.post('/crafter/webhook', express.raw({ type: 'application/json' }), (req, res) => {
+  const rawBody = req.body.toString('utf8');
+  const header = req.get('X-Crafter-Signature') || '';
+  const parts = Object.fromEntries(header.split(',').map((p) => p.trim().split('=')));
+  const t = Number(parts.t);
+  if (!parts.v1 || !Number.isFinite(t) || Math.abs(Date.now() / 1000 - t) > 300) {
+    return res.status(400).send('invalid signature');
+  }
+  const expected = crypto.createHmac('sha256', SECRET).update(`${t}.${rawBody}`).digest();
+  const given = Buffer.from(parts.v1, 'hex');
+  if (given.length !== expected.length || !crypto.timingSafeEqual(given, expected)) {
+    return res.status(400).send('invalid signature');
+  }
+  const event = JSON.parse(rawBody);
+  // X-Crafter-Delivery ile tekilleştirin, sonra olayı işleyin
+  res.sendStatus(200);
+});
+```
+
+```php PHP
+<?php
+$secret = getenv('CRAFTER_WEBHOOK_SECRET'); // whsec_…
+$rawBody = file_get_contents('php://input');
+$header = $_SERVER['HTTP_X_CRAFTER_SIGNATURE'] ?? '';
+
+$parts = [];
+foreach (explode(',', $header) as $pair) {
+    [$key, $value] = array_pad(explode('=', trim($pair), 2), 2, '');
+    $parts[$key] = $value;
+}
+$t = isset($parts['t']) ? (int) $parts['t'] : 0;
+if (empty($parts['v1']) || abs(time() - $t) > 300) {
+    http_response_code(400);
+    exit('invalid signature');
+}
+$expected = hash_hmac('sha256', $t . '.' . $rawBody, $secret);
+if (!hash_equals($expected, $parts['v1'])) {
+    http_response_code(400);
+    exit('invalid signature');
+}
+$event = json_decode($rawBody, true);
+// X-Crafter-Delivery ile tekilleştirin, sonra olayı işleyin
+http_response_code(200);
+```
+
+</CodeGroup>
+
+## Eski biçim (legacy)
+
+CrafterPayments ayarlarındaki tek webhook adresi (`storeWebhookUrl`) eski biçimde gönderim alıyordu. Bu adresler mağaza webhook'larına **eski biçimdeki uç noktası** olarak taşınır. Paneldeki uyarı şöyledir: "Eski biçim — {tarih} tarihinde yeni biçime geçecek". Taşınan adres aynı gövdeyi ve aynı imzayı almaya devam eder; gizli anahtar da değişmez. Aynı adrese çift gönderim yapılmaz.
+
+| Başlık | Değer |
+| --- | --- |
+| `X-Crafter-Event` | `order.paid`, `order.refunded`, `order.delivery_failed` |
+| `X-Crafter-Signature` | `sha256=<hex hmac_sha256(anahtar, gövde)>` (zaman damgası yok) |
+| `X-Crafter-Delivery` | Taşınmış uç noktasında gönderim kimliği (tekilleştirme için) |
+
+<CodeGroup>
+
+```js Node.js
+const expected = crypto.createHmac('sha256', SECRET).update(rawBody).digest('hex');
+const given = (req.get('X-Crafter-Signature') || '').replace(/^sha256=/, '');
+const ok = given.length === expected.length &&
+  crypto.timingSafeEqual(Buffer.from(given), Buffer.from(expected));
+```
+
+```php PHP
+$expected = hash_hmac('sha256', $rawBody, $secret);
+$given = preg_replace('/^sha256=/', '', $_SERVER['HTTP_X_CRAFTER_SIGNATURE'] ?? '');
+$ok = hash_equals($expected, $given);
+```
+
+</CodeGroup>
+
+## Eski ve yeni biçim farkı
+
+| | Eski biçim | Yeni biçim (2026-12) |
+| --- | --- | --- |
+| İmza | `sha256=<hmac(gövde)>` | `t=<zaman>,v1=<hmac(zaman + "." + gövde)>` |
+| Tekrar saldırısına karşı | Yok | Zaman damgası (5 dk tolerans önerilir) |
+| Gövde | `{ event, timestamp, data: { orderId (sipariş no), paymentId, … customer: { userId, name, email, phone, address }, licenses: [{ itemName, licenseKey, quantity }] } }` | `{ event, id, version: "2026-12", createdAt, data: { orderId, paymentId, websiteId, amount, currency, customer: { id, name, email }, basket, deliveryStatus, licenses: [{ id, productId, type, licenseKey }], invoice } }` |
+| Müşteri telefonu ve adresi | Var | Yok |
+| Lisanslar | Gönderim anında üretilen anahtarlar | Gerçek lisans kayıtları (lisans doğrulama API'siyle doğrulanabilir) |
+| Olaylar | Sipariş olayları | Sipariş olayları ve `delivery.requested` (webhook ile teslimat) |
+| Tekrar deneme ve teslim geçmişi | Taşınmış uç noktasında var | Var |
+
+## Geçiş takvimi
+
+1. **Taşıma günü:** Eski adres mağaza webhook'larında eski biçimdeki uç noktası olarak görünür. Gönderimler aynı gövde ve imzayla sürer.
+2. **Geçiş tarihine 30 gün kala:** Mağaza sahibine e-posta ve panel bildirimi gider.
+3. **Geçiş tarihine 7 gün kala:** İkinci hatırlatma gider.
+4. **Geçiş tarihi** (taşımadan yaklaşık 90 gün sonra; tarih panelde ve e-postada yazar): Uç noktası yeni biçime geçer. Gizli anahtar değişmez; imza ve gövde yeni biçimde gelir. Bildirim gönderilir.
+
+Hazır olduğunuzda beklemeden geçebilirsiniz. Mağaza webhook'ları ekranında **Şimdi yeni biçime geç** düğmesine basın. Bu işlem gizli anahtarı yeniler ve yeni anahtar yalnızca bir kez gösterilir. Geçiş öncesinde doğrulama kodunuzu iki biçimi de kabul edecek şekilde yazabilirsiniz: başlık `sha256=` ile başlıyorsa eski, `t=` ile başlıyorsa yeni doğrulamayı çalıştırın.
