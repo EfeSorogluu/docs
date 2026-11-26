@@ -1,0 +1,42 @@
+---
+title: "Multiple currencies"
+description: "Store currency and customer currencies: buyers see and pay in their own currency, and the rate is locked before payment."
+---
+
+CrafterPayments has two currency concepts:
+
+| | Store currency | Customer currency |
+| --- | --- | --- |
+| Used for | Your prices, balance, payouts and reports | The amount the buyer sees and pays |
+| Options | USD, EUR, GBP or TRY | One of the supported currencies |
+| Who chooses | You, when you set up the store | The system (the buyer can change it), within your setting |
+
+## Store currency
+
+You enter product prices in the store currency; accounting is kept in this currency. Once your store has sales or a balance, the currency can no longer be changed. If you need to change it, contact support.
+
+## Customer currencies
+
+Buyers see prices in their own currency and pay in that currency. You manage this under **Settings → Payments → Customer currencies** in the dashboard:
+
+- **Automatic** (default for new stores): all supported currencies can be used.
+- **Selected:** only the currencies you choose (plus the store currency) are shown.
+- **Off:** buyers see only the store currency.
+
+You can add an **exchange-rate markup** of 0 to 10 percent on top of the rate.
+
+Supported customer currencies: USD, EUR, GBP, TRY, AUD, BRL, CAD, CHF, CNY, CZK, DKK, HKD, IDR, ILS, JPY, KRW, MXN, MYR, NOK, NZD, PHP, PLN, RON, SEK, SGD, THB, ZAR.
+
+### How the currency is chosen
+
+In order: the buyer's explicit choice (currency picker), IP country, browser language. If the country's currency is not on the list, the buyer sees the store currency.
+
+### Locked rate
+
+When the buyer moves to payment, the amount is converted at the current rate and **locked for 30 minutes**. If the buyer pays within that time, they pay exactly the amount they saw. If the time runs out or the cart changes, a new quote is made at the current rate.
+
+Rates are updated daily from official sources. If no rate is available, only the store currency is used.
+
+## What goes into your balance
+
+Whatever currency the buyer pays in, the sale is recorded at the price in the store currency and your earnings are added to your balance in the store currency.

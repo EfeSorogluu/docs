@@ -1,0 +1,48 @@
+---
+title: "Weekly payouts"
+description: "Your earnings are sent to your bank account automatically every Wednesday: holding period, cutoff and hold reasons."
+---
+
+With CrafterPayments you do not need to request withdrawals. Your payable balance is sent to your bank account (through Wise) automatically at the **Wednesday 00:00 UTC** cutoff every week.
+
+## How your balance builds up
+
+1. When a sale completes, the [commission and processing fee](/en/crafterpayments/fees) are deducted from the sale amount; the rest is added to your balance in the store currency.
+2. The amount first goes through a **holding period**. Part of the earnings is held a while longer against refund and chargeback risk (a rolling reserve); the part whose period ends is released.
+3. Amounts past the holding period move to your **payable balance**.
+
+The dashboard shows pending and payable amounts separately.
+
+## Weekly cutoff
+
+Every Wednesday at 00:00 UTC:
+
+1. Held amounts that are due are released.
+2. The payable amount at the cutoff is calculated. Amounts released after the cutoff wait for the next week.
+3. If there is no hold reason, a payout is created and sent. If there is one, the amount stays in your balance and you get an email.
+
+Wise converts the payout from your store currency to your bank account's currency.
+
+## Why a payout is held
+
+| Reason | What to do |
+| --- | --- |
+| The amount is below the minimum payout | Nothing; the amount rolls over to the next week. |
+| No payout account, or it is not verified | Add your bank account or complete its verification. |
+| Tax form missing or expired | Sign or renew the W-9 / W-8 form in payout settings. |
+| Identity verification not completed | Complete identity verification in payout settings. |
+| Identity, address or tax details missing | Complete the missing details. |
+| Document required | For payouts of this size, upload a document showing the payout account is yours. |
+| Agreement not accepted | Accept the current version of the CrafterPayments agreement. |
+| Application not approved | Wait for your application to be approved. |
+| Under review / store suspended / balance currency not supported | Contact the support team. |
+
+Once you resolve them, the held amount is sent automatically on the next Wednesday.
+
+## If a transfer fails
+
+If something goes wrong on the bank side (for example a closed account), the payout comes back and the amount is added to your balance again. Fix your bank account; the amount is sent again at the next cutoff.
+
+## Refunds and chargebacks
+
+If a sale is refunded or a chargeback is lost, the amount is deducted from your balance. The processing fee is not returned on a refund. If your balance is not enough, it can go negative; your store keeps selling and new sales cover the negative amount, and no payouts are sent meanwhile. If the negative balance goes beyond the limit set by the platform, the store may be suspended.

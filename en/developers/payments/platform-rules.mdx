@@ -1,0 +1,52 @@
+---
+title: "Platform rules: mobile, console and game platforms"
+description: "What to keep in mind when you use the Crafter payment page in an app distributed through an app store, game platform or console."
+---
+
+Crafter checkout takes payment on the web, on CrafterPayments' secure payment page. If you distribute your app or game through an app store or a game platform, that platform's own payment rules apply. These rules differ by region and change often.
+
+<Warning>
+**You, the developer, are responsible for compliance.** Crafter does not confirm that your use complies with platform rules and does not provide legal advice. You decide which flow to use in which region. Any enforcement by a platform (app rejection or removal, account termination, retroactive fees) applies to you.
+</Warning>
+
+## Flow options
+
+- **Platform payments only:** No Crafter checkout link in your app. Items the player bought elsewhere (for example on your website) can still be used in the app. Start here if you are not sure.
+- **External link in permitted regions:** Show the link only in storefront regions where the platform allows it, with the disclosure screen the platform requires. In some regions you must first obtain platform permission (an entitlement or program enrollment), report sales to the platform and pay the platform's fee.
+- **Web only:** For builds distributed through your own launcher, your website, or a store that allows your own payment system.
+- **Buy on the web with a QR code (console / TV):** Use it only if you have confirmed the platform allows it. Some console platforms prohibit directing players to other purchase methods from inside the game.
+
+## Short summary
+
+As of 26 November 2026.
+
+| Platform / region | Directing users to web payment from inside the app |
+| --- | --- |
+| Apple App Store, US | Links to the web are allowed. The commission question is still in court. |
+| Apple App Store, EU | With Apple's link entitlement; a commission is owed to Apple. |
+| Apple App Store, other regions | Directing users to other purchase methods inside the app is not allowed. |
+| Google Play, US and EEA | With enrollment in Google's program; Google charges fees and requires sales reporting. |
+| Google Play, other regions | Google Play Billing is the general rule. |
+| Steam | In-game purchases in the Steam build must use Steam's system. |
+| Epic Games Store | Your own payment system is allowed (under the agreement's terms). |
+| Your own launcher / web | No platform rule; payment and consumer law rules apply. |
+| Xbox and games in the Microsoft Store | Microsoft's purchase system is required; directing users to other methods is not allowed. |
+| PlayStation, Nintendo | No public developer rule was found; confirm with the platform. |
+| Minecraft servers | Items in your store must follow the Minecraft Usage Guidelines: the same price for everyone, no capes and no gameplay advantages. |
+
+This information is provided for convenience and may change. Check the platform's current rules yourself before you publish:
+
+- [Apple App Review Guidelines (3.1 Payments)](https://developer.apple.com/app-store/review/guidelines/#payments)
+- [Google Play: US external content links program](https://support.google.com/googleplay/android-developer/answer/16470497)
+- [Google Play: EEA external offers program](https://support.google.com/googleplay/android-developer/answer/14372887)
+- [Steamworks: Microtransactions](https://partner.steamgames.com/doc/features/microtransactions)
+- [Microsoft Store Policies](https://learn.microsoft.com/en-us/windows/apps/publish/store-policies)
+- [Minecraft Usage Guidelines](https://www.minecraft.net/en-us/usage-guidelines)
+
+## Safe use in apps
+
+- Open the payment page in the system browser (on iOS, `ASWebAuthenticationSession` also works); do not use an in-app WebView.
+- To return to your app, add an app scheme (`mygame://`) to your allowed origins. See [Allowed origins](/en/developers/payments/keys-and-modes#allowed-origins).
+- Never put the secret key in the app. Your own server creates the session; the app only opens the `url`.
+- Always confirm payment on your server (the `checkout.completed` webhook or `GET /v1/checkout/sessions/{id}`). Never rely on the return link or on data from the client alone.
+- For programs that require sales reporting to the platform (for example Google's programs), you can trigger the report from your own server with the `checkout.completed` webhook.

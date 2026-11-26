@@ -1,0 +1,52 @@
+---
+title: "Platform kuralları: mobil, konsol ve oyun platformları"
+description: "Crafter ödeme sayfasını uygulama mağazası, oyun platformu ya da konsol üzerinden dağıtılan bir uygulamada kullanırken dikkat edilecekler."
+---
+
+Crafter ödeme sayfası, ödemeyi web'de, CrafterPayments'ın güvenli ödeme sayfasında alır. Uygulamanızı ya da oyununuzu bir uygulama mağazası veya oyun platformu üzerinden dağıtıyorsanız, o platformun kendi ödeme kuralları geçerlidir. Bu kurallar bölgeye göre değişir ve sık güncellenir.
+
+<Warning>
+**Uyum sorumluluğu size, yani geliştiriciye aittir.** Crafter, kullanımınızın platform kurallarına uygun olduğunu teyit etmez ve hukuki danışmanlık yapmaz. Hangi akışı hangi bölgede kullanacağınıza siz karar verirsiniz. Platformun yaptırımları (uygulamanın reddedilmesi ya da kaldırılması, hesabın kapatılması, geriye dönük ücret talebi) size uygulanır.
+</Warning>
+
+## Akış seçenekleri
+
+- **Yalnızca platform ödemesi:** Uygulamanızda Crafter ödeme bağlantısı göstermezsiniz. Oyuncunun başka yerde (ör. web sitenizde) satın aldığı ürünler uygulamada kullanılabilir. Emin değilseniz bu seçenekle başlayın.
+- **İzin verilen bölgelerde dış bağlantı:** Bağlantıyı yalnızca platformun izin verdiği mağaza bölgelerinde ve platformun istediği bilgilendirme ekranıyla gösterirsiniz. Bazı bölgelerde önce platformdan izin (entitlement ya da program kaydı) almanız, satışları platforma bildirmeniz ve platform ücretini ödemeniz gerekir.
+- **Yalnızca web:** Kendi başlatıcınız, web siteniz ya da kendi ödeme sisteminize izin veren bir mağaza üzerinden dağıttığınız sürümler içindir.
+- **QR ile web'de satın alma (konsol / TV):** Yalnızca platformun buna izin verdiğini teyit ederseniz kullanın. Bazı konsol platformları oyun içinden başka ödeme yöntemine yönlendirmeyi yasaklar.
+
+## Kısa özet
+
+Durum 26.11.2026 itibarıyladır.
+
+| Platform / bölge | Uygulama içinden web ödemesine yönlendirme |
+| --- | --- |
+| Apple App Store, ABD | Web'e bağlantı serbest. Komisyon konusu mahkemede sürüyor. |
+| Apple App Store, AB | Apple'ın bağlantı izniyle; Apple'a komisyon ödenir. |
+| Apple App Store, diğer bölgeler | Uygulama içinde başka ödeme yöntemine yönlendirme yasak. |
+| Google Play, ABD ve AEA | Google'ın programına kayıtla; Google'a ücret ödenir ve satışlar bildirilir. |
+| Google Play, diğer bölgeler | Genel kural Google Play faturalaması. |
+| Steam | Steam sürümünde oyun içi satın almalar Steam'in sistemiyle yapılmalı. |
+| Epic Games Store | Kendi ödeme sisteminize izin var (sözleşme koşullarıyla). |
+| Kendi başlatıcınız / web | Platform kuralı yok; ödeme ve tüketici hukuku kuralları geçerli. |
+| Xbox ve Microsoft Store'daki oyunlar | Microsoft'un satın alma sistemi zorunlu; başka yönteme yönlendirme yasak. |
+| PlayStation, Nintendo | Herkese açık bir geliştirici kuralı bulunamadı; platformla teyit edin. |
+| Minecraft sunucuları | Mağazanızdaki ürünler Minecraft Usage Guidelines'a uymalı: fiyat herkes için aynı olmalı, pelerin ve oyun avantajı satılmamalı. |
+
+Bu bilgiler bilgilendirme amaçlıdır ve değişebilir. Yayımlamadan önce platformun güncel kurallarını kendiniz kontrol edin:
+
+- [Apple App Review Guidelines (3.1 Ödemeler)](https://developer.apple.com/app-store/review/guidelines/#payments)
+- [Google Play: ABD external content links programı](https://support.google.com/googleplay/android-developer/answer/16470497)
+- [Google Play: AEA external offers programı](https://support.google.com/googleplay/android-developer/answer/14372887)
+- [Steamworks: Microtransactions](https://partner.steamgames.com/doc/features/microtransactions)
+- [Microsoft Store Policies](https://learn.microsoft.com/en-us/windows/apps/publish/store-policies)
+- [Minecraft Usage Guidelines](https://www.minecraft.net/en-us/usage-guidelines)
+
+## Uygulamalarda güvenli kullanım
+
+- Ödeme sayfasını sistem tarayıcısında açın (iOS'ta `ASWebAuthenticationSession` da olur); uygulama içi WebView kullanmayın.
+- Uygulamaya dönüş için izinli adreslere bir uygulama şeması (`mygame://`) ekleyin. Ayrıntı: [İzinli adresler](/tr/developers/payments/keys-and-modes).
+- Gizli anahtarı uygulamaya koymayın. Oturumu kendi sunucunuz oluşturur, uygulama yalnızca `url` adresini açar.
+- Ödemenin tamamlandığını her zaman sunucunuzda doğrulayın (`checkout.completed` webhook'u ya da `GET /v1/checkout/sessions/{id}`). Uygulamaya dönen bağlantıya ya da istemciden gelen bilgiye tek başına güvenmeyin.
+- Platform satış bildirimi isteyen programlarda (ör. Google'ın programları) bildirimi `checkout.completed` webhook'u ile kendi sunucunuzdan tetikleyebilirsiniz.

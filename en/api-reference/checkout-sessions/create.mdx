@@ -1,0 +1,176 @@
+---
+title: "Create a session"
+description: "Creates a checkout session for products in the store catalog and returns the payment page URL."
+api: "POST https://api.crafterpayments.com/v1/checkout/sessions"
+playground: "none"
+---
+
+Requires a secret key. There are no price fields: the unit price always comes from the store catalog (product discount included). If you send an unknown field, the request is rejected with `validation_failed`.
+
+### Headers
+
+<ParamField header="Authorization" type="string" required>
+  `Bearer cp_sk_test_…` or `Bearer cp_sk_live_…`
+</ParamField>
+
+<ParamField header="Idempotency-Key" type="string" required>
+  A unique value per request, 1–255 characters. Kept for 24 hours. See [Idempotency](/en/api-reference/introduction#idempotency).
+</ParamField>
+
+<ParamField header="Crafter-Version" type="string">
+  `2026-12`
+</ParamField>
+
+### Body
+
+<ParamField body="lineItems" type="object[]" required>
+  1–50 lines.
+
+  <Expandable title="line">
+    <ParamField body="productId" type="string" required>
+      Product id in the store catalog (up to 64 characters).
+    </ParamField>
+    <ParamField body="quantity" type="integer" required>
+      1–99. For stocked products, the total quantity cannot exceed stock.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="customer" type="object">
+  Buyer details. All optional.
+
+  <Expandable title="fields">
+    <ParamField body="email" type="string">
+      Receipt email (up to 254 characters). If you omit it, the payment page asks for it.
+    </ParamField>
+    <ParamField body="externalId" type="string">
+      The user id in your system (up to 128 characters). Returned in the webhook.
+    </ParamField>
+    <ParamField body="player" type="object">
+      Player identity for delivery. `type` is one of the identity types of the store's game integration (for example `minecraft_java`, `steam64`). `username` is required for name-based types, `id` for `steam64` / `cfx` / `roblox`. `uuid` is optional for Minecraft. If you omit it and the cart has in-game deliveries, the payment page asks for it.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="successUrl" type="string">
+  Return URL after payment. Required when `uiMode` is `hosted`. Must be on an allowed origin. `{CHECKOUT_SESSION_ID}` is replaced with the session id; `session_id`, `cp_status`, `cp_ts`, `cp_sig` are added.
+</ParamField>
+
+<ParamField body="cancelUrl" type="string">
+  Where the buyer goes if they leave the payment page. Must be on an allowed origin.
+</ParamField>
+
+<ParamField body="uiMode" type="string" default="hosted">
+  `hosted` or `embedded`. Embedded mode is not in the Free plan (`403 plan_feature_unavailable`).
+</ParamField>
+
+<ParamField body="locale" type="string">
+  Payment page language, for example `tr`, `en`, `en-US`.
+</ParamField>
+
+<ParamField body="currency" type="string">
+  Three-letter currency hint (for example `EUR`). Only a hint; the currency the buyer sees is decided by the server.
+</ParamField>
+
+<ParamField body="allowCoupons" type="boolean" default="true">
+  Whether the payment page shows a coupon field.
+</ParamField>
+
+<ParamField body="couponCode" type="string">
+  A coupon to apply up front (up to 64 characters).
+</ParamField>
+
+<ParamField body="expiresInSeconds" type="integer" default="1800">
+  How long the session stays open, 900–86400 seconds.
+</ParamField>
+
+<ParamField body="clientReferenceId" type="string">
+  Your own order number (up to 200 characters). Returned in the session and the webhook.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Up to 20 key-value pairs. Key `^[A-Za-z0-9_.-]{1,40}$`, value a string of up to 500 characters. Values that look like card numbers are rejected. Not passed to delivery commands.
+</ParamField>
+
+### Response
+
+`201 Created` with the [session object](/en/api-reference/checkout-sessions/retrieve#the-session-object).
+
+<Note>
+When the session is created, `amountTotal` and `currency` are **`null`**. Tax is calculated on the payment page from the buyer's billing country, so the final total and the charge currency are known only after payment starts. Use `amountSubtotal` (the catalog total in the store currency, before coupon and tax) for display before that.
+</Note>
+
+### Possible errors
+
+`validation_failed`, `checkout_line_items_invalid`, `checkout_player_invalid`, `checkout_return_url_not_allowed`, `checkout_metadata_invalid`, `idempotency_key_required`, `idempotency_key_reused`, `idempotency_in_progress`, `plan_limit_reached`, `plan_feature_unavailable`, `api_key_invalid`, `api_key_wrong_type`, `api_key_exposed`, `too_many_requests`. See [Error types](/en/api-reference/introduction#error-types).
+
+<RequestExample>
+
+```bash curl
+curl https://api.crafterpayments.com/v1/checkout/sessions \
+  -H "Authorization: Bearer $CRAFTER_SECRET_KEY" \
+  -H "Crafter-Version: 2026-12" \
+  -H "Idempotency-Key: order_1234" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "lineItems": [{ "productId": "PRODUCT_ID", "quantity": 1 }],
+    "customer": {
+      "email": "player@example.com",
+      "externalId": "user_42",
+      "player": { "type": "minecraft_java", "username": "Notch" }
+    },
+    "successUrl": "https://shop.example.com/thanks?session={CHECKOUT_SESSION_ID}",
+    "cancelUrl": "https://shop.example.com/cart",
+    "clientReferenceId": "order_1234",
+    "metadata": { "campaign": "winter" }
+  }'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201
+{
+  "id": "cs_test_8fK2…",
+  "object": "checkout.session",
+  "livemode": false,
+  "status": "open",
+  "paymentStatus": "unpaid",
+  "uiMode": "hosted",
+  "url": "https://checkout.crafterpayments.com/c/cs_test_8fK2…",
+  "clientSecret": "cs_test_8fK2…_secret_…",
+  "expiresAt": "2026-12-01T10:45:00.000Z",
+  "createdAt": "2026-12-01T10:15:00.000Z",
+  "storeCurrency": "USD",
+  "amountSubtotal": 10,
+  "amountTotal": null,
+  "currency": null,
+  "lineItems": [
+    { "productId": "PRODUCT_ID", "name": "VIP", "quantity": 1, "unitAmount": 10, "currency": "USD" }
+  ],
+  "customer": {
+    "email": "player@example.com",
+    "externalId": "user_42",
+    "player": { "type": "minecraft_java", "username": "Notch", "uuid": null }
+  },
+  "clientReferenceId": "order_1234",
+  "metadata": { "campaign": "winter" },
+  "orderId": null,
+  "paymentId": null,
+  "completedAt": null
+}
+```
+
+```json 400
+{
+  "error": {
+    "type": "checkout_line_items_invalid",
+    "message": "…",
+    "details": { "errors": [{ "index": 0, "code": "out_of_stock" }] },
+    "requestId": "req_4f1c…"
+  }
+}
+```
+
+</ResponseExample>

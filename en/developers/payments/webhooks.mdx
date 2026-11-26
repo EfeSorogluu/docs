@@ -1,0 +1,149 @@
+---
+title: "Headless payment webhook events"
+description: "Bodies of checkout.completed, checkout.expired and order.chargeback, signature verification and retry rules."
+---
+
+Headless payment events are sent through store webhooks. In the dashboard, add an endpoint (an HTTPS URL) to your store webhooks and subscribe to the events below. The signing secret (`whsec_…`) is shown **only once**, when you create the endpoint or rotate its secret.
+
+## Events
+
+| Event | When | Plan |
+| --- | --- | --- |
+| `checkout.completed` | A session created through the API completed (payment received, or the total became 0 with a coupon). Once per session. | Every plan |
+| `checkout.expired` | A session created through the API expired. Once per session. | Every plan |
+| `order.chargeback` | A chargeback on an order was opened, won or lost. Once per case and status. | Plans with webhooks |
+
+<Note>
+`checkout.*` events are sent only for sessions created through the API. Your store's own cart payments are reported with the existing `order.*` events. If your plan does not include webhooks, `order.chargeback` is not sent and the delivery shows as "skipped".
+</Note>
+
+## Envelope
+
+Every event uses the same envelope:
+
+```json
+{
+  "event": "checkout.completed",
+  "id": "whd_…",
+  "version": "2026-12",
+  "createdAt": "2026-12-01T10:15:00.000Z",
+  "livemode": true,
+  "data": { }
+}
+```
+
+`livemode` tells you whether the event is from test or live mode. `id` is the delivery id and is the same as the `X-Crafter-Delivery` header.
+
+### `checkout.completed`
+
+```json
+{
+  "checkoutSession": {
+    "id": "cs_live_…",
+    "clientReferenceId": "order_1234",
+    "metadata": { "campaign": "winter" }
+  },
+  "orderId": "…",
+  "paymentId": "…",
+  "websiteId": "…",
+  "amount": 12.5,
+  "currency": "EUR",
+  "customer": {
+    "externalId": "user_42",
+    "email": "player@example.com",
+    "player": { "type": "minecraft_java", "username": "Notch", "uuid": null }
+  },
+  "basket": [
+    { "id": "PRODUCT_ID", "name": "VIP", "quantity": 1, "price": 10 }
+  ],
+  "deliveryStatus": "pending"
+}
+```
+
+- `amount` and `currency`: the amount charged to the buyer and its currency (tax included). For an order made free by a coupon, `amount` is 0 and `paymentId` is `null`.
+- `basket[].price`: catalog unit price in the store currency.
+- `deliveryStatus`: `pending` at event time. Your store delivers as it does today; you can follow the current status with `delivery.status` in the `/public` read.
+
+### `checkout.expired`
+
+```json
+{
+  "checkoutSession": { "id": "cs_live_…", "clientReferenceId": "order_1234", "metadata": {} },
+  "websiteId": "…",
+  "expiresAt": "2026-12-01T10:45:00.000Z"
+}
+```
+
+### `order.chargeback`
+
+```json
+{
+  "chargebackId": "…",
+  "status": "opened",
+  "orderId": "…",
+  "paymentId": "…",
+  "websiteId": "…",
+  "amount": 12.5,
+  "currency": "EUR",
+  "reason": "…",
+  "checkoutSession": { "id": "cs_live_…" }
+}
+```
+
+`status`: `opened`, `won` or `lost`. If the order did not come from a headless session, `checkoutSession` is `null`. You decide what to do with an item that was already delivered (for example, taking back an in-game item).
+
+## Request headers
+
+| Header | Value |
+| --- | --- |
+| `X-Crafter-Event` | Event name |
+| `X-Crafter-Delivery` | Delivery id (`whd_…`). Stays the same on retries; do not process the same id twice. |
+| `X-Crafter-Timestamp` | Unix time (seconds) |
+| `X-Crafter-Signature` | `t=<time>,v1=<hex hmac_sha256(secret, time + "." + raw body)>` |
+| `X-Crafter-Webhook-Version` | `2026-12` |
+| `User-Agent` | `Crafter-Webhooks/1.0` |
+
+## Verifying the signature
+
+1. Split `t` and `v1` out of the `X-Crafter-Signature` header.
+2. `t` must be within 5 minutes of the current time (this blocks replays of old requests).
+3. Compute HMAC-SHA256 of `t + "." + raw body` with your secret and compare it to `v1` in constant time.
+4. Respond with a 2xx status.
+
+```js Node.js (Express)
+import crypto from 'node:crypto';
+import express from 'express';
+
+const app = express();
+const SECRET = process.env.CRAFTER_WEBHOOK_SECRET; // whsec_…
+
+app.post('/webhooks/crafter', express.raw({ type: 'application/json' }), (req, res) => {
+  const rawBody = req.body.toString('utf8');
+  const parts = Object.fromEntries(
+    (req.get('X-Crafter-Signature') || '').split(',').map((p) => p.trim().split('=')),
+  );
+  const t = Number(parts.t);
+  if (!parts.v1 || !Number.isFinite(t) || Math.abs(Date.now() / 1000 - t) > 300) {
+    return res.status(400).send('invalid signature');
+  }
+  const expected = crypto.createHmac('sha256', SECRET).update(`${t}.${rawBody}`).digest();
+  const given = Buffer.from(parts.v1, 'hex');
+  if (given.length !== expected.length || !crypto.timingSafeEqual(given, expected)) {
+    return res.status(400).send('invalid signature');
+  }
+
+  const event = JSON.parse(rawBody);
+  if (event.event === 'checkout.completed') {
+    // Deduplicate on X-Crafter-Delivery, then complete the order
+  }
+  res.sendStatus(200);
+});
+```
+
+<Warning>
+Compute the signature over the raw body. If you parse the JSON and turn it back into text, the bytes can change and the signature will not match.
+</Warning>
+
+## Retries
+
+Any response other than 2xx (and no response within 10 seconds) counts as a failure. There are 6 attempts in total: right away, then 1 minute, 5 minutes, 30 minutes, 2 hours and 6 hours after the previous attempt. Events can arrive out of order; if needed, read the session with `GET /v1/checkout/sessions/{id}` before acting.

@@ -1,0 +1,73 @@
+---
+title: "Anahtarlar, modlar ve izinli adresler"
+description: "Gizli ve yayınlanabilir anahtarlar, test ve canlı mod, anahtar döndürme, dönüş imza sırrı ve izinli adresler (origin)."
+---
+
+Bu ayarların hepsi panelde **Ayarlar → Gelişmiş → Headless ve API** sayfasındadır. Sayfayı mağazada **Web sitesini yönetme** yetkisi olan ekip üyeleri görür.
+
+## Anahtar türleri
+
+| Tür | Biçim | Nerede kullanılır | Ne yapabilir |
+| --- | --- | --- | --- |
+| Gizli anahtar | `cp_sk_test_…`, `cp_sk_live_…` | Yalnızca sunucuda | Oturum oluşturma, okuma, iptal |
+| Yayınlanabilir anahtar | `cp_pk_test_…`, `cp_pk_live_…` | Tarayıcı, uygulama | Yalnızca `GET /v1/checkout/sessions/{id}/public` (oturumun `clientSecret` değeriyle) |
+
+- Her mod için bir yayınlanabilir anahtar kendiliğinden oluşturulur ve panelde her zaman görünür.
+- Gizli anahtar oluşturulduğunda **yalnızca bir kez** gösterilir; Crafter anahtarın kendisini değil özetini saklar. Kaybederseniz yenisini oluşturun.
+- Her mod için en fazla 10 etkin gizli anahtar olabilir (`api_key_limit_reached`).
+- Gizli anahtar tarayıcıdan, yani `Origin` başlığı olan bir istekle kullanılırsa istek `403 api_key_exposed` ile reddedilir. Anahtar açığa çıkmış olabilir: panelden iptal edip yenisini oluşturun.
+- Yanlış türde anahtar `403 api_key_wrong_type` döner (`details.expected` beklenen türü söyler).
+
+### Anahtar döndürme ve iptal
+
+**Döndür** yeni bir gizli anahtar üretir. Eski anahtarın ne zaman çalışmayı bırakacağını seçersiniz:
+
+- **Hemen:** Eski anahtar anında geçersiz olur.
+- **24 saat sonra:** Dağıtımınızı güncellemek için 24 saatiniz olur; bu sürede iki anahtar da çalışır.
+
+**İptal et** anahtarı hemen geçersiz kılar.
+
+## Test ve canlı mod
+
+Anahtarın modu her şeyi belirler: test anahtarıyla açılan oturum `cs_test_…`, canlı anahtarla açılan `cs_live_…` olur ve oturum yanıtındaki `livemode` alanı buna göre gelir. Bir moddaki anahtar diğer modun oturumunu göremez (`404 checkout_session_not_found`).
+
+| | Test | Canlı |
+| --- | --- | --- |
+| Aylık oturum kotası | Sayılmaz | Paketinize göre |
+| `http://localhost` dönüş adresi | Kendiliğinden izinli | İzinli değil |
+| `http://` izinli adres | Kabul edilir | Yalnızca `https://` |
+| Ödeme | Henüz açık değil (`checkout_test_payments_unavailable`) | Açık |
+| İzinli adresler ve dönüş imza sırrı | Ayrı | Ayrı |
+
+<Note>
+Test modu ödemeleri hazırlanıyor. Şimdilik test modunda oturum oluşturma, okuma, iptal ve dönüş akışını deneyebilirsiniz; gerçek ödeme denemesi için canlı anahtar kullanın.
+</Note>
+
+## Dönüş imza sırrı
+
+Alıcı ödeme sayfasından döndüğünde dönüş adresine eklenen `cp_sig` imzası bu sırla (`crs_…`) hesaplanır. Sır mod başınadır; panelde görüntülenir ve **Yenile** ile değiştirilebilir. Yeniledikten sonra eski sırla imzalanmış dönüşler doğrulanmaz. Doğrulama kodu: [Hızlı başlangıç, 4. adım](/tr/developers/payments/quickstart).
+
+## İzinli adresler
+
+İzinli adresler şunlar için kullanılır:
+
+- `successUrl` ve `cancelUrl` bu adreslerden birinde olmalıdır (aksi halde `400 checkout_return_url_not_allowed`, `details.field` ve `details.origin` ile),
+- tarayıcıdan yayınlanabilir anahtarla yapılan `/public` okumasında `Origin` bu listede olmalıdır (aksi halde `403 checkout_origin_not_allowed`).
+
+**Mağazanızın alan adları kendiliğinden izinlidir:** platform alt alan adınız ve bağladığınız özel alan adları `https://<alan-adı>` olarak listeye girer, ayrıca eklemeniz gerekmez. Alan adı mağazadan kaldırılırsa listeden de düşer.
+
+Ek olarak mod başına en fazla 20 kayıt ekleyebilirsiniz:
+
+| Biçim | Örnek | Kural |
+| --- | --- | --- |
+| Web adresi | `https://shop.example.com` | Yalnızca şema, ana makine ve isteğe bağlı port. Yol, sorgu ve parça olmaz. Canlı modda yalnızca `https`. |
+| Joker alt alan adı | `https://*.example.com` | Tek seviye; `example.com`'un kendisini kapsamaz. Yalnızca mağazaya bağlı, doğrulanmış alan adında kabul edilir. |
+| Uygulama şeması | `mygame://` | Yalnızca dönüş adresi olarak (mobil ya da masaüstü uygulamaya dönüş). `http`, `javascript`, `data`, `file` gibi şemalar kabul edilmez. |
+
+Masaüstü uygulamalar için `http://127.0.0.1` (loopback) dönüşü canlı modda da kabul edilir. Test modunda `localhost` her zaman izinlidir.
+
+Oturum oluşturulduğunda izinli liste oturuma kopyalanır. Sonradan listeden kaldırdığınız bir adres, açık oturumlar için de geçersiz olur.
+
+## Paket sınırları
+
+Panelin aynı sayfasındaki **Paket ve kullanım** bölümü bu ayın oturum sayısını, istek sınırınızı ve gömülü ödeme sayfasının açık olup olmadığını gösterir. Değerler için: [API referansı, Sınırlar](/tr/api-reference/introduction).

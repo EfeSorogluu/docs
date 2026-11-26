@@ -1,0 +1,94 @@
+---
+title: "Retrieve a session"
+description: "Returns every field of a checkout session. Use it as the source of truth before completing an order."
+api: "GET https://api.crafterpayments.com/v1/checkout/sessions/{id}"
+playground: "none"
+---
+
+Requires a secret key. A key only sees sessions of its own store and its own mode; others return `404 checkout_session_not_found`.
+
+An open session past its expiry is returned as `expired`, even if the background job has not closed it yet.
+
+<ParamField path="id" type="string" required>
+  Session id, for example `cs_live_…`.
+</ParamField>
+
+<ParamField header="Authorization" type="string" required>
+  `Bearer cp_sk_…`
+</ParamField>
+
+## The session object
+
+<ResponseField name="id" type="string">`cs_test_…` or `cs_live_…`</ResponseField>
+<ResponseField name="object" type="string">Always `checkout.session`</ResponseField>
+<ResponseField name="livemode" type="boolean">`true` in live mode</ResponseField>
+<ResponseField name="status" type="string">`open`, `processing`, `complete`, `expired`, `canceled`</ResponseField>
+<ResponseField name="paymentStatus" type="string">`unpaid`, `paid`, `no_payment_required`, `refunded`, `partially_refunded`, `disputed`</ResponseField>
+<ResponseField name="uiMode" type="string">`hosted` or `embedded`</ResponseField>
+<ResponseField name="url" type="string">Payment page: `https://checkout.crafterpayments.com/c/{id}`</ResponseField>
+<ResponseField name="clientSecret" type="string">For the `/public` read with the publishable key and for embedded mode. Do not log it.</ResponseField>
+<ResponseField name="expiresAt" type="string">ISO 8601</ResponseField>
+<ResponseField name="createdAt" type="string">ISO 8601</ResponseField>
+<ResponseField name="storeCurrency" type="string">The store currency, for example `USD`</ResponseField>
+<ResponseField name="amountSubtotal" type="number">Sum of the lines at catalog price in `storeCurrency` (before coupon and tax)</ResponseField>
+<ResponseField name="amountTotal" type="number | null">Final amount charged (tax included, after coupon). `null` when the session is created; filled after payment starts.</ResponseField>
+<ResponseField name="currency" type="string | null">Charge currency (the buyer's currency). `null` until payment starts.</ResponseField>
+<ResponseField name="lineItems" type="object[]">`{ productId, name, quantity, unitAmount, currency }`. `unitAmount` is the catalog unit price after product discount.</ResponseField>
+<ResponseField name="customer" type="object | null">`{ email, externalId, player }`</ResponseField>
+<ResponseField name="clientReferenceId" type="string | null" />
+<ResponseField name="metadata" type="object">The metadata you sent; `{}` if none</ResponseField>
+<ResponseField name="orderId" type="string | null">The order number in the store once complete</ResponseField>
+<ResponseField name="paymentId" type="string | null">The payment record once complete (`null` for an order made free by a coupon)</ResponseField>
+<ResponseField name="completedAt" type="string | null">ISO 8601</ResponseField>
+
+<RequestExample>
+
+```bash curl
+curl https://api.crafterpayments.com/v1/checkout/sessions/cs_live_8fK2... \
+  -H "Authorization: Bearer $CRAFTER_SECRET_KEY" \
+  -H "Crafter-Version: 2026-12"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "id": "cs_live_8fK2…",
+  "object": "checkout.session",
+  "livemode": true,
+  "status": "complete",
+  "paymentStatus": "paid",
+  "uiMode": "hosted",
+  "url": "https://checkout.crafterpayments.com/c/cs_live_8fK2…",
+  "clientSecret": "cs_live_8fK2…_secret_…",
+  "expiresAt": "2026-12-01T10:45:00.000Z",
+  "createdAt": "2026-12-01T10:15:00.000Z",
+  "storeCurrency": "USD",
+  "amountSubtotal": 10,
+  "amountTotal": 11.07,
+  "currency": "EUR",
+  "lineItems": [
+    { "productId": "PRODUCT_ID", "name": "VIP", "quantity": 1, "unitAmount": 10, "currency": "USD" }
+  ],
+  "customer": { "email": "player@example.com", "externalId": "user_42", "player": null },
+  "clientReferenceId": "order_1234",
+  "metadata": {},
+  "orderId": "…",
+  "paymentId": "…",
+  "completedAt": "2026-12-01T10:21:09.000Z"
+}
+```
+
+```json 404
+{
+  "error": {
+    "type": "checkout_session_not_found",
+    "message": "…",
+    "requestId": "req_4f1c…"
+  }
+}
+```
+
+</ResponseExample>

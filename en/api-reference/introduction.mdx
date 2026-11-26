@@ -1,0 +1,133 @@
+---
+title: "API reference"
+description: "CrafterPayments API: base URL, authentication, versioning, idempotency, error format, error types and plan-based limits."
+---
+
+## Base URL
+
+```
+https://api.crafterpayments.com/v1
+```
+
+The API works over HTTPS with JSON only. Request bodies must use `Content-Type: application/json`. A successful response returns the object directly (no wrapper).
+
+OpenAPI 3 definition: [`crafterpayments-v1.openapi.json`](https://github.com/EfeSorogluu/docs/blob/main/api-reference/crafterpayments-v1.openapi.json)
+
+## Endpoints
+
+| Method | Path | Key |
+| --- | --- | --- |
+| `POST` | [`/v1/checkout/sessions`](/en/api-reference/checkout-sessions/create) | Secret |
+| `GET` | [`/v1/checkout/sessions/{id}`](/en/api-reference/checkout-sessions/retrieve) | Secret |
+| `GET` | [`/v1/checkout/sessions/{id}/public`](/en/api-reference/checkout-sessions/retrieve-public) | Publishable |
+| `POST` | [`/v1/checkout/sessions/{id}/cancel`](/en/api-reference/checkout-sessions/cancel) | Secret |
+| `GET` | `/v1/health` | None. Returns `{ "status": "ok", "version": "2026-12" }`. |
+
+## Authentication
+
+Send the key in the `Authorization` header:
+
+```
+Authorization: Bearer cp_sk_live_…
+```
+
+Key types and modes: [Keys, modes and allowed origins](/en/developers/payments/keys-and-modes).
+
+## Headers
+
+| Header | Direction | Description |
+| --- | --- | --- |
+| `Crafter-Version` | Request and response | API version. The only supported version is `2026-12`. If you omit it, the latest version is used. Send it on every request to pin your integration. An unsupported value returns `400 crafter_version_unsupported` (`details.supported` lists the supported versions). |
+| `Idempotency-Key` | Request | Required for `POST /v1/checkout/sessions`. 1 to 255 characters. |
+| `X-Request-Id` | Response | On every response, including errors. Share it when you contact support. |
+| `Idempotent-Replayed` | Response | `true`: the response is the same as the one given earlier for the same `Idempotency-Key`. |
+| `Retry-After` | Response | On `429`, how many seconds to wait. |
+
+Responses are sent with `Cache-Control: no-store`.
+
+## Idempotency
+
+Send an `Idempotency-Key` with the session create request (for example a UUID or your own order number). The key is kept for 24 hours per API key:
+
+- Same key and same body: the first response is returned as is, with the `Idempotent-Replayed: true` header. The order of fields in the body does not matter.
+- Same key, different body: `409 idempotency_key_reused`.
+- The first request is still being processed: `409 idempotency_in_progress`. Wait a moment and retry.
+- If the first request ended with a `4xx`, the same error is returned again. `5xx` results are not stored; you can safely retry with the same key.
+
+## Errors
+
+Error responses always have the same shape:
+
+```json
+{
+  "error": {
+    "type": "checkout_line_items_invalid",
+    "message": "…",
+    "details": { "errors": [{ "index": 0, "code": "out_of_stock" }] },
+    "requestId": "req_4f1c…"
+  }
+}
+```
+
+| Field | Description |
+| --- | --- |
+| `type` | Stable, machine-readable error type. Branch on this field. |
+| `message` | Human-readable text. It can change; do not parse it. |
+| `param` | The field that caused the error, when there is one. |
+| `details` | Extra information, when there is any. |
+| `requestId` | Same as `X-Request-Id`. |
+
+`5xx` errors carry no details (`type: internal_server_error`); you can retry the same request with its `Idempotency-Key`.
+
+### Error types
+
+| HTTP | `type` | Meaning |
+| --- | --- | --- |
+| 400 | `validation_failed` | The body failed validation. `details.errors` maps field → rule; an unknown field shows as `should_not_exist`. |
+| 400 | `checkout_line_items_invalid` | One or more lines cannot be sold. `details.errors[]`: `{ index, code }`, `code`: `not_found`, `inactive`, `out_of_stock`, `quantity_exceeded`, `not_for_sale_headless`. |
+| 400 | `checkout_player_invalid` | Invalid player identity. `details.reason`: `unsupported_type` or `pattern`. |
+| 400 | `checkout_return_url_not_allowed` | `successUrl` / `cancelUrl` is not on an allowed origin. `details.field`, `details.origin`. |
+| 400 | `checkout_metadata_invalid` | Metadata breaks the rules. `details.key`, `details.reason`: `too_many`, `invalid_key`, `too_long`, `not_string`, `card_number_detected`. |
+| 400 | `idempotency_key_required` | `Idempotency-Key` is missing or invalid. |
+| 400 | `crafter_version_unsupported` | `Crafter-Version` is not supported. |
+| 401 | `api_key_invalid` | The key is missing, malformed or revoked. |
+| 403 | `api_key_wrong_type` | This endpoint needs the other key type. `details.expected`. |
+| 403 | `api_key_exposed` | A secret key was used from a browser (with an `Origin` header). |
+| 403 | `checkout_origin_not_allowed` | The `Origin` of a `/public` read is not allowed. |
+| 403 | `plan_feature_unavailable` | The feature is not in your plan (for example embedded mode). |
+| 403 | `plan_limit_reached` | Your plan's monthly session quota is used up. |
+| 404 | `checkout_session_not_found` | No such session, a session of another store or the other mode, or a wrong `X-Client-Secret`. |
+| 404 | `not_found` | No such endpoint, or headless payments are not available for your store. |
+| 409 | `idempotency_key_reused` | The same key was used with a different body. |
+| 409 | `idempotency_in_progress` | A request with the same key is still being processed. |
+| 409 | `checkout_session_not_open` | The session cannot be canceled (complete or expired). `details.status`. |
+| 409 | `checkout_payment_in_progress` | A payment is being processed; the session cannot be canceled right now. |
+| 429 | `too_many_requests` | Per-minute request limit exceeded. `details.limit`, `details.windowSeconds`, `Retry-After`. |
+| 500 | `internal_server_error` | Unexpected error. |
+
+## Limits
+
+### By plan
+
+| | Free | Pro and above |
+| --- | --- | --- |
+| Live sessions per month (calendar month, UTC) | 100 | Unlimited |
+| Requests per key (per minute) | 30 | 100 |
+| Embedded payment page (`uiMode: "embedded"`) | No | Yes |
+
+Test-mode sessions do not count towards the quota. For current plan contents, see the [pricing page](https://crafter.net.tr/en/pricing).
+
+### Request limits
+
+| Field | Limit |
+| --- | --- |
+| `lineItems` | 1–50 lines, quantity 1–99 per line |
+| `expiresInSeconds` | 900–86400 (default 1800) |
+| `metadata` | Up to 20 keys; key `^[A-Za-z0-9_.-]{1,40}$`, value a string of up to 500 characters; values that look like card numbers are rejected |
+| `clientReferenceId` | Up to 200 characters |
+| `customer.externalId` | Up to 128 characters |
+| `customer.email` | Up to 254 characters |
+| `successUrl`, `cancelUrl` | Up to 2000 characters |
+| Secret keys | Up to 10 active per mode |
+| Allowed origins | Up to 20 extra entries per mode |
+| Payment attempts | Up to 5 per session |

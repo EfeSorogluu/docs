@@ -1,0 +1,79 @@
+---
+title: "Oturum durumu (tarayıcı)"
+description: "Yayınlanabilir anahtar ve clientSecret ile tarayıcıdan oturumun durumunu okur."
+api: "GET https://api.crafterpayments.com/v1/checkout/sessions/{id}/public"
+playground: "none"
+---
+
+Tarayıcıdan ya da uygulamadan çağrılabilen tek uç noktadır. Yalnızca durum alanlarını döner; alıcı bilgisi, satırlar ve metadata dönmez.
+
+- Yayınlanabilir anahtar gerekir (`cp_pk_…`). Gizli anahtar burada `403 api_key_wrong_type` döner.
+- `X-Client-Secret` oturumun `clientSecret` değeri olmalıdır; yanlışsa `404 checkout_session_not_found`.
+- İstekte `Origin` başlığı varsa (tarayıcı), bu adres mağazanın izinli adreslerinde olmalıdır; değilse `403 checkout_origin_not_allowed`.
+- CORS: yalnızca `GET`, kimlik bilgisi (cookie) gönderilmez. İzin verilen istek başlıkları `Authorization`, `X-Client-Secret`, `Crafter-Version`; okunabilir yanıt başlıkları `X-Request-Id`, `Crafter-Version`.
+
+<Warning>
+Bu okuma ekranda doğru mesajı göstermek içindir. Teslimatı ve hesaba ürün yazmayı sunucuda, webhook ya da [Oturumu getir](/tr/api-reference/checkout-sessions/retrieve) ile doğrulayın.
+</Warning>
+
+<ParamField path="id" type="string" required>
+  Oturum kimliği.
+</ParamField>
+
+<ParamField header="Authorization" type="string" required>
+  `Bearer cp_pk_…`
+</ParamField>
+
+<ParamField header="X-Client-Secret" type="string" required>
+  Oturumun `clientSecret` değeri.
+</ParamField>
+
+## Yanıt
+
+<ResponseField name="id" type="string" />
+<ResponseField name="object" type="string">`checkout.session`</ResponseField>
+<ResponseField name="status" type="string">`open`, `processing`, `complete`, `expired`, `canceled`</ResponseField>
+<ResponseField name="paymentStatus" type="string" />
+<ResponseField name="amountTotal" type="number | null" />
+<ResponseField name="currency" type="string | null" />
+<ResponseField name="orderId" type="string | null" />
+<ResponseField name="delivery" type="object">
+  `status`: `pending`, `delivered`, `needs_review`, `failed`, `refunded` ya da (ödeme yoksa) `null`.
+</ResponseField>
+<ResponseField name="expiresAt" type="string" />
+
+<RequestExample>
+
+```js Tarayıcı
+const res = await fetch(
+  `https://api.crafterpayments.com/v1/checkout/sessions/${sessionId}/public`,
+  {
+    headers: {
+      Authorization: 'Bearer cp_pk_live_...',
+      'X-Client-Secret': clientSecret,
+      'Crafter-Version': '2026-12',
+    },
+  },
+);
+const status = await res.json();
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "id": "cs_live_8fK2…",
+  "object": "checkout.session",
+  "status": "complete",
+  "paymentStatus": "paid",
+  "amountTotal": 11.07,
+  "currency": "EUR",
+  "orderId": "…",
+  "delivery": { "status": "delivered" },
+  "expiresAt": "2026-12-01T10:45:00.000Z"
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,61 @@
+---
+title: "Cancel a session"
+description: "Closes an open checkout session; the payment page stops taking payments."
+api: "POST https://api.crafterpayments.com/v1/checkout/sessions/{id}/cancel"
+playground: "none"
+---
+
+Requires a secret key. No body.
+
+- An open session is canceled, any reserved coupon is released and `status` becomes `canceled`.
+- Calling it again on a canceled session is not an error; the session is returned unchanged.
+- A complete or expired session cannot be canceled: `409 checkout_session_not_open` (`details.status` gives the current status).
+- It cannot be canceled while a payment is being processed: `409 checkout_payment_in_progress`. Wait for the result with the webhook.
+
+<ParamField path="id" type="string" required>
+  Session id.
+</ParamField>
+
+<ParamField header="Authorization" type="string" required>
+  `Bearer cp_sk_…`
+</ParamField>
+
+### Response
+
+`200 OK` with the [session object](/en/api-reference/checkout-sessions/retrieve#the-session-object).
+
+<RequestExample>
+
+```bash curl
+curl -X POST https://api.crafterpayments.com/v1/checkout/sessions/cs_live_8fK2.../cancel \
+  -H "Authorization: Bearer $CRAFTER_SECRET_KEY" \
+  -H "Crafter-Version: 2026-12"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "id": "cs_live_8fK2…",
+  "object": "checkout.session",
+  "livemode": true,
+  "status": "canceled",
+  "paymentStatus": "unpaid",
+  "…": "…"
+}
+```
+
+```json 409
+{
+  "error": {
+    "type": "checkout_session_not_open",
+    "message": "…",
+    "details": { "status": "complete" },
+    "requestId": "req_4f1c…"
+  }
+}
+```
+
+</ResponseExample>

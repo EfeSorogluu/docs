@@ -1,0 +1,154 @@
+---
+title: "Quickstart: headless payments"
+description: "Create an API key, open a checkout session, send the buyer to the payment page and verify the payment on your server."
+---
+
+By the end of this guide you will have opened a checkout session from your server, sent the buyer to the CrafterPayments payment page and safely confirmed that the payment completed.
+
+<Steps>
+  <Step title="Create a key">
+    In the dashboard, open **Settings → Advanced → Headless & API**.
+
+    - Choose the mode at the top: **Test** or **Live**.
+    - Create a key with **Create secret key** and give it a name. The secret key (`cp_sk_test_…`) is shown **only once**; store it right away in a secret environment variable on your server (for example `CRAFTER_SECRET_KEY`).
+    - The same page has the **Return signing secret** (`crs_…`) and **Allowed origins**. You will need them in step 4.
+
+    <Warning>
+    Never put the secret key in a browser, mobile app or game client. A secret-key request coming from a browser (with an `Origin` header) is rejected with `api_key_exposed`; if that happens, revoke the key in the dashboard and create a new one.
+    </Warning>
+  </Step>
+
+  <Step title="Create a checkout session">
+    Create the session **on your server**. You do not send prices; product id and quantity are enough. The `Idempotency-Key` header is required: if you retry with the same key after a network error, no second session is created.
+
+    <CodeGroup>
+
+    ```bash curl
+    curl https://api.crafterpayments.com/v1/checkout/sessions \
+      -H "Authorization: Bearer $CRAFTER_SECRET_KEY" \
+      -H "Crafter-Version: 2026-12" \
+      -H "Idempotency-Key: order_1234" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "lineItems": [{ "productId": "PRODUCT_ID", "quantity": 1 }],
+        "customer": { "email": "player@example.com", "externalId": "user_42" },
+        "successUrl": "https://shop.example.com/thanks?session={CHECKOUT_SESSION_ID}",
+        "cancelUrl": "https://shop.example.com/cart",
+        "clientReferenceId": "order_1234"
+      }'
+    ```
+
+    ```js Node.js
+    import crypto from 'node:crypto';
+
+    const res = await fetch('https://api.crafterpayments.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.CRAFTER_SECRET_KEY}`,
+        'Crafter-Version': '2026-12',
+        'Idempotency-Key': crypto.randomUUID(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        lineItems: [{ productId: 'PRODUCT_ID', quantity: 1 }],
+        customer: { email: 'player@example.com', externalId: 'user_42' },
+        successUrl: 'https://shop.example.com/thanks?session={CHECKOUT_SESSION_ID}',
+        cancelUrl: 'https://shop.example.com/cart',
+        clientReferenceId: 'order_1234',
+      }),
+    });
+    if (!res.ok) {
+      const { error } = await res.json();
+      throw new Error(`${error.type}: ${error.message} (${error.requestId})`);
+    }
+    const session = await res.json();
+    // session.id  -> "cs_test_…"
+    // session.url -> "https://checkout.crafterpayments.com/c/cs_test_…"
+    ```
+
+    </CodeGroup>
+
+    `amountTotal` and `currency` come back as **`null`**. Tax is calculated on the payment page from the buyer's billing country, so the final total and the charge currency are known only after payment starts. If you need to show an amount before that, use `amountSubtotal` (the catalog total in the store currency, before coupon and tax).
+
+    If you know the buyer's player identity, send it in `customer.player` (for example `{ "type": "minecraft_java", "username": "Notch" }`). If you do not and the cart has items that need in-game delivery, the payment page asks for it.
+  </Step>
+
+  <Step title="Redirect the buyer to the payment page">
+    Redirect to the `url` in the response. A server-side `303 See Other` is recommended:
+
+    ```js Express
+    app.post('/checkout', async (req, res) => {
+      const session = await createCheckoutSession(req.body); // the request from step 2
+      res.redirect(303, session.url);
+    });
+    ```
+
+    The session stays open for 30 minutes by default (`expiresInSeconds`: 900 to 86400).
+  </Step>
+
+  <Step title="Handle the return">
+    When payment finishes, Crafter sends the buyer to `successUrl`; if they leave, to `cancelUrl`. These parameters are added to the URL:
+
+    | Parameter | Value |
+    | --- | --- |
+    | `session_id` | Session id (`cs_…`) |
+    | `cp_status` | `complete`, `processing`, `canceled` or `expired` |
+    | `cp_ts` | Unix time (seconds) |
+    | `cp_sig` | `hex(HMAC_SHA256(return_signing_secret, cp_ts + "." + session_id + "." + cp_status))` |
+
+    The `{CHECKOUT_SESSION_ID}` placeholder is replaced with the session id. The return URL must be on one of your store's allowed origins; the list is checked again at return time.
+
+    A buyer leaving the payment page (`cp_status=canceled`) does not cancel the session: the buyer can come back with the same link and pay until it expires. To close the session, call `POST /v1/checkout/sessions/{id}/cancel`.
+
+    Verify the signature **on your server** and use it only to show the right screen:
+
+    ```js Node.js
+    import crypto from 'node:crypto';
+
+    export function verifyReturn(query, secret, toleranceSec = 600) {
+      const { session_id, cp_status, cp_ts, cp_sig } = query;
+      const ts = Number(cp_ts);
+      if (!session_id || !['complete', 'processing', 'canceled', 'expired'].includes(cp_status)) return false;
+      if (!Number.isInteger(ts) || !/^[0-9a-f]{64}$/.test(String(cp_sig))) return false;
+      if (Math.abs(Date.now() / 1000 - ts) > toleranceSec) return false;
+      const expected = crypto
+        .createHmac('sha256', secret)
+        .update(`${ts}.${session_id}.${cp_status}`)
+        .digest();
+      const given = Buffer.from(cp_sig, 'hex');
+      return given.length === expected.length && crypto.timingSafeEqual(given, expected);
+    }
+    ```
+
+    <Warning>
+    The return signature only means "Crafter redirected the buyer to this screen". Do not tie delivery or crediting items to it; use step 5. The return signing secret is per mode and must stay secret.
+    </Warning>
+  </Step>
+
+  <Step title="Verify the payment on your server">
+    There are two sources of truth:
+
+    - **Webhook (recommended):** Add an endpoint under your store webhooks in the dashboard and subscribe to `checkout.completed`. Verify the signature with the `X-Crafter-Signature` header. See [Webhook events](/en/developers/payments/webhooks).
+    - **Reading the session:** If `status` is `complete` in the `GET /v1/checkout/sessions/{id}` response, the payment was received.
+
+    ```bash
+    curl https://api.crafterpayments.com/v1/checkout/sessions/cs_test_... \
+      -H "Authorization: Bearer $CRAFTER_SECRET_KEY" \
+      -H "Crafter-Version: 2026-12"
+    ```
+
+    When completing the order on your side, find your own record with `clientReferenceId` and `metadata`. Store the webhook's `X-Crafter-Delivery` value so you never process the same event twice.
+  </Step>
+</Steps>
+
+## Going live
+
+- In test mode you can create and read sessions; test-mode payments are not available yet. On the payment page, a test session returns `checkout_test_payments_unavailable`. For an end-to-end payment test, use a live key with a low-priced product.
+- In live mode, return URLs must use `https`. In test mode, `http://localhost` is allowed automatically.
+- In live mode, a monthly session quota applies based on your plan. See [Limits](/en/api-reference/introduction#limits).
+
+## Next steps
+
+- [API reference](/en/api-reference/introduction)
+- [Keys, modes and allowed origins](/en/developers/payments/keys-and-modes)
+- [Platform rules](/en/developers/payments/platform-rules)
