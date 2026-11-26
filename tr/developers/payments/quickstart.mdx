@@ -1,0 +1,154 @@
+---
+title: "Hızlı başlangıç: headless ödeme"
+description: "API anahtarı oluşturun, checkout oturumu açın, alıcıyı ödeme sayfasına yönlendirin ve ödemeyi sunucunuzda doğrulayın."
+---
+
+Bu rehberin sonunda sunucunuzdan bir checkout oturumu açmış, alıcıyı CrafterPayments ödeme sayfasına göndermiş ve ödemenin tamamlandığını güvenli şekilde doğrulamış olacaksınız.
+
+<Steps>
+  <Step title="Anahtar oluşturun">
+    Panelde **Ayarlar → Gelişmiş → Headless ve API** sayfasını açın.
+
+    - Üstten modu seçin: **Test** ya da **Canlı**.
+    - **Gizli anahtar oluştur** ile bir anahtar oluşturun ve bir ad verin. Gizli anahtar (`cp_sk_test_…`) **yalnızca bir kez** gösterilir; hemen sunucunuzdaki gizli ortam değişkenine kaydedin (ör. `CRAFTER_SECRET_KEY`).
+    - Aynı sayfada **Dönüş imza sırrı** (`crs_…`) ve **İzinli adresler** bulunur. Bunlara 4. adımda ihtiyacınız olacak.
+
+    <Warning>
+    Gizli anahtarı tarayıcıya, mobil uygulamaya ya da oyun istemcisine koymayın. Tarayıcıdan (`Origin` başlığıyla) gelen gizli anahtarlı istek `api_key_exposed` hatasıyla reddedilir; bu durumda anahtarı panelden iptal edip yenisini oluşturun.
+    </Warning>
+  </Step>
+
+  <Step title="Checkout oturumu oluşturun">
+    Oturumu **sunucunuzda** oluşturun. Fiyat göndermezsiniz; ürün kimliği ve adet yeterlidir. `Idempotency-Key` başlığı zorunludur: ağ hatasında aynı anahtarla tekrar denediğinizde ikinci bir oturum açılmaz.
+
+    <CodeGroup>
+
+    ```bash curl
+    curl https://api.crafterpayments.com/v1/checkout/sessions \
+      -H "Authorization: Bearer $CRAFTER_SECRET_KEY" \
+      -H "Crafter-Version: 2026-12" \
+      -H "Idempotency-Key: order_1234" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "lineItems": [{ "productId": "PRODUCT_ID", "quantity": 1 }],
+        "customer": { "email": "oyuncu@example.com", "externalId": "user_42" },
+        "successUrl": "https://shop.example.com/tesekkurler?session={CHECKOUT_SESSION_ID}",
+        "cancelUrl": "https://shop.example.com/sepet",
+        "clientReferenceId": "order_1234"
+      }'
+    ```
+
+    ```js Node.js
+    import crypto from 'node:crypto';
+
+    const res = await fetch('https://api.crafterpayments.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.CRAFTER_SECRET_KEY}`,
+        'Crafter-Version': '2026-12',
+        'Idempotency-Key': crypto.randomUUID(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        lineItems: [{ productId: 'PRODUCT_ID', quantity: 1 }],
+        customer: { email: 'oyuncu@example.com', externalId: 'user_42' },
+        successUrl: 'https://shop.example.com/tesekkurler?session={CHECKOUT_SESSION_ID}',
+        cancelUrl: 'https://shop.example.com/sepet',
+        clientReferenceId: 'order_1234',
+      }),
+    });
+    if (!res.ok) {
+      const { error } = await res.json();
+      throw new Error(`${error.type}: ${error.message} (${error.requestId})`);
+    }
+    const session = await res.json();
+    // session.id  -> "cs_test_…"
+    // session.url -> "https://checkout.crafterpayments.com/c/cs_test_…"
+    ```
+
+    </CodeGroup>
+
+    Yanıtta `amountTotal` ve `currency` **`null`** gelir. Vergi, ödeme sayfasında alıcının fatura ülkesine göre hesaplanır; son tutar ve tahsilat para birimi ödeme başladıktan sonra belli olur. Ödemeden önce bir tutar göstermeniz gerekiyorsa `amountSubtotal` (mağaza para biriminde, kupon ve vergi öncesi katalog toplamı) alanını kullanın.
+
+    Alıcının oyuncu kimliğini biliyorsanız `customer.player` ile gönderin (ör. `{ "type": "minecraft_java", "username": "Notch" }`). Göndermezseniz ve sepette oyun içi teslimat gereken ürün varsa ödeme sayfası alıcıdan ister.
+  </Step>
+
+  <Step title="Alıcıyı ödeme sayfasına yönlendirin">
+    Yanıttaki `url` adresine yönlendirin. Sunucu tarafında `303 See Other` önerilir:
+
+    ```js Express
+    app.post('/checkout', async (req, res) => {
+      const session = await createCheckoutSession(req.body); // 2. adımdaki istek
+      res.redirect(303, session.url);
+    });
+    ```
+
+    Oturum varsayılan olarak 30 dakika açık kalır (`expiresInSeconds`: 900 ile 86400 arası).
+  </Step>
+
+  <Step title="Dönüşü karşılayın">
+    Ödeme bitince Crafter alıcıyı `successUrl` adresine, vazgeçerse `cancelUrl` adresine gönderir. Adrese şu parametreler eklenir:
+
+    | Parametre | Değer |
+    | --- | --- |
+    | `session_id` | Oturum kimliği (`cs_…`) |
+    | `cp_status` | `complete`, `processing`, `canceled` ya da `expired` |
+    | `cp_ts` | Unix zamanı (saniye) |
+    | `cp_sig` | `hex(HMAC_SHA256(dönüş_imza_sırrı, cp_ts + "." + session_id + "." + cp_status))` |
+
+    `{CHECKOUT_SESSION_ID}` yer tutucusu oturum kimliğiyle değiştirilir. Dönüş adresi mağazanızın izinli adreslerinden birinde olmalıdır; dönüş anında liste yeniden kontrol edilir.
+
+    Alıcının ödeme sayfasından geri dönmesi (`cp_status=canceled`) oturumu iptal etmez: alıcı süre dolana kadar aynı bağlantıyla geri gelip ödeyebilir. Oturumu kapatmak isterseniz `POST /v1/checkout/sessions/{id}/cancel` çağırın.
+
+    İmzayı **sunucunuzda** doğrulayın ve yalnızca doğru ekranı göstermek için kullanın:
+
+    ```js Node.js
+    import crypto from 'node:crypto';
+
+    export function verifyReturn(query, secret, toleranceSec = 600) {
+      const { session_id, cp_status, cp_ts, cp_sig } = query;
+      const ts = Number(cp_ts);
+      if (!session_id || !['complete', 'processing', 'canceled', 'expired'].includes(cp_status)) return false;
+      if (!Number.isInteger(ts) || !/^[0-9a-f]{64}$/.test(String(cp_sig))) return false;
+      if (Math.abs(Date.now() / 1000 - ts) > toleranceSec) return false;
+      const expected = crypto
+        .createHmac('sha256', secret)
+        .update(`${ts}.${session_id}.${cp_status}`)
+        .digest();
+      const given = Buffer.from(cp_sig, 'hex');
+      return given.length === expected.length && crypto.timingSafeEqual(given, expected);
+    }
+    ```
+
+    <Warning>
+    Dönüş imzası yalnızca "bu ekrana alıcıyı Crafter yönlendirdi" bilgisidir. Teslimatı ya da hesaba ürün yazmayı bu imzaya bağlamayın; 5. adımı kullanın. Dönüş imza sırrı mod başınadır ve gizli kalmalıdır.
+    </Warning>
+  </Step>
+
+  <Step title="Ödemeyi sunucuda doğrulayın">
+    Doğruluk kaynağı iki yoldur:
+
+    - **Webhook (önerilen):** Panelde mağaza webhook'larına bir uç nokta ekleyin ve `checkout.completed` olayına abone olun. İmzayı `X-Crafter-Signature` başlığıyla doğrulayın. Ayrıntı: [Webhook olayları](/tr/developers/payments/webhooks).
+    - **Oturumu okuma:** `GET /v1/checkout/sessions/{id}` yanıtında `status` `complete` ise ödeme alınmıştır.
+
+    ```bash
+    curl https://api.crafterpayments.com/v1/checkout/sessions/cs_test_... \
+      -H "Authorization: Bearer $CRAFTER_SECRET_KEY" \
+      -H "Crafter-Version: 2026-12"
+    ```
+
+    Siparişi kendi tarafınızda tamamlarken `clientReferenceId` ve `metadata` alanlarıyla kendi kaydınızı bulun. Aynı olayı iki kez işlememek için webhook'taki `X-Crafter-Delivery` değerini saklayın.
+  </Step>
+</Steps>
+
+## Canlıya geçiş
+
+- Test modunda `4242 4242 4242 4242` gibi bir test kartıyla (ileri bir tarih, herhangi bir CVC) ödeme yapın. Gerçek para hareketi olmaz, teslimat simüle edilir. Ayrıntılar: [Anahtarlar ve modlar, Test kartları](/tr/developers/payments/keys-and-modes).
+- Canlı modda dönüş adresleri `https` olmalıdır. Test modunda `http://localhost` kendiliğinden izinlidir.
+- Canlı modda aylık oturum kotası paketinize göre uygulanır. Ayrıntı: [Sınırlar](/tr/api-reference/introduction).
+
+## Sonraki adımlar
+
+- [API referansı](/tr/api-reference/introduction)
+- [Anahtarlar, modlar ve izinli adresler](/tr/developers/payments/keys-and-modes)
+- [Platform kuralları](/tr/developers/payments/platform-rules)

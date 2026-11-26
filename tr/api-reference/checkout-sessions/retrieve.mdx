@@ -1,0 +1,94 @@
+---
+title: "Oturumu getir"
+description: "Bir checkout oturumunun bütün alanlarını döner. Siparişi tamamlamadan önce doğruluk kaynağı olarak kullanın."
+api: "GET https://api.crafterpayments.com/v1/checkout/sessions/{id}"
+playground: "none"
+---
+
+Gizli anahtar gerekir. Anahtar yalnızca kendi mağazasının ve kendi modunun oturumlarını görür; diğerleri `404 checkout_session_not_found` döner.
+
+Süresi geçmiş açık oturum, arka plan görevi henüz kapatmamış olsa bile `expired` olarak döner.
+
+<ParamField path="id" type="string" required>
+  Oturum kimliği, ör. `cs_live_…`.
+</ParamField>
+
+<ParamField header="Authorization" type="string" required>
+  `Bearer cp_sk_…`
+</ParamField>
+
+## Oturum nesnesi
+
+<ResponseField name="id" type="string">`cs_test_…` ya da `cs_live_…`</ResponseField>
+<ResponseField name="object" type="string">Her zaman `checkout.session`</ResponseField>
+<ResponseField name="livemode" type="boolean">Canlı modda `true`</ResponseField>
+<ResponseField name="status" type="string">`open`, `processing`, `complete`, `expired`, `canceled`</ResponseField>
+<ResponseField name="paymentStatus" type="string">`unpaid`, `paid`, `no_payment_required`, `refunded`, `partially_refunded`, `disputed`</ResponseField>
+<ResponseField name="uiMode" type="string">`hosted` ya da `embedded`</ResponseField>
+<ResponseField name="url" type="string">Ödeme sayfası: `https://checkout.crafterpayments.com/c/{id}`</ResponseField>
+<ResponseField name="clientSecret" type="string">Yayınlanabilir anahtarla `/public` okuması ve gömülü mod için. Loglara yazmayın.</ResponseField>
+<ResponseField name="expiresAt" type="string">ISO 8601</ResponseField>
+<ResponseField name="createdAt" type="string">ISO 8601</ResponseField>
+<ResponseField name="storeCurrency" type="string">Mağazanın para birimi, ör. `USD`</ResponseField>
+<ResponseField name="amountSubtotal" type="number">Satırların `storeCurrency` cinsinden katalog fiyatıyla toplamı (kupon ve vergi öncesi)</ResponseField>
+<ResponseField name="amountTotal" type="number | null">Tahsil edilen son tutar (vergi dahil, kupon sonrası). Oturum açıldığında `null`; ödeme başladıktan sonra dolar.</ResponseField>
+<ResponseField name="currency" type="string | null">Tahsilat para birimi (alıcının para birimi). Ödeme başlayana kadar `null`.</ResponseField>
+<ResponseField name="lineItems" type="object[]">`{ productId, name, quantity, unitAmount, currency }`. `unitAmount` ürün indirimi sonrası katalog birim fiyatıdır.</ResponseField>
+<ResponseField name="customer" type="object | null">`{ email, externalId, player }`</ResponseField>
+<ResponseField name="clientReferenceId" type="string | null" />
+<ResponseField name="metadata" type="object">Gönderdiğiniz metadata; yoksa `{}`</ResponseField>
+<ResponseField name="orderId" type="string | null">Tamamlanınca mağazadaki sipariş numarası</ResponseField>
+<ResponseField name="paymentId" type="string | null">Tamamlanınca ödeme kaydı (kuponla ücretsiz siparişte `null`)</ResponseField>
+<ResponseField name="completedAt" type="string | null">ISO 8601</ResponseField>
+
+<RequestExample>
+
+```bash curl
+curl https://api.crafterpayments.com/v1/checkout/sessions/cs_live_8fK2... \
+  -H "Authorization: Bearer $CRAFTER_SECRET_KEY" \
+  -H "Crafter-Version: 2026-12"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "id": "cs_live_8fK2…",
+  "object": "checkout.session",
+  "livemode": true,
+  "status": "complete",
+  "paymentStatus": "paid",
+  "uiMode": "hosted",
+  "url": "https://checkout.crafterpayments.com/c/cs_live_8fK2…",
+  "clientSecret": "cs_live_8fK2…_secret_…",
+  "expiresAt": "2026-12-01T10:45:00.000Z",
+  "createdAt": "2026-12-01T10:15:00.000Z",
+  "storeCurrency": "USD",
+  "amountSubtotal": 10,
+  "amountTotal": 11.07,
+  "currency": "EUR",
+  "lineItems": [
+    { "productId": "PRODUCT_ID", "name": "VIP", "quantity": 1, "unitAmount": 10, "currency": "USD" }
+  ],
+  "customer": { "email": "oyuncu@example.com", "externalId": "user_42", "player": null },
+  "clientReferenceId": "order_1234",
+  "metadata": {},
+  "orderId": "…",
+  "paymentId": "…",
+  "completedAt": "2026-12-01T10:21:09.000Z"
+}
+```
+
+```json 404
+{
+  "error": {
+    "type": "checkout_session_not_found",
+    "message": "…",
+    "requestId": "req_4f1c…"
+  }
+}
+```
+
+</ResponseExample>

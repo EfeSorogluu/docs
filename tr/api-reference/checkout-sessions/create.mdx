@@ -1,0 +1,176 @@
+---
+title: "Oturum oluştur"
+description: "Mağaza kataloğundaki ürünler için bir checkout oturumu oluşturur ve ödeme sayfası adresini döner."
+api: "POST https://api.crafterpayments.com/v1/checkout/sessions"
+playground: "none"
+---
+
+Gizli anahtar gerekir. Fiyat alanı yoktur: birim fiyat her zaman mağaza kataloğundan (ürün indirimi dahil) alınır. Bilinmeyen alan gönderirseniz istek `validation_failed` ile reddedilir.
+
+### Başlıklar
+
+<ParamField header="Authorization" type="string" required>
+  `Bearer cp_sk_test_…` ya da `Bearer cp_sk_live_…`
+</ParamField>
+
+<ParamField header="Idempotency-Key" type="string" required>
+  İstek başına benzersiz değer, 1–255 karakter. 24 saat saklanır. Bkz. [Idempotency](/tr/api-reference/introduction#idempotency).
+</ParamField>
+
+<ParamField header="Crafter-Version" type="string">
+  `2026-12`
+</ParamField>
+
+### Gövde
+
+<ParamField body="lineItems" type="object[]" required>
+  1–50 satır.
+
+  <Expandable title="satır">
+    <ParamField body="productId" type="string" required>
+      Mağaza kataloğundaki ürün kimliği (en fazla 64 karakter).
+    </ParamField>
+    <ParamField body="quantity" type="integer" required>
+      1–99. Stoklu üründe toplam adet stoğu aşamaz.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="customer" type="object">
+  Alıcı bilgisi. Hepsi isteğe bağlıdır.
+
+  <Expandable title="alanlar">
+    <ParamField body="email" type="string">
+      Makbuz e-postası (en fazla 254 karakter). Göndermezseniz ödeme sayfası ister.
+    </ParamField>
+    <ParamField body="externalId" type="string">
+      Sizin sisteminizdeki kullanıcı kimliği (en fazla 128 karakter). Webhook'ta geri gelir.
+    </ParamField>
+    <ParamField body="player" type="object">
+      Teslimat için oyuncu kimliği. `type` mağazanın oyun entegrasyonundaki kimlik türlerinden biridir (ör. `minecraft_java`, `steam64`). Ad tabanlı türlerde `username`, `steam64` / `cfx` / `roblox` türlerinde `id` zorunludur. Minecraft'ta `uuid` isteğe bağlıdır. Göndermezseniz ve sepette oyun içi teslimat varsa ödeme sayfası ister.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="successUrl" type="string">
+  Ödeme sonrası dönüş adresi. `uiMode` `hosted` iken zorunlu. İzinli adreslerden birinde olmalı. `{CHECKOUT_SESSION_ID}` oturum kimliğiyle değiştirilir; adrese `session_id`, `cp_status`, `cp_ts`, `cp_sig` eklenir.
+</ParamField>
+
+<ParamField body="cancelUrl" type="string">
+  Alıcı ödeme sayfasından geri dönerse gideceği adres. İzinli adreslerden birinde olmalı.
+</ParamField>
+
+<ParamField body="uiMode" type="string" default="hosted">
+  `hosted` ya da `embedded`. Gömülü mod Free pakette yoktur (`403 plan_feature_unavailable`).
+</ParamField>
+
+<ParamField body="locale" type="string">
+  Ödeme sayfasının dili, ör. `tr`, `en`, `en-US`.
+</ParamField>
+
+<ParamField body="currency" type="string">
+  Üç harfli para birimi önerisi (ör. `EUR`). Yalnızca öneridir; alıcının göreceği para birimi sunucuda belirlenir.
+</ParamField>
+
+<ParamField body="allowCoupons" type="boolean" default="true">
+  Ödeme sayfasında kupon alanı gösterilsin mi.
+</ParamField>
+
+<ParamField body="couponCode" type="string">
+  Önceden uygulanacak kupon (en fazla 64 karakter).
+</ParamField>
+
+<ParamField body="expiresInSeconds" type="integer" default="1800">
+  Oturumun açık kalacağı süre, 900–86400 saniye.
+</ParamField>
+
+<ParamField body="clientReferenceId" type="string">
+  Kendi sipariş numaranız (en fazla 200 karakter). Oturumda ve webhook'ta geri gelir.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  En fazla 20 anahtar-değer. Anahtar `^[A-Za-z0-9_.-]{1,40}$`, değer metin ve en fazla 500 karakter. Kart numarasına benzeyen değer reddedilir. Teslimat komutlarına aktarılmaz.
+</ParamField>
+
+### Yanıt
+
+`201 Created` ile [oturum nesnesi](/tr/api-reference/checkout-sessions/retrieve#oturum-nesnesi) döner.
+
+<Note>
+Oturum açıldığında `amountTotal` ve `currency` **`null`** gelir. Vergi ödeme sayfasında alıcının fatura ülkesine göre hesaplanır; son tutar ve tahsilat para birimi ödeme başladıktan sonra belli olur. Öncesinde gösterim için `amountSubtotal` (mağaza para biriminde, kupon ve vergi öncesi katalog toplamı) kullanın.
+</Note>
+
+### Olası hatalar
+
+`validation_failed`, `checkout_line_items_invalid`, `checkout_player_invalid`, `checkout_return_url_not_allowed`, `checkout_metadata_invalid`, `idempotency_key_required`, `idempotency_key_reused`, `idempotency_in_progress`, `plan_limit_reached`, `plan_feature_unavailable`, `api_key_invalid`, `api_key_wrong_type`, `api_key_exposed`, `too_many_requests`. Ayrıntı: [Hata tipleri](/tr/api-reference/introduction#hata-tipleri).
+
+<RequestExample>
+
+```bash curl
+curl https://api.crafterpayments.com/v1/checkout/sessions \
+  -H "Authorization: Bearer $CRAFTER_SECRET_KEY" \
+  -H "Crafter-Version: 2026-12" \
+  -H "Idempotency-Key: order_1234" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "lineItems": [{ "productId": "PRODUCT_ID", "quantity": 1 }],
+    "customer": {
+      "email": "oyuncu@example.com",
+      "externalId": "user_42",
+      "player": { "type": "minecraft_java", "username": "Notch" }
+    },
+    "successUrl": "https://shop.example.com/tesekkurler?session={CHECKOUT_SESSION_ID}",
+    "cancelUrl": "https://shop.example.com/sepet",
+    "clientReferenceId": "order_1234",
+    "metadata": { "campaign": "winter" }
+  }'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201
+{
+  "id": "cs_test_8fK2…",
+  "object": "checkout.session",
+  "livemode": false,
+  "status": "open",
+  "paymentStatus": "unpaid",
+  "uiMode": "hosted",
+  "url": "https://checkout.crafterpayments.com/c/cs_test_8fK2…",
+  "clientSecret": "cs_test_8fK2…_secret_…",
+  "expiresAt": "2026-12-01T10:45:00.000Z",
+  "createdAt": "2026-12-01T10:15:00.000Z",
+  "storeCurrency": "USD",
+  "amountSubtotal": 10,
+  "amountTotal": null,
+  "currency": null,
+  "lineItems": [
+    { "productId": "PRODUCT_ID", "name": "VIP", "quantity": 1, "unitAmount": 10, "currency": "USD" }
+  ],
+  "customer": {
+    "email": "oyuncu@example.com",
+    "externalId": "user_42",
+    "player": { "type": "minecraft_java", "username": "Notch", "uuid": null }
+  },
+  "clientReferenceId": "order_1234",
+  "metadata": { "campaign": "winter" },
+  "orderId": null,
+  "paymentId": null,
+  "completedAt": null
+}
+```
+
+```json 400
+{
+  "error": {
+    "type": "checkout_line_items_invalid",
+    "message": "…",
+    "details": { "errors": [{ "index": 0, "code": "out_of_stock" }] },
+    "requestId": "req_4f1c…"
+  }
+}
+```
+
+</ResponseExample>

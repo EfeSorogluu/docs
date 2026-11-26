@@ -1,0 +1,69 @@
+---
+title: "Headless payments overview"
+description: "Send buyers from your own site, app or game to the CrafterPayments payment page: concepts, keys and flow."
+---
+
+The headless payments API lets you sell the products in your store's catalog **from your own interface**. You build the cart, CrafterPayments' secure payment page (`checkout.crafterpayments.com`) takes the payment, and your store delivers the items as it does today.
+
+<Note>
+The headless payments API is available to stores that use CrafterPayments in the global merchant of record (MoR) model. See [What is CrafterPayments?](/en/crafterpayments/overview)
+</Note>
+
+## Flow
+
+1. Your server creates a **checkout session** with a secret key (`POST /v1/checkout/sessions`). The request only carries product ids and quantities; the price always comes from the store catalog.
+2. You redirect the buyer to the `url` in the response.
+3. The buyer enters a billing country, tax and the final total are calculated there, and the buyer pays.
+4. Crafter sends the buyer back to your `successUrl` (or `cancelUrl` if they leave) with signed parameters.
+5. Your server receives the `checkout.completed` webhook, or reads the session with `GET /v1/checkout/sessions/{id}`, and completes the order on your side.
+
+<Warning>
+The parameters on the return URL only tell you that "Crafter redirected the buyer here". Tie delivery, or crediting items to an account, to **the webhook or the session status read from your server**.
+</Warning>
+
+## Key concepts
+
+| Concept | Description |
+| --- | --- |
+| Base URL | `https://api.crafterpayments.com/v1` |
+| Secret key | `cp_sk_test_…` / `cp_sk_live_…`. Server-side only. |
+| Publishable key | `cp_pk_test_…` / `cp_pk_live_…`. In the browser, only to read session status. |
+| Checkout session | `cs_test_…` / `cs_live_…`. Stays open for 30 minutes by default (configurable from 15 minutes to 24 hours). |
+| Test and live mode | The key's mode decides the session's mode. See [Keys, modes and allowed origins](/en/developers/payments/keys-and-modes). |
+| Allowed origins | Where return URLs and browser requests may come from. Your store's domains are allowed automatically. |
+
+## Session statuses
+
+| `status` | Meaning |
+| --- | --- |
+| `open` | Waiting for payment. |
+| `processing` | Payment started, waiting for the result. |
+| `complete` | Payment received (or the total became 0 with a coupon). The order was created. |
+| `expired` | The session expired. |
+| `canceled` | You canceled it. |
+
+`paymentStatus` gives the payment state separately: `unpaid`, `paid`, `no_payment_required`, `refunded`, `partially_refunded`, `disputed`.
+
+## What can be sold
+
+Visible, on-sale products in your store catalog. These products cannot be sold in a headless session and return `checkout_line_items_invalid` (`not_for_sale_headless`):
+
+- random-reward products such as chests or wheels,
+- products that require a verified Minecraft account.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/en/developers/payments/quickstart">
+    Create your first session and verify the payment.
+  </Card>
+  <Card title="API reference" icon="code" href="/en/api-reference/introduction">
+    Endpoints, headers, errors and limits.
+  </Card>
+  <Card title="Webhook events" icon="bell" href="/en/developers/payments/webhooks">
+    `checkout.completed`, `checkout.expired`, `order.chargeback`.
+  </Card>
+  <Card title="Platform rules" icon="scale-balanced" href="/en/developers/payments/platform-rules">
+    Using checkout on mobile, console and game platforms.
+  </Card>
+</CardGroup>

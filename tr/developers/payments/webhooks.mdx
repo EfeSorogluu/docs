@@ -1,0 +1,187 @@
+---
+title: "Headless ödeme webhook olayları"
+description: "checkout.completed, checkout.expired ve order.chargeback olaylarının gövdeleri, imza doğrulama ve tekrar deneme kuralları."
+---
+
+Headless ödeme olayları mağaza webhook'larıyla gönderilir. Panelde mağaza webhook'larına bir uç nokta (HTTPS adresi) ekleyin ve aşağıdaki olaylara abone olun. İmzalama sırrı (`whsec_…`) uç noktayı oluştururken ya da sırrı yenilerken **yalnızca bir kez** gösterilir.
+
+## Olaylar
+
+| Olay | Ne zaman | Paket |
+| --- | --- | --- |
+| `checkout.completed` | API ile açılan oturum tamamlandı (ödeme alındı ya da kuponla toplam 0 oldu). Oturum başına bir kez. | Her pakette |
+| `checkout.expired` | API ile açılan oturumun süresi doldu. Oturum başına bir kez. | Her pakette |
+| `order.chargeback` | Bir sipariş için ters ibraz açıldı, kazanıldı ya da kaybedildi. Vaka ve durum başına bir kez. | Webhook özelliği olan paketlerde |
+
+<Note>
+`checkout.*` olayları yalnızca API ile açılan oturumlar için gönderilir. Mağazanızın kendi sepet ödemeleri bugünkü `order.*` olaylarıyla bildirilir. Paketinizde webhook özelliği yoksa `order.chargeback` gönderilmez ve teslimat kaydı "atlandı" olarak görünür.
+</Note>
+
+## Olay kataloğu
+
+Bütün webhook olayları tek bir katalogdan gelir (sürüm `2026-12`). Bir sürüm içinde alanlar yalnızca eklenir; ad değişikliği ya da alan kaldırma yeni bir sürümle ve geçiş süresiyle yapılır.
+
+| Olay | Ne zaman | Kim abone olabilir | Uygulama izni | Paket |
+| --- | --- | --- | --- | --- |
+| `order.paid` | Sipariş ödendi. Sipariş başına bir kez. | Mağaza, uygulama | `read_orders` | Webhook özelliği olan paketlerde |
+| `order.refunded` | Sipariş iade edildi. Sipariş başına bir kez. | Mağaza, uygulama | `read_orders` | Webhook özelliği olan paketlerde |
+| `order.delivery_failed` | Ödenmiş siparişin teslimatı başarısız oldu. Sipariş başına bir kez. | Mağaza, uygulama | `read_orders` | Webhook özelliği olan paketlerde |
+| `order.chargeback` | Ters ibraz açıldı, kazanıldı ya da kaybedildi. Vaka ve durum başına bir kez. | Mağaza, uygulama | `read_orders` | Webhook özelliği olan paketlerde |
+| `checkout.completed` | API ile açılan oturum tamamlandı. Oturum başına bir kez. | Mağaza, uygulama | `read_orders` | Her pakette |
+| `checkout.expired` | API ile açılan oturumun süresi doldu. Oturum başına bir kez. | Mağaza, uygulama | `read_orders` | Her pakette |
+| `delivery.requested` | Webhook ile teslim edilen bir ürün satın alındı. Sipariş satırı başına bir kez. | Mağaza | | Her pakette |
+| `app.installed` | Uygulama bir mağazaya kuruldu. | Uygulama (yalnızca kendi kurulumu) | | |
+| `app.uninstalled` | Uygulama kaldırıldı; ardından başka olay gelmez. | Uygulama (yalnızca kendi kurulumu) | | |
+
+Yakında (katalogda tanımlı, henüz gönderilmiyor): `delivery.completed`, `player.joined`, `player.registered`, `player.linked`, `player.role_changed`, `subscription.created`, `subscription.renewed`, `subscription.cancelled`.
+
+<Note>
+Uygulama uç noktaları, uygulama platformuyla birlikte açılır. Bir uygulama yalnızca manifestinde tanımladığı ve mağaza sahibinin izin verdiği olayları alır; uç noktalarını `webhooks:write` izniyle yönetir. `read_customers` izni olmayan uygulamaya giden gövdelerde müşteri adı ve e-postası `null` olur.
+</Note>
+
+## Zarf
+
+Bütün olaylar aynı zarfla gelir:
+
+```json
+{
+  "event": "checkout.completed",
+  "id": "whd_…",
+  "version": "2026-12",
+  "createdAt": "2026-12-01T10:15:00.000Z",
+  "livemode": true,
+  "data": { }
+}
+```
+
+`livemode`, olayın test mi canlı mod mu olduğunu söyler; katalogdaki her olayda bulunur ve ödemenin gerçek modunu taşır (test modundaki bir siparişin `order.paid` ya da `order.chargeback` olayı `livemode: false` ile gelir). `id`, teslimat kimliğidir ve `X-Crafter-Delivery` başlığıyla aynıdır.
+
+Uygulama uç noktaları canlı ya da test için ayrı açılır: canlı uç nokta yalnızca `livemode: true`, test uç noktası yalnızca `livemode: false` olaylarını alır. Mağaza uç noktaları iki modu da alır; `livemode` alanına bakın.
+
+### `checkout.completed`
+
+```json
+{
+  "checkoutSession": {
+    "id": "cs_live_…",
+    "clientReferenceId": "order_1234",
+    "metadata": { "campaign": "winter" }
+  },
+  "orderId": "…",
+  "paymentId": "…",
+  "websiteId": "…",
+  "amount": 12.5,
+  "currency": "EUR",
+  "customer": {
+    "externalId": "user_42",
+    "email": "oyuncu@example.com",
+    "player": { "type": "minecraft_java", "username": "Notch", "uuid": null }
+  },
+  "basket": [
+    { "id": "PRODUCT_ID", "name": "VIP", "quantity": 1, "price": 10 }
+  ],
+  "deliveryStatus": "pending"
+}
+```
+
+- `amount` ve `currency`: alıcıdan tahsil edilen tutar ve para birimi (vergi dahil). Kuponla ücretsiz siparişte `amount` 0 olur ve `paymentId` `null` gelir.
+- `basket[].price`: mağaza para biriminde katalog birim fiyatı.
+- `deliveryStatus`: olay anında `pending`. Mağazanın teslimatı bugünkü gibi çalışır; güncel durumu `/public` okumasındaki `delivery.status` alanıyla izleyebilirsiniz.
+
+### `checkout.expired`
+
+```json
+{
+  "checkoutSession": { "id": "cs_live_…", "clientReferenceId": "order_1234", "metadata": {} },
+  "websiteId": "…",
+  "expiresAt": "2026-12-01T10:45:00.000Z"
+}
+```
+
+### `order.chargeback`
+
+```json
+{
+  "chargebackId": "…",
+  "status": "opened",
+  "orderId": "…",
+  "paymentId": "…",
+  "websiteId": "…",
+  "amount": 12.5,
+  "currency": "EUR",
+  "reason": "…",
+  "checkoutSession": { "id": "cs_live_…" }
+}
+```
+
+`status`: `opened`, `won` ya da `lost`. Sipariş headless oturumdan gelmediyse `checkoutSession` `null` olur. Teslim edilmiş ürünle ne yapacağınıza (ör. oyun içi ürünü geri alma) siz karar verirsiniz.
+
+## İstek başlıkları
+
+| Başlık | Değer |
+| --- | --- |
+| `X-Crafter-Event` | Olay adı |
+| `X-Crafter-Delivery` | Teslimat kimliği (`whd_…`). Tekrar denemelerde aynı kalır; aynı kimliği iki kez işlemeyin. |
+| `X-Crafter-Timestamp` | Unix zamanı (saniye) |
+| `X-Crafter-Signature` | `t=<zaman>,v1=<hex hmac_sha256(sır, zaman + "." + ham gövde)>`. Sır yenilendikten sonraki 24 saat boyunca iki `v1=` değeri taşır. |
+| `X-Crafter-Webhook-Version` | `2026-12` |
+| `User-Agent` | `Crafter-Webhooks/1.0` |
+
+## İmzayı doğrulama
+
+1. `X-Crafter-Signature` başlığından `t` değerini ve **bütün** `v1` değerlerini ayırın.
+2. `t` şu andan en fazla 5 dakika farklı olmalı (eski isteğin tekrar gönderilmesini engeller).
+3. `t + "." + ham gövde` için sırrınızla HMAC-SHA256 hesaplayın ve `v1` değerlerinden herhangi biriyle sabit sürede karşılaştırın. Biri tutuyorsa imza geçerlidir.
+4. 2xx ile yanıt verin.
+
+```js Node.js (Express)
+import crypto from 'node:crypto';
+import express from 'express';
+
+const app = express();
+const SECRET = process.env.CRAFTER_WEBHOOK_SECRET; // whsec_…
+
+app.post('/webhooks/crafter', express.raw({ type: 'application/json' }), (req, res) => {
+  const rawBody = req.body.toString('utf8');
+  const pairs = (req.get('X-Crafter-Signature') || '').split(',').map((p) => p.trim().split('='));
+  const t = Number(pairs.find(([k]) => k === 't')?.[1]);
+  // Sır yenilendikten sonraki 24 saatte başlıkta iki v1 olur: herhangi biri tutarsa geçerli
+  const given = pairs.filter(([k]) => k === 'v1').map(([, v]) => Buffer.from(v, 'hex'));
+  if (!given.length || !Number.isFinite(t) || Math.abs(Date.now() / 1000 - t) > 300) {
+    return res.status(400).send('invalid signature');
+  }
+  const expected = crypto.createHmac('sha256', SECRET).update(`${t}.${rawBody}`).digest();
+  const valid = given.some((v) => v.length === expected.length && crypto.timingSafeEqual(v, expected));
+  if (!valid) {
+    return res.status(400).send('invalid signature');
+  }
+
+  const event = JSON.parse(rawBody);
+  if (event.event === 'checkout.completed') {
+    // X-Crafter-Delivery ile tekilleştirin, sonra siparişi tamamlayın
+  }
+  res.sendStatus(200);
+});
+```
+
+<Warning>
+İmzayı ham gövde üzerinden hesaplayın. JSON'u ayrıştırıp yeniden metne çevirirseniz baytlar değişebilir ve imza tutmaz.
+</Warning>
+
+### Sırrı yenileme
+
+Sırrı yenilediğinizde yeni sır hemen imzalamaya başlar; eski sır **24 saat** daha imzalar. Bu sürede başlık iki imza taşır: `t=…,v1=<yeni>,v1=<eski>`. Değerlerin sırası sözleşme değildir. Sunucunuzu bu 24 saat içinde yeni sırra geçirin; geçiş sırasında iki sırrı birden kabul edebilirsiniz. Süre dolunca yalnızca yeni sırla imzalanır. Aynı süre içinde tekrar yenilerseniz yalnızca bir önceki sır geçerli kalır.
+
+## Tekrar deneme
+
+2xx dışındaki her yanıt (ve 10 saniyede yanıt vermeme) başarısız sayılır. Olaylar sırasız gelebilir; işlem yapmadan önce gerekirse oturumu `GET /v1/checkout/sessions/{id}` ile okuyun.
+
+| | Mağaza uç noktası | Uygulama uç noktası |
+| --- | --- | --- |
+| Deneme | Toplam 6: hemen, sonra önceki denemeden 1 dk, 5 dk, 30 dk, 2 sa ve 6 sa sonra | Toplam 8: üstel bekleme (1 dk × 3ⁿ, en fazla 6 sa) ve rastgele sapma (beklemenin yarısı sabit, yarısı rastgele) |
+| Son deneme de başarısızsa | Teslimat "başarısız" olur | Teslimat ölü kuyruğa düşer (teslim geçmişinde ayrı listelenir); yeniden gönderilebilir |
+| Uç noktanın kapanması | Kapanmaz | En az 3 gün boyunca arka arkaya 40 başarısız denemede otomatik kapanır ve bildirim gider; yeniden açınca sayaç sıfırlanır |
+| Gövdenin saklanması | 30 gün (bu sürede yeniden gönderilebilir) | 30 gün |
+| Teslim geçmişi | Kalır | 90 gün |
+
+Yeniden gönderim ve tekrar denemeler aynı `X-Crafter-Delivery` kimliğini kullanır. Aynı olay aynı uç noktaya bir kez kuyruğa alınır.

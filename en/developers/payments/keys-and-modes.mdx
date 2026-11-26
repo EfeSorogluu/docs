@@ -1,0 +1,89 @@
+---
+title: "Keys, modes and allowed origins"
+description: "Secret and publishable keys, test and live mode, key rotation, the return signing secret and allowed origins."
+---
+
+All of these settings are on **Settings → Advanced → Headless & API** in the dashboard. Team members with the **Manage website** permission on the store can see this page.
+
+## Key types
+
+| Type | Format | Where | What it can do |
+| --- | --- | --- | --- |
+| Secret key | `cp_sk_test_…`, `cp_sk_live_…` | Server only | Create, read and cancel sessions |
+| Publishable key | `cp_pk_test_…`, `cp_pk_live_…` | Browser, app | Only `GET /v1/checkout/sessions/{id}/public` (with the session's `clientSecret`) |
+
+- One publishable key per mode is created automatically and is always visible in the dashboard.
+- A secret key is shown **only once** when it is created; Crafter stores a hash, not the key itself. If you lose it, create a new one.
+- Each mode can have at most 10 active secret keys (`api_key_limit_reached`).
+- If a secret key is used from a browser, that is, in a request with an `Origin` header, the request is rejected with `403 api_key_exposed`. The key may be exposed: revoke it in the dashboard and create a new one.
+- The wrong key type returns `403 api_key_wrong_type` (`details.expected` names the expected type).
+
+### Rotating and revoking keys
+
+**Rotate** creates a new secret key. You choose when the old key stops working:
+
+- **Now:** The old key stops working immediately.
+- **In 24 hours:** You get 24 hours to update your deployment; both keys work during that time.
+
+**Revoke** disables the key immediately.
+
+## Test and live mode
+
+The key's mode decides everything: a session created with a test key is `cs_test_…`, one created with a live key is `cs_live_…`, and the `livemode` field in the session follows. A key in one mode cannot see sessions of the other mode (`404 checkout_session_not_found`).
+
+| | Test | Live |
+| --- | --- | --- |
+| Monthly session quota | Not counted | Based on your plan |
+| `http://localhost` return URL | Allowed automatically | Not allowed |
+| `http://` allowed origin | Accepted | `https://` only |
+| Payment | Test cards only, no real money moves | Real cards |
+| Orders | Marked **Test**, listed under the **Test** filter in Orders | Listed under **Live** |
+| Delivery | Simulated: no in-game commands, stock, licenses or roles | Real delivery |
+| Balance, payouts, invoices, tax, fees, statistics | Not affected | Included |
+| Emails to the buyer | Receipt only, subject starts with `[TEST]` | All order emails |
+| Webhooks | `livemode: false` | `livemode: true` |
+| Allowed origins and return signing secret | Separate | Separate |
+
+### Test cards
+
+A test session is paid on the same payment page with test card numbers; real cards are declined in test mode. Use any future expiry date, any three-digit CVC and any postal code.
+
+| Card number | Result |
+| --- | --- |
+| `4242 4242 4242 4242` | Payment succeeds |
+| `4000 0025 0000 3155` | Asks for 3D Secure authentication, then succeeds |
+| `4000 0000 0000 9995` | Declined (insufficient funds) |
+| `4000 0000 0000 0002` | Declined (generic decline) |
+
+<Note>
+Test orders never reach your balance or payouts and do not appear in statistics. Delivery is simulated, so no command runs on your game server. If test payments are not configured on the environment, paying a test session returns `checkout_test_payments_unavailable`.
+</Note>
+
+## Return signing secret
+
+When the buyer returns from the payment page, the `cp_sig` signature added to the return URL is computed with this secret (`crs_…`). The secret is per mode; it is shown in the dashboard and can be changed with **Rotate**. After rotating, returns signed with the old secret no longer verify. Verification code: [Quickstart, step 4](/en/developers/payments/quickstart).
+
+## Allowed origins
+
+Allowed origins are used for:
+
+- `successUrl` and `cancelUrl` must be on one of them (otherwise `400 checkout_return_url_not_allowed`, with `details.field` and `details.origin`),
+- for the browser `/public` read with a publishable key, the `Origin` must be in the list (otherwise `403 checkout_origin_not_allowed`).
+
+**Your store's domains are allowed automatically:** your platform subdomain and the custom domains you connected are added as `https://<domain>`; you do not need to add them. If a domain is removed from the store, it drops off the list too.
+
+You can add up to 20 more entries per mode:
+
+| Format | Example | Rule |
+| --- | --- | --- |
+| Web origin | `https://shop.example.com` | Scheme, host and optional port only. No path, query or fragment. `https` only in live mode. |
+| Wildcard subdomain | `https://*.example.com` | One level; does not cover `example.com` itself. Accepted only on a verified domain connected to the store. |
+| App scheme | `mygame://` | Return URLs only (returning to a mobile or desktop app). Schemes such as `http`, `javascript`, `data` and `file` are not accepted. |
+
+For desktop apps, an `http://127.0.0.1` (loopback) return is accepted in live mode too. In test mode, `localhost` is always allowed.
+
+The allowed list is copied into the session when it is created. An origin you later remove from the list stops working for open sessions as well.
+
+## Plan limits
+
+The **Plan and usage** section on the same dashboard page shows this month's session count, your request limit and whether the embedded payment page is available. For the values, see [API reference, Limits](/en/api-reference/introduction#limits).

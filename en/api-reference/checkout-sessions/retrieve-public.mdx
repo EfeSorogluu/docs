@@ -1,0 +1,79 @@
+---
+title: "Session status (browser)"
+description: "Reads a session's status from the browser with the publishable key and the clientSecret."
+api: "GET https://api.crafterpayments.com/v1/checkout/sessions/{id}/public"
+playground: "none"
+---
+
+The only endpoint you can call from a browser or an app. It returns status fields only; buyer details, lines and metadata are not returned.
+
+- Requires a publishable key (`cp_pk_…`). A secret key returns `403 api_key_wrong_type` here.
+- `X-Client-Secret` must be the session's `clientSecret`; if it is wrong, `404 checkout_session_not_found`.
+- If the request has an `Origin` header (a browser), that origin must be in the store's allowed origins; otherwise `403 checkout_origin_not_allowed`.
+- CORS: `GET` only, no credentials (cookies). Allowed request headers are `Authorization`, `X-Client-Secret`, `Crafter-Version`; readable response headers are `X-Request-Id`, `Crafter-Version`.
+
+<Warning>
+This read is for showing the right message on screen. Confirm delivery and crediting items on your server, with the webhook or [Retrieve a session](/en/api-reference/checkout-sessions/retrieve).
+</Warning>
+
+<ParamField path="id" type="string" required>
+  Session id.
+</ParamField>
+
+<ParamField header="Authorization" type="string" required>
+  `Bearer cp_pk_…`
+</ParamField>
+
+<ParamField header="X-Client-Secret" type="string" required>
+  The session's `clientSecret`.
+</ParamField>
+
+## Response
+
+<ResponseField name="id" type="string" />
+<ResponseField name="object" type="string">`checkout.session`</ResponseField>
+<ResponseField name="status" type="string">`open`, `processing`, `complete`, `expired`, `canceled`</ResponseField>
+<ResponseField name="paymentStatus" type="string" />
+<ResponseField name="amountTotal" type="number | null" />
+<ResponseField name="currency" type="string | null" />
+<ResponseField name="orderId" type="string | null" />
+<ResponseField name="delivery" type="object">
+  `status`: `pending`, `delivered`, `needs_review`, `failed`, `refunded` or (no payment yet) `null`.
+</ResponseField>
+<ResponseField name="expiresAt" type="string" />
+
+<RequestExample>
+
+```js Browser
+const res = await fetch(
+  `https://api.crafterpayments.com/v1/checkout/sessions/${sessionId}/public`,
+  {
+    headers: {
+      Authorization: 'Bearer cp_pk_live_...',
+      'X-Client-Secret': clientSecret,
+      'Crafter-Version': '2026-12',
+    },
+  },
+);
+const status = await res.json();
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "id": "cs_live_8fK2…",
+  "object": "checkout.session",
+  "status": "complete",
+  "paymentStatus": "paid",
+  "amountTotal": 11.07,
+  "currency": "EUR",
+  "orderId": "…",
+  "delivery": { "status": "delivered" },
+  "expiresAt": "2026-12-01T10:45:00.000Z"
+}
+```
+
+</ResponseExample>

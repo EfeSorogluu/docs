@@ -1,0 +1,48 @@
+---
+title: "Haftalık ödemeler"
+description: "Kazancınız her çarşamba otomatik olarak banka hesabınıza gönderilir: bekleme süresi, kesim, bekletme nedenleri."
+---
+
+CrafterPayments'ta para çekme talebi oluşturmanız gerekmez. Ödenebilir bakiyeniz **her çarşamba 00:00 UTC** kesimiyle otomatik olarak banka hesabınıza (Wise üzerinden) gönderilir.
+
+## Bakiye nasıl oluşur
+
+1. Satış tamamlandığında satış tutarından [komisyon ve işlem ücreti](/tr/crafterpayments/fees) düşülür; kalan tutar mağaza para biriminde bakiyenize yazılır.
+2. Tutar önce **bekleme süresine** girer. Kazancın bir kısmı iade ve ters ibraz riskine karşı bir süre daha bloke tutulur (dönen rezerv); süresi dolan kısım serbest kalır.
+3. Bekleme süresi dolan tutar **ödenebilir bakiyeye** geçer.
+
+Panelde bekleyen ve ödenebilir tutarları ayrı ayrı görürsünüz.
+
+## Haftalık kesim
+
+Her çarşamba 00:00 UTC'de:
+
+1. Vadesi dolmuş bloke tutarlar serbest bırakılır.
+2. Kesim anındaki ödenebilir tutar hesaplanır. Kesimden sonra serbest kalan tutarlar bir sonraki haftaya kalır.
+3. Bekletme nedeni yoksa ödeme oluşturulur ve gönderilir. Bekletme nedeni varsa tutar bakiyenizde kalır ve size e-posta gönderilir.
+
+Ödeme mağaza para biriminizden banka hesabınızın para birimine Wise tarafından çevrilir.
+
+## Ödeme neden bekletilir
+
+| Neden | Ne yapmalısınız |
+| --- | --- |
+| Tutar en düşük ödeme tutarının altında | Bir şey yapmanız gerekmez; tutar sonraki haftaya devreder. |
+| Ödeme hesabı yok ya da doğrulanmadı | Banka hesabınızı ekleyin ya da doğrulamasını tamamlayın. |
+| Vergi formu eksik ya da süresi dolmuş | Ödeme ayarlarından W-9 / W-8 formunu imzalayın ya da yenileyin. |
+| Kimlik doğrulaması tamamlanmadı | Ödeme ayarlarından kimlik doğrulamanızı tamamlayın. |
+| Kimlik, adres ya da vergi bilgisi eksik | Eksik bilgileri tamamlayın. |
+| Belge gerekiyor | Bu tutardaki ödemeler için ödeme hesabının size ait olduğunu gösteren belgeyi yükleyin. |
+| Sözleşme onayı bekliyor | CrafterPayments sözleşmesinin güncel sürümünü onaylayın. |
+| Başvuru onaylanmadı | Başvurunuzun onaylanmasını bekleyin. |
+| İnceleme / mağaza askıda / bakiyenin para birimi desteklenmiyor | Destek ekibiyle iletişime geçin. |
+
+Eksikleri tamamladığınızda bekletilen tutar bir sonraki çarşamba otomatik gönderilir.
+
+## Gönderim başarısız olursa
+
+Banka tarafında bir sorun olursa (ör. hesap kapalı) ödeme geri döner ve tutar bakiyenize yeniden eklenir. Banka hesabınızı düzeltin; tutar sonraki kesimde tekrar gönderilir.
+
+## İadeler ve ters ibraz
+
+Bir satış iade edilirse ya da ters ibraz kaybedilirse ilgili tutar bakiyenizden düşülür. İadede işlem ücreti geri dönmez. Bakiyeniz yetmezse bakiye eksiye düşebilir; mağazanız satmaya devam eder ve yeni satışlar eksiyi kapatır, bu sürede ödeme gönderilmez. Eksi bakiye platformun belirlediği sınırı aşarsa mağaza askıya alınabilir.

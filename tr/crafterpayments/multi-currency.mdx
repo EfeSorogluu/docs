@@ -1,0 +1,42 @@
+---
+title: "Çoklu para birimi"
+description: "Mağaza para birimi ve müşteri para birimleri: alıcı kendi para biriminde görür ve öder, kur ödemeden önce kilitlenir."
+---
+
+CrafterPayments'ta iki para birimi kavramı vardır:
+
+| | Mağaza para birimi | Müşteri para birimi |
+| --- | --- | --- |
+| Ne için | Fiyatlarınız, bakiyeniz, ödemeleriniz ve raporlarınız | Alıcının gördüğü ve ödediği tutar |
+| Seçenekler | USD, EUR, GBP ya da TRY | Desteklenen para birimlerinden biri |
+| Kim seçer | Siz, mağazayı kurarken | Sistem (alıcı değiştirebilir), sizin ayarınızla sınırlı |
+
+## Mağaza para birimi
+
+Ürün fiyatlarını mağaza para biriminde girersiniz; muhasebe bu para biriminde tutulur. Mağazanızda satış ya da bakiye oluştuktan sonra para birimi değiştirilemez. Değiştirmeniz gerekirse destekle iletişime geçin.
+
+## Müşteri para birimleri
+
+Alıcı fiyatları kendi para biriminde görür ve o para biriminde öder. Ayarı panelde **Ayarlar → Ödemeler → Müşteri para birimleri** bölümünden yönetirsiniz:
+
+- **Otomatik** (yeni mağazalarda varsayılan): desteklenen bütün para birimleri kullanılabilir.
+- **Seçili:** yalnızca sizin seçtiğiniz para birimleri (ve mağaza para birimi) gösterilir.
+- **Kapalı:** alıcılar yalnızca mağaza para birimini görür.
+
+Kurun üzerine yüzde 0 ile 10 arasında bir **kur payı** ekleyebilirsiniz.
+
+Desteklenen müşteri para birimleri: USD, EUR, GBP, TRY, AUD, BRL, CAD, CHF, CNY, CZK, DKK, HKD, IDR, ILS, JPY, KRW, MXN, MYR, NOK, NZD, PHP, PLN, RON, SEK, SGD, THB, ZAR.
+
+### Para birimi nasıl seçilir
+
+Sırasıyla: alıcının açık seçimi (para birimi seçicisi), IP ülkesi, tarayıcı dili. Ülkenin para birimi listede yoksa alıcı mağaza para birimini görür.
+
+### Kilitli kur
+
+Alıcı ödemeye geçtiğinde tutar o anki kurla çevrilir ve **30 dakika boyunca kilitlenir**. Alıcı bu süre içinde öderse tam olarak gördüğü tutarı öder. Süre dolarsa ya da sepet değişirse güncel kurla yeni bir teklif alınır.
+
+Kurlar günlük olarak resmî kaynaklardan güncellenir. Kur alınamazsa yalnızca mağaza para birimi kullanılır.
+
+## Bakiyenize ne yazılır
+
+Alıcı hangi para biriminde öderse ödesin satış, mağaza para birimindeki fiyat üzerinden kaydedilir ve kazancınız mağaza para biriminde bakiyenize yazılır.

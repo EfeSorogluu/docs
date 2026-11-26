@@ -1,0 +1,29 @@
+---
+title: "Komisyon ve işlem ücreti"
+description: "CrafterPayments'ta her satıştan düşülen tutarlar: paketinize göre komisyon ve işlem ücreti."
+---
+
+CrafterPayments'ta her satıştan iki kalem düşülür; kalan tutar bakiyenize yazılır.
+
+| Kalem | Ne kadar |
+| --- | --- |
+| **Komisyon** | Paketinize göre değişen bir yüzde. Güncel oranlar [fiyatlandırma sayfasında](https://crafter.net.tr/tr/pricing). |
+| **İşlem ücreti** | Satış başına bir yüzde ve para birimine göre sabit bir tutar. Güncel değer [fiyatlandırma sayfasında](https://crafter.net.tr/tr/pricing) ve panelde gösterilir. |
+
+<Note>
+Oranlar platform ayarlarından gelir ve zamanla değişebilir. Bu sayfada sabit bir sayı verilmez; her zaman fiyatlandırma sayfasındaki ve panelinizdeki değer geçerlidir.
+</Note>
+
+## Komisyon nasıl belirlenir
+
+- Komisyon, mağazanın bağlı olduğu hesabın (workspace) paketinden okunur.
+- Oran, ödeme anında işlem kaydına yazılır. Paketinizi değiştirdiğinizde ya da mağazayı başka bir hesaba taşıdığınızda yeni oran **sonraki** satışlara uygulanır; daha önce başlamış işlemler eski oranla kalır.
+- Hesabınıza özel bir oran tanımlandıysa paket oranı yerine o oran kullanılır.
+
+## İşlem ücreti
+
+- Ödeme altyapısının maliyetini karşılar. Yüzde kısmı ve sabit kısmı vardır; sabit kısım ödeme para birimine göre belirlenir.
+- Satış iade edilirse işlem ücreti geri dönmez.
+- Kartla alınan her ödemenin en düşük tutarı 1 USD karşılığıdır (USD, EUR ve GBP'de 1 birim). Kuponla toplamı 0 olan siparişlerde ödeme alınmadığı için işlem ücreti yoktur.
+
+İlgili: [Paketler ve hesap](/tr/account/plans-and-workspace), [Haftalık ödemeler](/tr/crafterpayments/payouts).

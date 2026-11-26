@@ -1,0 +1,69 @@
+---
+title: "Headless ödemelere genel bakış"
+description: "Kendi sitenizden, uygulamanızdan ya da oyununuzdan CrafterPayments ödeme sayfasına yönlendirme: kavramlar, anahtarlar ve akış."
+---
+
+Headless ödeme API'si, mağazanızın kataloğundaki ürünleri **kendi arayüzünüzden** satmanızı sağlar. Sepeti siz kurarsınız, ödemeyi CrafterPayments'ın güvenli ödeme sayfası (`checkout.crafterpayments.com`) alır, teslimatı mağazanız bugünkü gibi yapar.
+
+<Note>
+Headless ödeme API'si, CrafterPayments'ı küresel satıcı (MoR) modelinde kullanan mağazalarda açıktır. Ayrıntı: [CrafterPayments nedir?](/tr/crafterpayments/overview)
+</Note>
+
+## Akış
+
+1. Sunucunuz gizli anahtarla bir **checkout oturumu** oluşturur (`POST /v1/checkout/sessions`). İstekte yalnızca ürün kimliği ve adet gönderilir; fiyat her zaman mağaza kataloğundan gelir.
+2. Yanıttaki `url` adresine alıcıyı yönlendirirsiniz.
+3. Alıcı fatura ülkesini girer, vergi ve son tutar burada hesaplanır, ödemeyi yapar.
+4. Crafter alıcıyı `successUrl` (ya da vazgeçerse `cancelUrl`) adresinize imzalı parametrelerle geri gönderir.
+5. Sunucunuz `checkout.completed` webhook'unu alır ya da oturumu `GET /v1/checkout/sessions/{id}` ile okur ve siparişi kendi tarafında tamamlar.
+
+<Warning>
+Dönüş adresine gelen parametreler yalnızca "alıcıyı Crafter yönlendirdi" bilgisidir. Ürün teslimatını ya da hesaba ürün yazmayı **webhook'a veya sunucudan okunan oturum durumuna** bağlayın.
+</Warning>
+
+## Temel kavramlar
+
+| Kavram | Açıklama |
+| --- | --- |
+| Taban adres | `https://api.crafterpayments.com/v1` |
+| Gizli anahtar | `cp_sk_test_…` / `cp_sk_live_…`. Yalnızca sunucuda kullanılır. |
+| Yayınlanabilir anahtar | `cp_pk_test_…` / `cp_pk_live_…`. Tarayıcıda yalnızca durum okumak için. |
+| Checkout oturumu | `cs_test_…` / `cs_live_…`. Varsayılan 30 dakika açık kalır (15 dakika ile 24 saat arasında ayarlanabilir). |
+| Test ve canlı mod | Anahtarın modu oturumun modunu belirler. Ayrıntı: [Anahtarlar, modlar ve izinli adresler](/tr/developers/payments/keys-and-modes) |
+| İzinli adresler | Dönüş adreslerinin ve tarayıcı isteklerinin geleceği adresler. Mağazanızın alan adları kendiliğinden izinlidir. |
+
+## Oturum durumları
+
+| `status` | Anlamı |
+| --- | --- |
+| `open` | Ödeme bekleniyor. |
+| `processing` | Ödeme başladı, sonuç bekleniyor. |
+| `complete` | Ödeme alındı (ya da kuponla toplam 0 oldu). Sipariş oluştu. |
+| `expired` | Süresi doldu. |
+| `canceled` | Sizin tarafınızdan iptal edildi. |
+
+`paymentStatus` ödemenin durumunu ayrıca verir: `unpaid`, `paid`, `no_payment_required`, `refunded`, `partially_refunded`, `disputed`.
+
+## Neler satılabilir
+
+Mağaza kataloğundaki görünür ve satışta olan ürünler. Şu ürünler headless oturumda satılamaz ve `checkout_line_items_invalid` hatası (`not_for_sale_headless`) döner:
+
+- kasa / çark gibi rastgele ödüllü ürünler,
+- doğrulanmış Minecraft hesabı isteyen ürünler.
+
+## Sonraki adımlar
+
+<CardGroup cols={2}>
+  <Card title="Hızlı başlangıç" icon="rocket" href="/tr/developers/payments/quickstart">
+    İlk oturumu oluşturun ve ödemeyi doğrulayın.
+  </Card>
+  <Card title="API referansı" icon="code" href="/tr/api-reference/introduction">
+    Uç noktalar, başlıklar, hatalar ve sınırlar.
+  </Card>
+  <Card title="Webhook olayları" icon="bell" href="/tr/developers/payments/webhooks">
+    `checkout.completed`, `checkout.expired`, `order.chargeback`.
+  </Card>
+  <Card title="Platform kuralları" icon="scale-balanced" href="/tr/developers/payments/platform-rules">
+    Mobil, konsol ve oyun platformlarında kullanım.
+  </Card>
+</CardGroup>

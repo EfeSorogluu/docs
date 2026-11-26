@@ -1,0 +1,46 @@
+---
+title: "CrafterPayments nedir?"
+description: "Satıcı (Merchant of Record) modeli: satışı Crafter Technologies LLC yapar, siz kazancınızı her hafta alırsınız."
+---
+
+CrafterPayments, Crafter'ın kendi ödeme hizmetidir. Küresel modelde mağazanızdaki satışlarda **satıcı (Merchant of Record, MoR) Crafter Technologies LLC**'dir. Yani:
+
+- Alıcıdan tahsilatı satıcı olarak Crafter Technologies LLC yapar.
+- Satıştaki vergi (KDV / satış vergisi) ödeme sayfasında alıcının fatura ülkesine göre hesaplanır ve satıcı olarak Crafter tarafından tahsil edilir.
+- Alıcıya makbuz e-postayla gönderilir.
+- İade talepleri ve ters ibrazlar (chargeback) Crafter üzerinden yürütülür; siz panelden süreci takip eder ve gerektiğinde teslimat kanıtı sağlarsınız.
+- Sizin kazancınız (satış tutarından komisyon ve işlem ücreti düşüldükten sonra kalan) bakiyenizde birikir ve [her hafta otomatik olarak](/tr/crafterpayments/payouts) banka hesabınıza gönderilir.
+
+<Note>
+Şirket kurmanız gerekmez. Bireysel satıcı ya da şirket olarak başvurabilirsiniz. Başvuru adımları: [CrafterPayments başvurusu](/tr/crafterpayments/onboarding).
+</Note>
+
+## Sizin sorumluluğunuzda olanlar
+
+- Sattığınız ürünlerin yasal olması ve oyunun kurallarına uyması (ör. Minecraft sunucularında Minecraft Usage Guidelines).
+- Ürünün alıcıya teslim edilmesi. Crafter'ın oyun entegrasyonları teslimatı otomatik yapar; başarısız teslimatlar panelde görünür.
+- Mağazanızın alıcı desteği (ürünle ilgili sorular).
+
+## Nasıl çalışır
+
+1. Alıcı mağazanızda (ya da [headless ödeme API'si](/tr/developers/payments/overview) ile kendi sitenizde) sepeti oluşturur.
+2. Ödeme, CrafterPayments'ın güvenli ödeme sayfasında alınır. Alıcı kendi para biriminde görür ve öder. Ayrıntı: [Çoklu para birimi](/tr/crafterpayments/multi-currency).
+3. Ödeme onaylanınca sipariş oluşur ve ürün teslim edilir.
+4. Kazancınız mağaza para biriminde bakiyenize yazılır; bekleme süresi dolan tutar haftalık ödemeye girer.
+
+## Sonraki adımlar
+
+<CardGroup cols={2}>
+  <Card title="Başvuru" icon="id-card" href="/tr/crafterpayments/onboarding">
+    Kimlik, banka hesabı ve vergi formu.
+  </Card>
+  <Card title="Haftalık ödemeler" icon="calendar-week" href="/tr/crafterpayments/payouts">
+    Kazancınız ne zaman ve nasıl gönderilir.
+  </Card>
+  <Card title="Komisyon ve ücretler" icon="percent" href="/tr/crafterpayments/fees">
+    Paketinize göre komisyon ve işlem ücreti.
+  </Card>
+  <Card title="Paketler ve hesap" icon="layer-group" href="/tr/account/plans-and-workspace">
+    Hesabınız (workspace), mağazalarınız ve ekibiniz.
+  </Card>
+</CardGroup>

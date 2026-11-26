@@ -9,20 +9,21 @@
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "tabs": [
+    "languages": [
       {
-        "tab": "🇹🇷 Türkçe",
-        "groups": [
+        "language": "tr",
+        "default": true,
+        "tabs": [
           {
-            "group": "Başlangıç",
-            "pages": [
-              "tr/introduction",
-              "tr/quickstart"
-            ]
-          },
-          {
-            "group": "Mağaza sahipleri için",
-            "pages": [
+            "tab": "Kullanım Kılavuzu",
+            "groups": [
+              {
+                "group": "Başlangıç",
+                "pages": [
+                  "tr/introduction",
+                  "tr/quickstart"
+                ]
+              },
               {
                 "group": "Kurulum ve ayarlar",
                 "pages": [
@@ -49,7 +50,17 @@
                 ]
               },
               {
-                "group": "Ödemeler ve CrafterPayments",
+                "group": "CrafterPayments",
+                "pages": [
+                  "tr/crafterpayments/overview",
+                  "tr/crafterpayments/onboarding",
+                  "tr/crafterpayments/payouts",
+                  "tr/crafterpayments/fees",
+                  "tr/crafterpayments/multi-currency"
+                ]
+              },
+              {
+                "group": "Ödemeler",
                 "pages": [
                   "tr/web-features/store/payments",
                   "tr/web-features/configuration/settings/payment",
@@ -63,6 +74,12 @@
                   "tr/integrations/payment/XSolla",
                   "tr/web-features/configuration/settings/invoice",
                   "tr/integrations/fatura-entegrasyon"
+                ]
+              },
+              {
+                "group": "Paketler ve hesap",
+                "pages": [
+                  "tr/account/plans-and-workspace"
                 ]
               },
               {
@@ -142,26 +159,62 @@
             ]
           },
           {
-            "group": "Geliştiriciler için",
-            "pages": [
-              "tr/development"
+            "tab": "Geliştiriciler",
+            "groups": [
+              {
+                "group": "Başlangıç",
+                "pages": [
+                  "tr/developers/index"
+                ]
+              },
+              {
+                "group": "Ödemeler (headless)",
+                "pages": [
+                  "tr/developers/payments/overview",
+                  "tr/developers/payments/quickstart",
+                  "tr/developers/payments/keys-and-modes",
+                  "tr/developers/payments/webhooks",
+                  "tr/developers/payments/platform-rules"
+                ]
+              },
+              {
+                "group": "API referansı",
+                "pages": [
+                  "tr/api-reference/introduction",
+                  {
+                    "group": "Checkout oturumları",
+                    "pages": [
+                      "tr/api-reference/checkout-sessions/create",
+                      "tr/api-reference/checkout-sessions/retrieve",
+                      "tr/api-reference/checkout-sessions/retrieve-public",
+                      "tr/api-reference/checkout-sessions/cancel"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Temalar",
+                "pages": [
+                  "tr/development"
+                ]
+              }
             ]
           }
         ]
       },
       {
-        "tab": "🇬🇧 English",
-        "groups": [
+        "language": "en",
+        "tabs": [
           {
-            "group": "Getting Started",
-            "pages": [
-              "en/introduction",
-              "en/quickstart"
-            ]
-          },
-          {
-            "group": "For Store Owners",
-            "pages": [
+            "tab": "User Guide",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "en/introduction",
+                  "en/quickstart"
+                ]
+              },
               {
                 "group": "Setup & Settings",
                 "pages": [
@@ -188,7 +241,17 @@
                 ]
               },
               {
-                "group": "Payments & CrafterPayments",
+                "group": "CrafterPayments",
+                "pages": [
+                  "en/crafterpayments/overview",
+                  "en/crafterpayments/onboarding",
+                  "en/crafterpayments/payouts",
+                  "en/crafterpayments/fees",
+                  "en/crafterpayments/multi-currency"
+                ]
+              },
+              {
+                "group": "Payments",
                 "pages": [
                   "en/web-features/store/payments",
                   "en/web-features/configuration/settings/payment",
@@ -202,6 +265,12 @@
                   "en/integrations/payment/XSolla",
                   "en/web-features/configuration/settings/invoice",
                   "en/integrations/fatura-entegrasyon"
+                ]
+              },
+              {
+                "group": "Plans & Account",
+                "pages": [
+                  "en/account/plans-and-workspace"
                 ]
               },
               {
@@ -281,9 +350,45 @@
             ]
           },
           {
-            "group": "For Developers",
-            "pages": [
-              "en/development"
+            "tab": "Developers",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "en/developers/index"
+                ]
+              },
+              {
+                "group": "Payments (headless)",
+                "pages": [
+                  "en/developers/payments/overview",
+                  "en/developers/payments/quickstart",
+                  "en/developers/payments/keys-and-modes",
+                  "en/developers/payments/webhooks",
+                  "en/developers/payments/platform-rules"
+                ]
+              },
+              {
+                "group": "API Reference",
+                "pages": [
+                  "en/api-reference/introduction",
+                  {
+                    "group": "Checkout sessions",
+                    "pages": [
+                      "en/api-reference/checkout-sessions/create",
+                      "en/api-reference/checkout-sessions/retrieve",
+                      "en/api-reference/checkout-sessions/retrieve-public",
+                      "en/api-reference/checkout-sessions/cancel"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Themes",
+                "pages": [
+                  "en/development"
+                ]
+              }
             ]
           }
         ]

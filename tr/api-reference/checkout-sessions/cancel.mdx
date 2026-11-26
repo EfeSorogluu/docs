@@ -1,0 +1,61 @@
+---
+title: "Oturumu iptal et"
+description: "Açık bir checkout oturumunu kapatır; ödeme sayfası artık ödeme almaz."
+api: "POST https://api.crafterpayments.com/v1/checkout/sessions/{id}/cancel"
+playground: "none"
+---
+
+Gizli anahtar gerekir. Gövde gönderilmez.
+
+- Açık oturum iptal edilir, ayrılmış kupon bırakılır ve `status` `canceled` olur.
+- Zaten iptal edilmiş oturumda tekrar çağırmak hata vermez; oturum aynen döner.
+- Tamamlanmış ya da süresi dolmuş oturum iptal edilemez: `409 checkout_session_not_open` (`details.status` güncel durumu verir).
+- Ödeme işlenirken iptal edilemez: `409 checkout_payment_in_progress`. Sonucu webhook ile bekleyin.
+
+<ParamField path="id" type="string" required>
+  Oturum kimliği.
+</ParamField>
+
+<ParamField header="Authorization" type="string" required>
+  `Bearer cp_sk_…`
+</ParamField>
+
+### Yanıt
+
+`200 OK` ile [oturum nesnesi](/tr/api-reference/checkout-sessions/retrieve#oturum-nesnesi) döner.
+
+<RequestExample>
+
+```bash curl
+curl -X POST https://api.crafterpayments.com/v1/checkout/sessions/cs_live_8fK2.../cancel \
+  -H "Authorization: Bearer $CRAFTER_SECRET_KEY" \
+  -H "Crafter-Version: 2026-12"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "id": "cs_live_8fK2…",
+  "object": "checkout.session",
+  "livemode": true,
+  "status": "canceled",
+  "paymentStatus": "unpaid",
+  "…": "…"
+}
+```
+
+```json 409
+{
+  "error": {
+    "type": "checkout_session_not_open",
+    "message": "…",
+    "details": { "status": "complete" },
+    "requestId": "req_4f1c…"
+  }
+}
+```
+
+</ResponseExample>

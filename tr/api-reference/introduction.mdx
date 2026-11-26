@@ -1,0 +1,136 @@
+---
+title: "API referansı"
+description: "CrafterPayments API'si: taban adres, kimlik doğrulama, sürüm, idempotency, hata biçimi, hata tipleri ve paket bazlı sınırlar."
+---
+
+## Taban adres
+
+```
+https://api.crafterpayments.com/v1
+```
+
+API yalnızca HTTPS üzerinden ve JSON ile çalışır. İstek gövdesi `Content-Type: application/json` olmalıdır. Başarılı yanıt nesneyi doğrudan döner (sarmalayıcı yok).
+
+OpenAPI 3 tanımı: [`crafterpayments-v1.openapi.json`](https://github.com/EfeSorogluu/docs/blob/main/api-reference/crafterpayments-v1.openapi.json)
+
+## Uç noktalar
+
+| Yöntem | Yol | Anahtar |
+| --- | --- | --- |
+| `POST` | [`/v1/checkout/sessions`](/tr/api-reference/checkout-sessions/create) | Gizli |
+| `GET` | [`/v1/checkout/sessions/{id}`](/tr/api-reference/checkout-sessions/retrieve) | Gizli |
+| `GET` | [`/v1/checkout/sessions/{id}/public`](/tr/api-reference/checkout-sessions/retrieve-public) | Yayınlanabilir |
+| `POST` | [`/v1/checkout/sessions/{id}/cancel`](/tr/api-reference/checkout-sessions/cancel) | Gizli |
+| `GET` | `/v1/health` | Gerekmez. `{ "status": "ok", "version": "2026-12" }` döner. |
+
+## Kimlik doğrulama
+
+Anahtarı `Authorization` başlığında gönderin:
+
+```
+Authorization: Bearer cp_sk_live_…
+```
+
+Anahtar türleri ve modlar: [Anahtarlar, modlar ve izinli adresler](/tr/developers/payments/keys-and-modes).
+
+## Başlıklar
+
+| Başlık | Yön | Açıklama |
+| --- | --- | --- |
+| `Crafter-Version` | İstek ve yanıt | API sürümü. Desteklenen tek sürüm `2026-12`. Göndermezseniz en güncel sürüm kullanılır. Entegrasyonunuzu sabitlemek için her istekte gönderin. Desteklenmeyen değer `400 crafter_version_unsupported` döner (`details.supported` desteklenen sürümleri listeler). |
+| `Idempotency-Key` | İstek | `POST /v1/checkout/sessions` için zorunlu. 1 ile 255 karakter. |
+| `X-Request-Id` | Yanıt | Her yanıtta, hata yanıtları dahil. Destekle iletişimde bu değeri paylaşın. |
+| `Idempotent-Replayed` | Yanıt | `true`: yanıt, aynı `Idempotency-Key` ile önceden verilmiş yanıtın aynısıdır. |
+| `Retry-After` | Yanıt | `429` yanıtında, kaç saniye beklemeniz gerektiği. |
+
+Yanıtlar `Cache-Control: no-store` ile gelir.
+
+## Idempotency
+
+Oturum oluşturma isteğinde `Idempotency-Key` gönderin (ör. bir UUID ya da kendi sipariş numaranız). Anahtar, API anahtarı başına 24 saat saklanır:
+
+- Aynı anahtar ve aynı gövde: ilk yanıt aynen döner, `Idempotent-Replayed: true` başlığıyla. Gövdedeki alanların sırası fark etmez.
+- Aynı anahtar, farklı gövde: `409 idempotency_key_reused`.
+- İlk istek hâlâ işleniyorsa: `409 idempotency_in_progress`. Biraz bekleyip tekrar deneyin.
+- İlk istek `4xx` ile bittiyse aynı hata tekrar döner. `5xx` sonuçlar saklanmaz; aynı anahtarla güvenle tekrar deneyebilirsiniz.
+
+## Hatalar
+
+Hata yanıtı her zaman aynı biçimdedir:
+
+```json
+{
+  "error": {
+    "type": "checkout_line_items_invalid",
+    "message": "…",
+    "details": { "errors": [{ "index": 0, "code": "out_of_stock" }] },
+    "requestId": "req_4f1c…"
+  }
+}
+```
+
+| Alan | Açıklama |
+| --- | --- |
+| `type` | Kararlı, makinece okunur hata tipi. Kodunuzu bu alana göre yazın. |
+| `message` | İnsan için açıklama. Değişebilir; ayrıştırmayın. |
+| `param` | Hataya neden olan alan (varsa). |
+| `details` | Ek bilgi (varsa). |
+| `requestId` | `X-Request-Id` ile aynı. |
+
+`5xx` hatalarında ayrıntı verilmez (`type: internal_server_error`); aynı isteği `Idempotency-Key` ile tekrar deneyebilirsiniz.
+
+### Hata tipleri
+
+| HTTP | `type` | Anlamı | Mesaj (`message`) |
+| --- | --- | --- | --- |
+| 400 | `validation_failed` | Gövde doğrulanamadı. `details.errors` alan → kural eşlemesi verir; bilinmeyen alan `should_not_exist` olarak gelir. | Invalid request parameters. See param and details. |
+| 400 | `checkout_line_items_invalid` | Bir ya da daha fazla satır satılamıyor. `details.errors[]`: `{ index, code }`, `code`: `not_found`, `inactive`, `out_of_stock`, `quantity_exceeded`, `not_for_sale_headless`. | One or more line items cannot be purchased. See details.errors. |
+| 400 | `checkout_player_invalid` | Oyuncu kimliği geçersiz. `details.reason`: `unsupported_type` ya da `pattern`. | The player identity is not valid for delivery. |
+| 400 | `checkout_return_url_not_allowed` | `successUrl` / `cancelUrl` izinli adreslerde değil. `details.field`, `details.origin`. | The return URL is not in the allowed origins of the store. |
+| 400 | `checkout_metadata_invalid` | Metadata kurallara uymuyor. `details.key`, `details.reason`: `too_many`, `invalid_key`, `too_long`, `not_string`, `card_number_detected`. | The metadata is invalid. See details. |
+| 400 | `idempotency_key_required` | `Idempotency-Key` yok ya da geçersiz. | The Idempotency-Key header is required (1-255 characters). |
+| 400 | `crafter_version_unsupported` | `Crafter-Version` desteklenmiyor. | Unsupported Crafter-Version. See details.supported. |
+| 401 | `api_key_invalid` | Anahtar yok, biçimi yanlış ya da iptal edilmiş. | Invalid API key provided, or the key has been revoked. |
+| 403 | `api_key_wrong_type` | Bu uç nokta diğer anahtar türünü ister. `details.expected`. | This endpoint requires a different API key type. Check details.expected. |
+| 403 | `api_key_exposed` | Gizli anahtar tarayıcıdan (`Origin` başlığıyla) kullanıldı. | Secret keys cannot be used from a browser. The key may be exposed; create a new key in the dashboard. |
+| 403 | `checkout_origin_not_allowed` | `/public` okumasında `Origin` izinli değil. | This origin is not allowed to access the checkout session. |
+| 403 | `plan_feature_unavailable` | Özellik paketinizde yok (ör. gömülü mod). | This feature is not available on the current plan. See details.requiredPlan. |
+| 403 | `plan_limit_reached` | Paketinizin aylık oturum kotası doldu. | The plan limit for this feature has been reached. See details.limit. |
+| 404 | `checkout_session_not_found` | Oturum yok, başka mağazanın ya da diğer modun oturumu, ya da `X-Client-Secret` yanlış. | No such checkout session. |
+| 404 | `not_found` | Uç nokta yok ya da mağazanızda headless ödeme açık değil. | Not found. |
+| 409 | `idempotency_key_reused` | Aynı anahtar farklı gövdeyle kullanıldı. | This Idempotency-Key was already used with a different request body. |
+| 409 | `idempotency_in_progress` | Aynı anahtarlı istek hâlâ işleniyor. | A request with the same Idempotency-Key is still being processed. |
+| 409 | `checkout_session_not_open` | Oturum iptal edilemez (tamamlandı ya da süresi doldu). `details.status`. | This checkout session is no longer open. |
+| 409 | `checkout_payment_in_progress` | Ödeme işleniyor; oturum şu an iptal edilemez. | A payment for this checkout session is being processed. Try again shortly. |
+| 409 | `checkout_already_paid` | Oturum zaten ödenmiş; iptal edilemez. | This checkout session has already been paid. |
+| 429 | `too_many_requests` | Dakikalık istek sınırı aşıldı. `details.limit`, `details.windowSeconds`, `Retry-After`. | Too many requests. Retry after the Retry-After delay. |
+| 500 | `internal_server_error` | Beklenmeyen hata. | An internal error occurred. |
+
+Hata mesajları (`message`) her zaman İngilizcedir ve `type`'tan üretilir; henüz özel metni olmayan yeni bir tipte mesaj `An error occurred.` olur. Kodunuzu `message`'a değil `type`'a göre yazın.
+
+## Sınırlar
+
+### Paket bazında
+
+| | Free | Pro ve üstü |
+| --- | --- | --- |
+| Aylık canlı oturum (takvim ayı, UTC) | 100 | Sınırsız |
+| Anahtar başına istek (dakikada) | 30 | 100 |
+| Gömülü ödeme sayfası (`uiMode: "embedded"`) | Yok | Var |
+
+Test modu oturumları kotaya sayılmaz. Güncel paket içerikleri için [fiyatlandırma sayfası](https://crafter.net.tr/tr/pricing).
+
+### İstek sınırları
+
+| Alan | Sınır |
+| --- | --- |
+| `lineItems` | 1–50 satır, satır başına adet 1–99 |
+| `expiresInSeconds` | 900–86400 (varsayılan 1800) |
+| `metadata` | En fazla 20 anahtar; anahtar `^[A-Za-z0-9_.-]{1,40}$`, değer metin ve en fazla 500 karakter; kart numarasına benzeyen değer reddedilir |
+| `clientReferenceId` | En fazla 200 karakter |
+| `customer.externalId` | En fazla 128 karakter |
+| `customer.email` | En fazla 254 karakter |
+| `successUrl`, `cancelUrl` | En fazla 2000 karakter |
+| Gizli anahtar | Mod başına en fazla 10 etkin |
+| İzinli adres | Mod başına en fazla 20 ek kayıt |
+| Ödeme denemesi | Oturum başına en fazla 5 |
