@@ -1,0 +1,81 @@
+---
+title: "Webhook endpoints"
+description: "Create, list and delete your app's webhook endpoints on the store."
+api: "POST https://api.crafterpayments.com/v1/webhook_endpoints"
+playground: "none"
+---
+
+Scopes: `webhooks:read` to list, `webhooks:write` to create and delete. You only see the endpoints your installation created on this store. Events, signature, retries and the event catalog: [Webhooks](/en/developers/payments/webhooks).
+
+- `GET /v1/webhook_endpoints`: list (at most 5 per installation, `hasMore` is always `false`).
+- `POST /v1/webhook_endpoints`: create. `Idempotency-Key` is required.
+- `DELETE /v1/webhook_endpoints/{id}`: delete. Pending deliveries to it are stopped.
+
+<ParamField body="url" type="string" required>Public `https://` URL, at most 2000 characters</ParamField>
+<ParamField body="events" type="string[]" required>Events from the catalog that are open to apps, declared in your manifest and covered by the token's scopes (for example `order.paid` needs `read_orders`)</ParamField>
+<ParamField body="livemode" type="boolean" required>`true`: live events only, `false`: test events only</ParamField>
+<ParamField body="description" type="string">Up to 200 characters</ParamField>
+
+## The webhook endpoint object
+
+<ResponseField name="id" type="string">`wh_…`</ResponseField>
+<ResponseField name="object" type="string">Always `webhook_endpoint`</ResponseField>
+<ResponseField name="livemode" type="boolean" />
+<ResponseField name="url" type="string" />
+<ResponseField name="events" type="string[]" />
+<ResponseField name="description" type="string | null" />
+<ResponseField name="enabled" type="boolean">`false` after automatic disabling</ResponseField>
+<ResponseField name="disabledReason" type="string | null">For example `consecutive_failures`</ResponseField>
+<ResponseField name="apiVersion" type="string">Body version, `2026-12`</ResponseField>
+<ResponseField name="secret" type="string">Signing secret. Only in the create response (and its idempotent replay). Store it securely.</ResponseField>
+<ResponseField name="createdAt" type="string | null">ISO 8601</ResponseField>
+<ResponseField name="updatedAt" type="string | null">ISO 8601</ResponseField>
+
+## Errors
+
+| Type | Status | When |
+| --- | --- | --- |
+| `app_webhook_events_invalid` | 400 | An event is unknown, not open to apps or not in your manifest |
+| `app_webhook_scope_missing` | 403 | The token's scopes do not cover an event |
+| `app_webhook_livemode_required` | 400 | `livemode` missing |
+| `app_webhook_limit_reached` | 400 | 5 endpoints already exist |
+| `store_webhook_url_invalid` | 400 | Not a public HTTPS URL |
+| `store_webhook_not_found` | 404 | No such endpoint for this installation |
+
+<RequestExample>
+
+```bash curl
+curl https://api.crafterpayments.com/v1/webhook_endpoints \
+  -H "Authorization: Bearer $CRAFTER_APP_TOKEN" \
+  -H "Crafter-Version: 2026-12" \
+  -H "Idempotency-Key: 6f1d0c1e-3b0a-4c55-9d1e-0a6c1f2b7a10" \
+  -H "Content-Type: application/json" \
+  -d '{ "url": "https://app.example.com/crafter/webhooks", "events": ["order.paid"], "livemode": true }'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201
+{
+  "id": "wh_3f9a…",
+  "object": "webhook_endpoint",
+  "livemode": true,
+  "url": "https://app.example.com/crafter/webhooks",
+  "events": ["order.paid"],
+  "description": null,
+  "enabled": true,
+  "disabledReason": null,
+  "apiVersion": "2026-12",
+  "createdAt": "2026-12-01T10:00:00.000Z",
+  "updatedAt": "2026-12-01T10:00:00.000Z",
+  "secret": "whsec_…"
+}
+```
+
+```json DELETE 200
+{ "id": "wh_3f9a…", "object": "webhook_endpoint", "deleted": true }
+```
+
+</ResponseExample>

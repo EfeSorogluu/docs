@@ -23,6 +23,8 @@ OpenAPI 3 tanımı: [`crafterpayments-v1.openapi.json`](https://github.com/EfeSo
 | `POST` | [`/v1/checkout/sessions/{id}/cancel`](/tr/api-reference/checkout-sessions/cancel) | Gizli |
 | `GET` | `/v1/health` | Gerekmez. `{ "status": "ok", "version": "2026-12" }` döner. |
 
+Kurulu uygulamalar, mağaza API anahtarı yerine uygulama erişim token'ıyla (`Bearer crft_aat_…`) [Uygulama API'sini](/tr/api-reference/apps/overview) kullanır (mağaza, ürünler, kategoriler, siparişler, müşteriler, webhook uç noktaları).
+
 ## Kimlik doğrulama
 
 Anahtarı `Authorization` başlığında gönderin:

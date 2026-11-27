@@ -1,0 +1,76 @@
+---
+title: "Siparişler"
+description: "Siparişleri listeleme ve tek sipariş getirme; ödeme ve teslimat durumuyla."
+api: "GET https://api.crafterpayments.com/v1/orders"
+playground: "none"
+---
+
+Kapsam: `read_orders`. Müşterinin `name` ve `email` alanları yalnızca token'da `read_customers` da varsa dolu gelir, yoksa `null` döner.
+
+`GET /v1/orders` canlı siparişleri en yeniden eskiye listeler. `livemode=false` bunun yerine test modundaki siparişleri listeler; canlı ve test siparişleri hiçbir zaman karışmaz. `GET /v1/orders/{id}` siparişin `id`'sini ya da `number` değerini (sipariş webhook'larındaki `data.orderId`) kabul eder, iki moddaki siparişleri döner; yoksa `404 order_not_found`.
+
+<ParamField query="limit" type="integer">1 ile 100 arası, varsayılan 10</ParamField>
+<ParamField query="starting_after" type="string">Önceki sayfanın son siparişinin kimliği</ParamField>
+<ParamField query="livemode" type="boolean">Test modundaki siparişler için `false`. Varsayılan `true`.</ParamField>
+<ParamField query="status" type="string">`pending`, `paid`, `failed`, `canceled`, `refunded`</ParamField>
+<ParamField query="customer" type="string">Yalnızca bu müşteri kimliğinin siparişleri</ParamField>
+
+## Sipariş nesnesi
+
+<ResponseField name="id" type="string">Sipariş (ödeme) kimliği</ResponseField>
+<ResponseField name="object" type="string">Her zaman `order`</ResponseField>
+<ResponseField name="livemode" type="boolean">Test modundaki siparişte `false`</ResponseField>
+<ResponseField name="number" type="string">Panelde görünen sipariş numarası; webhook'lardaki `data.orderId` ile aynı</ResponseField>
+<ResponseField name="status" type="string">`pending`, `paid`, `failed`, `canceled`, `refunded`</ResponseField>
+<ResponseField name="type" type="string">`cart` (ürünler) ya da `balance` (mağaza bakiyesi yükleme)</ResponseField>
+<ResponseField name="amount" type="number">`currency` cinsinden tahsil edilen tutar</ResponseField>
+<ResponseField name="currency" type="string">ISO 4217</ResponseField>
+<ResponseField name="lineItems" type="object[]">`{ productId, name, quantity, unitAmount }`</ResponseField>
+<ResponseField name="customer" type="object">`{ id, name, email }`. `name` ve `email` için `read_customers` gerekir. Telefon ve adres yoktur.</ResponseField>
+<ResponseField name="delivery" type="object">`{ status, deliveredAt, simulated }`. `status`: `pending`, `delivered`, `needs_review`, `failed`, `refunded`; teslimatı izlenmeyen siparişte `null`. Test siparişlerinde `simulated` `true` olur (oyunda teslimat yapılmaz).</ResponseField>
+<ResponseField name="checkoutSessionId" type="string | null">Sipariş bir checkout oturumundan geldiyse</ResponseField>
+<ResponseField name="createdAt" type="string | null">ISO 8601</ResponseField>
+<ResponseField name="updatedAt" type="string | null">ISO 8601</ResponseField>
+
+<RequestExample>
+
+```bash curl
+curl https://api.crafterpayments.com/v1/orders/ORDER_ID \
+  -H "Authorization: Bearer $CRAFTER_APP_TOKEN" \
+  -H "Crafter-Version: 2026-12"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "id": "ORDER_ID",
+  "object": "order",
+  "livemode": true,
+  "number": "ORDER_NUMBER",
+  "status": "paid",
+  "type": "cart",
+  "amount": 11.07,
+  "currency": "USD",
+  "lineItems": [
+    { "productId": "PRODUCT_ID", "name": "VIP", "quantity": 1, "unitAmount": 10 }
+  ],
+  "customer": { "id": "CUSTOMER_ID", "name": null, "email": null },
+  "delivery": { "status": "delivered", "deliveredAt": "2026-12-01T10:21:15.000Z", "simulated": false },
+  "checkoutSessionId": null,
+  "createdAt": "2026-12-01T10:20:00.000Z",
+  "updatedAt": "2026-12-01T10:21:15.000Z"
+}
+```
+
+```json 404
+{
+  "error": { "type": "order_not_found", "message": "No such order.", "requestId": "req_4f1c…" }
+}
+```
+
+</ResponseExample>
+
+İade henüz API üzerinden oluşturulamaz.

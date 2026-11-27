@@ -1,0 +1,79 @@
+---
+title: "Products"
+description: "List products and retrieve one product."
+api: "GET https://api.crafterpayments.com/v1/products"
+playground: "none"
+---
+
+Scope: `read_products`. `GET /v1/products` lists products (newest first, [pagination](/en/api-reference/apps/overview#pagination)); `GET /v1/products/{id}` returns one product or `404 product_not_found`.
+
+Hidden products are listed too (`visible: false`). Delivery commands, files and license settings are never returned.
+
+<ParamField query="limit" type="integer">1 to 100, default 10</ParamField>
+<ParamField query="starting_after" type="string">Product id of the previous page's last item</ParamField>
+<ParamField query="category" type="string">Only products of this category id</ParamField>
+
+## The product object
+
+<ResponseField name="id" type="string" />
+<ResponseField name="object" type="string">Always `product`</ResponseField>
+<ResponseField name="livemode" type="boolean">Always `true`</ResponseField>
+<ResponseField name="name" type="string" />
+<ResponseField name="slug" type="string | null" />
+<ResponseField name="description" type="string">Plain text</ResponseField>
+<ResponseField name="type" type="string">`in_game`, `digital`, `downloadable`, `webhook`</ResponseField>
+<ResponseField name="categoryId" type="string | null" />
+<ResponseField name="images" type="string[]">Image URLs</ResponseField>
+<ResponseField name="price" type="number">Catalog price in `currency`</ResponseField>
+<ResponseField name="unitAmount" type="number">Price after the product discount (before coupons, store-wide discounts and tax)</ResponseField>
+<ResponseField name="currency" type="string">Store currency</ResponseField>
+<ResponseField name="discount" type="object | null">`{ type: "percentage" | "fixed", value }`</ResponseField>
+<ResponseField name="stock" type="integer | null">`null`: unlimited</ResponseField>
+<ResponseField name="visible" type="boolean" />
+<ResponseField name="tags" type="string[]" />
+<ResponseField name="createdAt" type="string | null">ISO 8601</ResponseField>
+<ResponseField name="updatedAt" type="string | null">ISO 8601</ResponseField>
+
+<RequestExample>
+
+```bash curl
+curl "https://api.crafterpayments.com/v1/products?limit=2" \
+  -H "Authorization: Bearer $CRAFTER_APP_TOKEN" \
+  -H "Crafter-Version: 2026-12"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "PRODUCT_ID",
+      "object": "product",
+      "livemode": true,
+      "name": "VIP",
+      "slug": "vip",
+      "description": "VIP rank for 30 days.",
+      "type": "in_game",
+      "categoryId": "CATEGORY_ID",
+      "images": ["https://cdn.example.com/vip.png"],
+      "price": 10,
+      "unitAmount": 9,
+      "currency": "USD",
+      "discount": { "type": "percentage", "value": 10 },
+      "stock": null,
+      "visible": true,
+      "tags": [],
+      "createdAt": "2026-11-01T10:00:00.000Z",
+      "updatedAt": "2026-11-20T08:30:00.000Z"
+    }
+  ],
+  "hasMore": true,
+  "url": "/v1/products"
+}
+```
+
+</ResponseExample>

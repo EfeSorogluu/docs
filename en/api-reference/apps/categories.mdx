@@ -1,0 +1,47 @@
+---
+title: "List categories"
+description: "Product categories of the store."
+api: "GET https://api.crafterpayments.com/v1/categories"
+playground: "none"
+---
+
+Scope: `read_products`. Newest first, [pagination](/en/api-reference/apps/overview#pagination) with `limit` and `starting_after`.
+
+## The category object
+
+<ResponseField name="id" type="string" />
+<ResponseField name="object" type="string">Always `category`</ResponseField>
+<ResponseField name="livemode" type="boolean">Always `true`</ResponseField>
+<ResponseField name="name" type="string" />
+<ResponseField name="slug" type="string | null" />
+<ResponseField name="description" type="string | null" />
+<ResponseField name="image" type="string | null" />
+<ResponseField name="visible" type="boolean" />
+<ResponseField name="createdAt" type="string | null">ISO 8601</ResponseField>
+<ResponseField name="updatedAt" type="string | null">ISO 8601</ResponseField>
+
+<ResponseExample>
+
+```json 200
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "CATEGORY_ID",
+      "object": "category",
+      "livemode": true,
+      "name": "Ranks",
+      "slug": "ranks",
+      "description": null,
+      "image": null,
+      "visible": true,
+      "createdAt": "2026-10-01T10:00:00.000Z",
+      "updatedAt": "2026-10-01T10:00:00.000Z"
+    }
+  ],
+  "hasMore": false,
+  "url": "/v1/categories"
+}
+```
+
+</ResponseExample>

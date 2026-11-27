@@ -189,6 +189,18 @@
                       "tr/api-reference/checkout-sessions/retrieve-public",
                       "tr/api-reference/checkout-sessions/cancel"
                     ]
+                  },
+                  {
+                    "group": "Uygulamalar",
+                    "pages": [
+                      "tr/api-reference/apps/overview",
+                      "tr/api-reference/apps/store",
+                      "tr/api-reference/apps/products",
+                      "tr/api-reference/apps/categories",
+                      "tr/api-reference/apps/orders",
+                      "tr/api-reference/apps/customers",
+                      "tr/api-reference/apps/webhook-endpoints"
+                    ]
                   }
                 ]
               },
@@ -379,6 +391,18 @@
                       "en/api-reference/checkout-sessions/retrieve",
                       "en/api-reference/checkout-sessions/retrieve-public",
                       "en/api-reference/checkout-sessions/cancel"
+                    ]
+                  },
+                  {
+                    "group": "Apps",
+                    "pages": [
+                      "en/api-reference/apps/overview",
+                      "en/api-reference/apps/store",
+                      "en/api-reference/apps/products",
+                      "en/api-reference/apps/categories",
+                      "en/api-reference/apps/orders",
+                      "en/api-reference/apps/customers",
+                      "en/api-reference/apps/webhook-endpoints"
                     ]
                   }
                 ]

@@ -1,0 +1,81 @@
+---
+title: "Uygulama API'sine genel bakış"
+description: "Kurulu uygulamalar için REST API v1: uygulama erişim token'ları, izin kapsamları, nesneler, sayfalama, hız sınırları ve sürümleme."
+---
+
+Uygulamalar kendi sunucularında çalışır ve mağaza verisini, OAuth kurulum akışından (authorization code + PKCE) aldıkları erişim token'ıyla bu API üzerinden okur. Mağaza her zaman token'ın verildiği mağazadır; mağaza kimliği gönderilmez.
+
+## Taban adres ve kurallar
+
+```
+https://api.crafterpayments.com/v1
+```
+
+Uygulama API'si API'nin geri kalanıyla aynı kurallara uyar: yalnızca JSON, her yanıtta `Crafter-Version` ve `X-Request-Id`, `{ "error": { type, message, param, details, requestId } }` hata gövdesi ve `POST` isteklerinde `Idempotency-Key`. Başlıklar, idempotency ve hata biçimi için [API referansı](/tr/api-reference/introduction).
+
+## Kimlik doğrulama
+
+```
+Authorization: Bearer crft_aat_…
+```
+
+Erişim token'ı 1 saat geçerlidir; yenileme token'ıyla yenileyin. Mağaza sahibi uygulamayı kaldırır ya da kapatırsa veya yetki iptal edilirse token çalışmaz: `401 app_token_invalid`.
+
+## Uç noktalar ve kapsamlar
+
+| Yöntem | Yol | Kapsam |
+| --- | --- | --- |
+| `GET` | [`/v1/store`](/tr/api-reference/apps/store) | `read_store` |
+| `GET` | [`/v1/products`](/tr/api-reference/apps/products) | `read_products` |
+| `GET` | [`/v1/products/{id}`](/tr/api-reference/apps/products) | `read_products` |
+| `GET` | [`/v1/categories`](/tr/api-reference/apps/categories) | `read_products` |
+| `GET` | [`/v1/orders`](/tr/api-reference/apps/orders) | `read_orders` |
+| `GET` | [`/v1/orders/{id}`](/tr/api-reference/apps/orders) | `read_orders` |
+| `GET` | [`/v1/customers/{id}`](/tr/api-reference/apps/customers) | `read_customers` |
+| `GET` | [`/v1/webhook_endpoints`](/tr/api-reference/apps/webhook-endpoints) | `webhooks:read` |
+| `POST` | [`/v1/webhook_endpoints`](/tr/api-reference/apps/webhook-endpoints) | `webhooks:write` |
+| `DELETE` | [`/v1/webhook_endpoints/{id}`](/tr/api-reference/apps/webhook-endpoints) | `webhooks:write` |
+
+Gereken kapsamı olmayan token `403 app_token_scope_missing` alır; `details.required` gereken kapsamı gösterir. Yazma kapsamı okuma kapsamını da içerir (`webhooks:write`, `webhooks:read`'i; `write_customers`, `read_customers`'ı). Uygulamanın isteyebileceği kapsamlar manifestten gelir; mağaza sahibi onay ekranında onaylar.
+
+Müşteri adı ve e-postası kişisel veridir. Siparişlerde yalnızca token'da `read_customers` varsa dolu gelir, yoksa `null` döner.
+
+## Nesneler
+
+- Her nesnede `id` (panelin ve webhook'ların kullandığı kimlik), `object` (`store`, `product`, `category`, `order`, `customer`, `webhook_endpoint`) ve `livemode` vardır.
+- Siparişler kendi modunu taşır: test modundaki siparişte `livemode: false`. Mağaza, katalog ve müşteri nesneleri iki modda ortaktır ve her zaman `livemode: true` döner.
+- Tarihler ISO 8601 metnidir. Tutarlar `currency` para biriminin ana biriminde sayıdır (ör. `9.99`).
+- Başka bir mağazanın kaydı token'ınız için yoktur: `404` döner.
+
+## Sayfalama
+
+Liste uçları en yeniden eskiye sıralar:
+
+```json
+{ "object": "list", "data": [ … ], "hasMore": true, "url": "/v1/products" }
+```
+
+| Parametre | Açıklama |
+| --- | --- |
+| `limit` | 1 ile 100 arası, varsayılan 10 |
+| `starting_after` | Aldığınız son nesnenin `id`'si. Sonraki sayfayı döner. Listede olmayan bir kimlik `400 validation_failed` (`param: "starting_after"`) döner. |
+
+Bilinmeyen sorgu parametresi `400 validation_failed` döner.
+
+## Hız sınırları
+
+Kurulum başına dakikada 120 istek (bütün uçlar birlikte); IP başına sınır ayrıca geçerlidir. Yanıtlarda `X-RateLimit-Limit` ve `X-RateLimit-Remaining` başlıkları gelir. Sınır aşılırsa `429 too_many_requests` ve `Retry-After` (saniye) döner.
+
+## Sürümleme ve kullanımdan kaldırma
+
+Sürüm, `Crafter-Version` başlığında gönderilen bir tarihtir (güncel: `2026-12`). Bir sürüm içinde alanlar yalnızca eklenir, yeniden adlandırılmaz ya da kaldırılmaz; tanımadığınız alanları yok sayın. Geriye uyumsuz değişiklik yeni bir sürümle gelir; önceki sürüm, yenisi değişiklik günlüğünde ve uygulama geliştiricilerine e-postayla duyurulduktan sonra en az 6 ay çalışmaya devam eder.
+
+## Hatalar
+
+| Tip | Durum | Ne zaman |
+| --- | --- | --- |
+| `app_token_invalid` | 401 | Token yok, süresi dolmuş ya da iptal edilmiş; uygulama kaldırılmış ya da kapatılmış |
+| `app_token_scope_missing` | 403 | Token'da ucun kapsamı yok (`details.required`) |
+| `product_not_found`, `order_not_found`, `user_not_found` | 404 | Bu mağazada böyle bir nesne yok |
+| `validation_failed` | 400 | Geçersiz sorgu ya da gövde (`param` alanı gösterir) |
+| `too_many_requests` | 429 | Hız sınırı, `Retry-After`'a bakın |

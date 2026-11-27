@@ -1,0 +1,76 @@
+---
+title: "Orders"
+description: "List orders and retrieve one order, with payment and delivery status."
+api: "GET https://api.crafterpayments.com/v1/orders"
+playground: "none"
+---
+
+Scope: `read_orders`. Customer `name` and `email` are filled only when the token also has `read_customers`; otherwise they are `null`.
+
+`GET /v1/orders` lists live orders, newest first. `livemode=false` lists test-mode orders instead; live and test orders are never mixed. `GET /v1/orders/{id}` accepts the order `id` or its `number` (the `data.orderId` of order webhooks) and returns orders of both modes, or `404 order_not_found`.
+
+<ParamField query="limit" type="integer">1 to 100, default 10</ParamField>
+<ParamField query="starting_after" type="string">Order id of the previous page's last item</ParamField>
+<ParamField query="livemode" type="boolean">`false` for test-mode orders. Default `true`.</ParamField>
+<ParamField query="status" type="string">`pending`, `paid`, `failed`, `canceled`, `refunded`</ParamField>
+<ParamField query="customer" type="string">Only orders of this customer id</ParamField>
+
+## The order object
+
+<ResponseField name="id" type="string">Order (payment) id</ResponseField>
+<ResponseField name="object" type="string">Always `order`</ResponseField>
+<ResponseField name="livemode" type="boolean">`false` for a test-mode order</ResponseField>
+<ResponseField name="number" type="string">Order number shown in the panel; same as `data.orderId` in webhooks</ResponseField>
+<ResponseField name="status" type="string">`pending`, `paid`, `failed`, `canceled`, `refunded`</ResponseField>
+<ResponseField name="type" type="string">`cart` (products) or `balance` (store balance top-up)</ResponseField>
+<ResponseField name="amount" type="number">Amount charged, in `currency`</ResponseField>
+<ResponseField name="currency" type="string">ISO 4217</ResponseField>
+<ResponseField name="lineItems" type="object[]">`{ productId, name, quantity, unitAmount }`</ResponseField>
+<ResponseField name="customer" type="object">`{ id, name, email }`. `name` and `email` need `read_customers`. No phone number or address.</ResponseField>
+<ResponseField name="delivery" type="object">`{ status, deliveredAt, simulated }`. `status`: `pending`, `delivered`, `needs_review`, `failed`, `refunded`, or `null` when the order has no tracked delivery. `simulated` is `true` for test orders (nothing was delivered in game).</ResponseField>
+<ResponseField name="checkoutSessionId" type="string | null">When the order came from a checkout session</ResponseField>
+<ResponseField name="createdAt" type="string | null">ISO 8601</ResponseField>
+<ResponseField name="updatedAt" type="string | null">ISO 8601</ResponseField>
+
+<RequestExample>
+
+```bash curl
+curl https://api.crafterpayments.com/v1/orders/ORDER_ID \
+  -H "Authorization: Bearer $CRAFTER_APP_TOKEN" \
+  -H "Crafter-Version: 2026-12"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "id": "ORDER_ID",
+  "object": "order",
+  "livemode": true,
+  "number": "ORDER_NUMBER",
+  "status": "paid",
+  "type": "cart",
+  "amount": 11.07,
+  "currency": "USD",
+  "lineItems": [
+    { "productId": "PRODUCT_ID", "name": "VIP", "quantity": 1, "unitAmount": 10 }
+  ],
+  "customer": { "id": "CUSTOMER_ID", "name": null, "email": null },
+  "delivery": { "status": "delivered", "deliveredAt": "2026-12-01T10:21:15.000Z", "simulated": false },
+  "checkoutSessionId": null,
+  "createdAt": "2026-12-01T10:20:00.000Z",
+  "updatedAt": "2026-12-01T10:21:15.000Z"
+}
+```
+
+```json 404
+{
+  "error": { "type": "order_not_found", "message": "No such order.", "requestId": "req_4f1c…" }
+}
+```
+
+</ResponseExample>
+
+Refunds cannot be created through the API yet.

@@ -1,0 +1,81 @@
+---
+title: "Webhook uç noktaları"
+description: "Uygulamanızın mağazadaki webhook uç noktalarını oluşturma, listeleme ve silme."
+api: "POST https://api.crafterpayments.com/v1/webhook_endpoints"
+playground: "none"
+---
+
+Kapsamlar: listelemek için `webhooks:read`, oluşturmak ve silmek için `webhooks:write`. Yalnızca kurulumunuzun bu mağazada oluşturduğu uç noktaları görürsünüz. Olaylar, imza, yeniden denemeler ve olay kataloğu: [Webhook'lar](/tr/developers/payments/webhooks).
+
+- `GET /v1/webhook_endpoints`: listeleme (kurulum başına en fazla 5, `hasMore` her zaman `false`).
+- `POST /v1/webhook_endpoints`: oluşturma. `Idempotency-Key` zorunlu.
+- `DELETE /v1/webhook_endpoints/{id}`: silme. Bekleyen gönderimleri durdurulur.
+
+<ParamField body="url" type="string" required>Herkese açık `https://` adresi, en fazla 2000 karakter</ParamField>
+<ParamField body="events" type="string[]" required>Katalogda uygulamalara açık, manifestinizde tanımlı ve token kapsamlarının karşıladığı olaylar (ör. `order.paid` için `read_orders` gerekir)</ParamField>
+<ParamField body="livemode" type="boolean" required>`true`: yalnızca canlı olaylar, `false`: yalnızca test olayları</ParamField>
+<ParamField body="description" type="string">En fazla 200 karakter</ParamField>
+
+## Webhook uç noktası nesnesi
+
+<ResponseField name="id" type="string">`wh_…`</ResponseField>
+<ResponseField name="object" type="string">Her zaman `webhook_endpoint`</ResponseField>
+<ResponseField name="livemode" type="boolean" />
+<ResponseField name="url" type="string" />
+<ResponseField name="events" type="string[]" />
+<ResponseField name="description" type="string | null" />
+<ResponseField name="enabled" type="boolean">Otomatik kapatıldıktan sonra `false`</ResponseField>
+<ResponseField name="disabledReason" type="string | null">Ör. `consecutive_failures`</ResponseField>
+<ResponseField name="apiVersion" type="string">Gövde sürümü, `2026-12`</ResponseField>
+<ResponseField name="secret" type="string">İmza anahtarı. Yalnızca oluşturma yanıtında (ve idempotent tekrarında) gelir. Güvenli saklayın.</ResponseField>
+<ResponseField name="createdAt" type="string | null">ISO 8601</ResponseField>
+<ResponseField name="updatedAt" type="string | null">ISO 8601</ResponseField>
+
+## Hatalar
+
+| Tip | Durum | Ne zaman |
+| --- | --- | --- |
+| `app_webhook_events_invalid` | 400 | Bir olay bilinmiyor, uygulamalara açık değil ya da manifestte yok |
+| `app_webhook_scope_missing` | 403 | Token kapsamları bir olayı karşılamıyor |
+| `app_webhook_livemode_required` | 400 | `livemode` eksik |
+| `app_webhook_limit_reached` | 400 | Zaten 5 uç nokta var |
+| `store_webhook_url_invalid` | 400 | Herkese açık bir HTTPS adresi değil |
+| `store_webhook_not_found` | 404 | Bu kurulumda böyle bir uç nokta yok |
+
+<RequestExample>
+
+```bash curl
+curl https://api.crafterpayments.com/v1/webhook_endpoints \
+  -H "Authorization: Bearer $CRAFTER_APP_TOKEN" \
+  -H "Crafter-Version: 2026-12" \
+  -H "Idempotency-Key: 6f1d0c1e-3b0a-4c55-9d1e-0a6c1f2b7a10" \
+  -H "Content-Type: application/json" \
+  -d '{ "url": "https://app.example.com/crafter/webhooks", "events": ["order.paid"], "livemode": true }'
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201
+{
+  "id": "wh_3f9a…",
+  "object": "webhook_endpoint",
+  "livemode": true,
+  "url": "https://app.example.com/crafter/webhooks",
+  "events": ["order.paid"],
+  "description": null,
+  "enabled": true,
+  "disabledReason": null,
+  "apiVersion": "2026-12",
+  "createdAt": "2026-12-01T10:00:00.000Z",
+  "updatedAt": "2026-12-01T10:00:00.000Z",
+  "secret": "whsec_…"
+}
+```
+
+```json DELETE 200
+{ "id": "wh_3f9a…", "object": "webhook_endpoint", "deleted": true }
+```
+
+</ResponseExample>

@@ -23,6 +23,8 @@ OpenAPI 3 definition: [`crafterpayments-v1.openapi.json`](https://github.com/Efe
 | `POST` | [`/v1/checkout/sessions/{id}/cancel`](/en/api-reference/checkout-sessions/cancel) | Secret |
 | `GET` | `/v1/health` | None. Returns `{ "status": "ok", "version": "2026-12" }`. |
 
+Installed apps use the [Apps API](/en/api-reference/apps/overview) (store, products, categories, orders, customers, webhook endpoints) with an app access token (`Bearer crft_aat_…`) instead of a store API key.
+
 ## Authentication
 
 Send the key in the `Authorization` header:

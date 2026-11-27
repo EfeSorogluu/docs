@@ -3,7 +3,7 @@
   "info": {
     "title": "CrafterPayments API",
     "version": "2026-12",
-    "description": "Public, versioned headless checkout API. Authenticate with a store API key (`Authorization: Bearer cp_sk_…` or `cp_pk_…`). Successful responses return the object directly; errors use `{ \"error\": { type, message, param, details, requestId } }`. Every response carries `X-Request-Id` and `Crafter-Version`."
+    "description": "Public, versioned headless checkout API. Authenticate with a store API key (`Authorization: Bearer cp_sk_…` or `cp_pk_…`). Successful responses return the object directly; errors use `{ \"error\": { type, message, param, details, requestId } }`. Every response carries `X-Request-Id` and `Crafter-Version`. Installed apps use the Apps endpoints with an app access token (`Authorization: Bearer crft_aat_…`) and per-endpoint scopes."
   },
   "servers": [
     { "url": "https://api.crafterpayments.com", "description": "Production" }
@@ -11,7 +11,8 @@
   "security": [{ "secretKey": [] }],
   "tags": [
     { "name": "Checkout sessions" },
-    { "name": "Health" }
+    { "name": "Health" },
+    { "name": "Apps", "description": "REST API for installed apps (app access token, scopes). Cursor pagination, rate limit 120 requests per minute per installation." }
   ],
   "paths": {
     "/v1/checkout/sessions": {
@@ -139,17 +140,538 @@
           }
         }
       }
+    },
+    "/v1/store": {
+      "get": {
+        "tags": [
+          "Apps"
+        ],
+        "summary": "Retrieve the store",
+        "description": "Scope: `read_store`.",
+        "operationId": "retrieveStore",
+        "security": [
+          {
+            "appToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CrafterVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Store"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/v1/products": {
+      "get": {
+        "tags": [
+          "Apps"
+        ],
+        "summary": "List products",
+        "description": "Scope: `read_products`.",
+        "operationId": "listProducts",
+        "security": [
+          {
+            "appToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/StartingAfter"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/CrafterVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Products, newest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/products/{id}": {
+      "get": {
+        "tags": [
+          "Apps"
+        ],
+        "summary": "Retrieve a product",
+        "description": "Scope: `read_products`.",
+        "operationId": "retrieveProduct",
+        "security": [
+          {
+            "appToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/CrafterVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The product.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/v1/categories": {
+      "get": {
+        "tags": [
+          "Apps"
+        ],
+        "summary": "List categories",
+        "description": "Scope: `read_products`.",
+        "operationId": "listCategories",
+        "security": [
+          {
+            "appToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/StartingAfter"
+          },
+          {
+            "$ref": "#/components/parameters/CrafterVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Categories, newest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/orders": {
+      "get": {
+        "tags": [
+          "Apps"
+        ],
+        "summary": "List orders",
+        "description": "Customer name and email need `read_customers`. Scope: `read_orders`.",
+        "operationId": "listOrders",
+        "security": [
+          {
+            "appToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/StartingAfter"
+          },
+          {
+            "name": "livemode",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "paid",
+                "failed",
+                "canceled",
+                "refunded"
+              ]
+            }
+          },
+          {
+            "name": "customer",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/CrafterVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Orders of one mode, newest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/orders/{id}": {
+      "get": {
+        "tags": [
+          "Apps"
+        ],
+        "summary": "Retrieve an order",
+        "description": "Accepts the order id or its number. Customer name and email need `read_customers`. Scope: `read_orders`.",
+        "operationId": "retrieveOrder",
+        "security": [
+          {
+            "appToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/CrafterVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/v1/customers/{id}": {
+      "get": {
+        "tags": [
+          "Apps"
+        ],
+        "summary": "Retrieve a customer",
+        "description": "Scope: `read_customers`.",
+        "operationId": "retrieveCustomer",
+        "security": [
+          {
+            "appToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/CrafterVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The customer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/v1/webhook_endpoints": {
+      "get": {
+        "tags": [
+          "Apps"
+        ],
+        "summary": "List the app's webhook endpoints",
+        "description": "Scope: `webhooks:read`.",
+        "operationId": "listWebhookEndpoints",
+        "security": [
+          {
+            "appToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CrafterVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Endpoints of this installation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpointList"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Apps"
+        ],
+        "summary": "Create a webhook endpoint",
+        "description": "Scope: `webhooks:write`.",
+        "operationId": "createWebhookEndpoint",
+        "security": [
+          {
+            "appToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/CrafterVersion"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEndpointWithSecret"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWebhookEndpointRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/webhook_endpoints/{id}": {
+      "delete": {
+        "tags": [
+          "Apps"
+        ],
+        "summary": "Delete a webhook endpoint",
+        "description": "Scope: `webhooks:write`.",
+        "operationId": "deleteWebhookEndpoint",
+        "security": [
+          {
+            "appToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ObjectId"
+          },
+          {
+            "$ref": "#/components/parameters/CrafterVersion"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedWebhookEndpoint"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
     }
   },
   "components": {
     "securitySchemes": {
       "secretKey": { "type": "http", "scheme": "bearer", "description": "Secret key `cp_sk_test_…` or `cp_sk_live_…`. Server-side only; a request with a browser `Origin` header is rejected with `api_key_exposed`." },
-      "publishableKey": { "type": "http", "scheme": "bearer", "description": "Publishable key `cp_pk_test_…` or `cp_pk_live_…`. Safe to use in the browser, only for the `/public` endpoint." }
+      "publishableKey": { "type": "http", "scheme": "bearer", "description": "Publishable key `cp_pk_test_…` or `cp_pk_live_…`. Safe to use in the browser, only for the `/public` endpoint." },
+      "appToken": { "type": "http", "scheme": "bearer", "description": "App access token `crft_aat_…` from the app OAuth flow (authorization code + PKCE). The store is the one the token was issued for. Each endpoint requires a scope (see the operation description)." }
     },
     "parameters": {
       "SessionId": { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^cs_(test|live)_[A-Za-z0-9]{22,40}$" }, "description": "Session id, for example `cs_live_…`." },
       "IdempotencyKey": { "name": "Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string", "minLength": 1, "maxLength": 255 }, "description": "Unique per request (for example a UUID). Kept for 24 hours per API key." },
-      "CrafterVersion": { "name": "Crafter-Version", "in": "header", "required": false, "schema": { "type": "string", "enum": ["2026-12"] }, "description": "API version. Defaults to the latest version." }
+      "CrafterVersion": { "name": "Crafter-Version", "in": "header", "required": false, "schema": { "type": "string", "enum": ["2026-12"] }, "description": "API version. Defaults to the latest version." },
+      "Limit": { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 10} },
+      "StartingAfter": { "name": "starting_after", "in": "query", "description": "Id of the last object of the previous page", "schema": { "type": "string" } },
+      "ObjectId": { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
     },
     "headers": {
       "XRequestId": { "schema": { "type": "string", "example": "req_4f1c…" }, "description": "Request id. Include it when you contact support." },
@@ -276,6 +798,690 @@
               "details": { "type": "object", "additionalProperties": true },
               "requestId": { "type": "string", "example": "req_4f1c…" }
             }
+          }
+        }
+      },
+      "Store": {
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "livemode",
+          "name",
+          "url",
+          "description",
+          "currency",
+          "languages",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "store"
+            ]
+          },
+          "livemode": {
+            "type": "boolean",
+            "description": "Always true"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "currency": {
+            "type": "string",
+            "description": "ISO 4217"
+          },
+          "languages": {
+            "type": "object",
+            "properties": {
+              "default": {
+                "type": "string"
+              },
+              "enabled": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601"
+          }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "livemode",
+          "name",
+          "slug",
+          "description",
+          "type",
+          "categoryId",
+          "images",
+          "price",
+          "unitAmount",
+          "currency",
+          "discount",
+          "stock",
+          "visible",
+          "tags",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "product"
+            ]
+          },
+          "livemode": {
+            "type": "boolean",
+            "description": "Always true"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Plain text"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "in_game",
+              "digital",
+              "downloadable",
+              "webhook"
+            ]
+          },
+          "categoryId": {
+            "type": "string",
+            "nullable": true
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "price": {
+            "type": "number",
+            "description": "Catalog price in currency"
+          },
+          "unitAmount": {
+            "type": "number",
+            "description": "Price after the product discount"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "discount": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "percentage",
+                  "fixed"
+                ]
+              },
+              "value": {
+                "type": "number"
+              }
+            }
+          },
+          "stock": {
+            "type": "integer",
+            "nullable": true,
+            "description": "null: unlimited"
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601"
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601"
+          }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "livemode",
+          "name",
+          "slug",
+          "description",
+          "image",
+          "visible",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "category"
+            ]
+          },
+          "livemode": {
+            "type": "boolean",
+            "description": "Always true"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "image": {
+            "type": "string",
+            "nullable": true
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601"
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601"
+          }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "livemode",
+          "number",
+          "status",
+          "type",
+          "amount",
+          "currency",
+          "lineItems",
+          "customer",
+          "delivery",
+          "checkoutSessionId",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Order (payment) id"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "order"
+            ]
+          },
+          "livemode": {
+            "type": "boolean",
+            "description": "false for a test-mode order"
+          },
+          "number": {
+            "type": "string",
+            "description": "Order number; same as data.orderId in webhooks"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "paid",
+              "failed",
+              "canceled",
+              "refunded"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "cart",
+              "balance"
+            ]
+          },
+          "amount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "lineItems": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "productId": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "name": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "quantity": {
+                  "type": "integer"
+                },
+                "unitAmount": {
+                  "type": "number",
+                  "nullable": true
+                }
+              }
+            }
+          },
+          "customer": {
+            "type": "object",
+            "description": "name and email are null without read_customers",
+            "properties": {
+              "id": {
+                "type": "string",
+                "nullable": true
+              },
+              "name": {
+                "type": "string",
+                "nullable": true
+              },
+              "email": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          "delivery": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "pending",
+                  "delivered",
+                  "needs_review",
+                  "failed",
+                  "refunded",
+                  null
+                ]
+              },
+              "deliveredAt": {
+                "type": "string",
+                "nullable": true,
+                "description": "ISO 8601"
+              },
+              "simulated": {
+                "type": "boolean"
+              }
+            }
+          },
+          "checkoutSessionId": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601"
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601"
+          }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "livemode",
+          "username",
+          "email",
+          "emailVerified",
+          "locale",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "customer"
+            ]
+          },
+          "livemode": {
+            "type": "boolean",
+            "description": "Always true"
+          },
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailVerified": {
+            "type": "boolean"
+          },
+          "locale": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601"
+          }
+        }
+      },
+      "WebhookEndpoint": {
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "livemode",
+          "url",
+          "events",
+          "description",
+          "enabled",
+          "disabledReason",
+          "apiVersion",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "webhook_endpoint"
+            ]
+          },
+          "livemode": {
+            "type": "boolean"
+          },
+          "url": {
+            "type": "string"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "disabledReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "apiVersion": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601"
+          },
+          "updatedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "ISO 8601"
+          }
+        }
+      },
+      "WebhookEndpointWithSecret": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/WebhookEndpoint"
+          },
+          {
+            "type": "object",
+            "required": [
+              "secret"
+            ],
+            "properties": {
+              "secret": {
+                "type": "string",
+                "nullable": true,
+                "description": "Signing secret (whsec_…), only in the create response and its idempotent replay"
+              }
+            }
+          }
+        ]
+      },
+      "CreateWebhookEndpointRequest": {
+        "type": "object",
+        "required": [
+          "url",
+          "events",
+          "livemode"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "url": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "events": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "type": "string"
+            }
+          },
+          "livemode": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 200
+          }
+        }
+      },
+      "DeletedWebhookEndpoint": {
+        "type": "object",
+        "required": [
+          "id",
+          "object",
+          "deleted"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "webhook_endpoint"
+            ]
+          },
+          "deleted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        }
+      },
+      "ProductList": {
+        "type": "object",
+        "required": [
+          "object",
+          "data",
+          "hasMore",
+          "url"
+        ],
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "list"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "CategoryList": {
+        "type": "object",
+        "required": [
+          "object",
+          "data",
+          "hasMore",
+          "url"
+        ],
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "list"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "OrderList": {
+        "type": "object",
+        "required": [
+          "object",
+          "data",
+          "hasMore",
+          "url"
+        ],
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "list"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "WebhookEndpointList": {
+        "type": "object",
+        "required": [
+          "object",
+          "data",
+          "hasMore",
+          "url"
+        ],
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "list"
+            ]
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WebhookEndpoint"
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "url": {
+            "type": "string"
           }
         }
       }

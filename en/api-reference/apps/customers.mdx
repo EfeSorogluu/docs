@@ -1,0 +1,36 @@
+---
+title: "Retrieve a customer"
+description: "A store customer by id."
+api: "GET https://api.crafterpayments.com/v1/customers/{id}"
+playground: "none"
+---
+
+Scope: `read_customers` (personal data; your manifest must give a reason for it, shown to the store owner). The customer id comes from `order.customer.id`. A customer of another store returns `404 user_not_found`.
+
+## The customer object
+
+<ResponseField name="id" type="string" />
+<ResponseField name="object" type="string">Always `customer`</ResponseField>
+<ResponseField name="livemode" type="boolean">Always `true`</ResponseField>
+<ResponseField name="username" type="string | null">Store username (often the player name)</ResponseField>
+<ResponseField name="email" type="string | null" />
+<ResponseField name="emailVerified" type="boolean" />
+<ResponseField name="locale" type="string | null" />
+<ResponseField name="createdAt" type="string | null">ISO 8601</ResponseField>
+
+<ResponseExample>
+
+```json 200
+{
+  "id": "CUSTOMER_ID",
+  "object": "customer",
+  "livemode": true,
+  "username": "Steve",
+  "email": "player@example.com",
+  "emailVerified": true,
+  "locale": "en",
+  "createdAt": "2026-10-01T10:00:00.000Z"
+}
+```
+
+</ResponseExample>

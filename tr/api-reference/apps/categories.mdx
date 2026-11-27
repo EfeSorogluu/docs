@@ -1,0 +1,47 @@
+---
+title: "Kategorileri listele"
+description: "Mağazanın ürün kategorileri."
+api: "GET https://api.crafterpayments.com/v1/categories"
+playground: "none"
+---
+
+Kapsam: `read_products`. En yeniden eskiye; `limit` ve `starting_after` ile [sayfalama](/tr/api-reference/apps/overview#sayfalama).
+
+## Kategori nesnesi
+
+<ResponseField name="id" type="string" />
+<ResponseField name="object" type="string">Her zaman `category`</ResponseField>
+<ResponseField name="livemode" type="boolean">Her zaman `true`</ResponseField>
+<ResponseField name="name" type="string" />
+<ResponseField name="slug" type="string | null" />
+<ResponseField name="description" type="string | null" />
+<ResponseField name="image" type="string | null" />
+<ResponseField name="visible" type="boolean" />
+<ResponseField name="createdAt" type="string | null">ISO 8601</ResponseField>
+<ResponseField name="updatedAt" type="string | null">ISO 8601</ResponseField>
+
+<ResponseExample>
+
+```json 200
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "CATEGORY_ID",
+      "object": "category",
+      "livemode": true,
+      "name": "Ranks",
+      "slug": "ranks",
+      "description": null,
+      "image": null,
+      "visible": true,
+      "createdAt": "2026-10-01T10:00:00.000Z",
+      "updatedAt": "2026-10-01T10:00:00.000Z"
+    }
+  ],
+  "hasMore": false,
+  "url": "/v1/categories"
+}
+```
+
+</ResponseExample>

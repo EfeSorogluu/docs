@@ -1,0 +1,48 @@
+---
+title: "Retrieve the store"
+description: "The store the app is installed on."
+api: "GET https://api.crafterpayments.com/v1/store"
+playground: "none"
+---
+
+Scope: `read_store`.
+
+## The store object
+
+<ResponseField name="id" type="string">Store id</ResponseField>
+<ResponseField name="object" type="string">Always `store`</ResponseField>
+<ResponseField name="livemode" type="boolean">Always `true`</ResponseField>
+<ResponseField name="name" type="string" />
+<ResponseField name="url" type="string | null">Store address, `https://…`</ResponseField>
+<ResponseField name="description" type="string | null" />
+<ResponseField name="currency" type="string">Store currency (ISO 4217); catalog prices are in this currency</ResponseField>
+<ResponseField name="languages" type="object">`{ default, enabled[] }` storefront languages</ResponseField>
+<ResponseField name="createdAt" type="string | null">ISO 8601</ResponseField>
+
+<RequestExample>
+
+```bash curl
+curl https://api.crafterpayments.com/v1/store \
+  -H "Authorization: Bearer $CRAFTER_APP_TOKEN" \
+  -H "Crafter-Version: 2026-12"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "id": "STORE_ID",
+  "object": "store",
+  "livemode": true,
+  "name": "Example Network",
+  "url": "https://shop.example.com",
+  "description": null,
+  "currency": "USD",
+  "languages": { "default": "en", "enabled": ["en", "tr"] },
+  "createdAt": "2026-01-10T09:00:00.000Z"
+}
+```
+
+</ResponseExample>

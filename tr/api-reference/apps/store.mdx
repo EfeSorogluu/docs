@@ -1,0 +1,48 @@
+---
+title: "Mağazayı getir"
+description: "Uygulamanın kurulu olduğu mağaza."
+api: "GET https://api.crafterpayments.com/v1/store"
+playground: "none"
+---
+
+Kapsam: `read_store`.
+
+## Mağaza nesnesi
+
+<ResponseField name="id" type="string">Mağaza kimliği</ResponseField>
+<ResponseField name="object" type="string">Her zaman `store`</ResponseField>
+<ResponseField name="livemode" type="boolean">Her zaman `true`</ResponseField>
+<ResponseField name="name" type="string" />
+<ResponseField name="url" type="string | null">Mağaza adresi, `https://…`</ResponseField>
+<ResponseField name="description" type="string | null" />
+<ResponseField name="currency" type="string">Mağaza para birimi (ISO 4217); katalog fiyatları bu para birimindedir</ResponseField>
+<ResponseField name="languages" type="object">`{ default, enabled[] }` vitrin dilleri</ResponseField>
+<ResponseField name="createdAt" type="string | null">ISO 8601</ResponseField>
+
+<RequestExample>
+
+```bash curl
+curl https://api.crafterpayments.com/v1/store \
+  -H "Authorization: Bearer $CRAFTER_APP_TOKEN" \
+  -H "Crafter-Version: 2026-12"
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 200
+{
+  "id": "STORE_ID",
+  "object": "store",
+  "livemode": true,
+  "name": "Example Network",
+  "url": "https://shop.example.com",
+  "description": null,
+  "currency": "USD",
+  "languages": { "default": "en", "enabled": ["en", "tr"] },
+  "createdAt": "2026-01-10T09:00:00.000Z"
+}
+```
+
+</ResponseExample>

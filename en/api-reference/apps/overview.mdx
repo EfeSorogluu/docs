@@ -1,0 +1,81 @@
+---
+title: "Apps API overview"
+description: "REST API v1 for installed apps: app access tokens, scopes, objects, pagination, rate limits and versioning."
+---
+
+Apps run on their own servers and read store data through this API with the access token they got from the OAuth install flow (authorization code + PKCE). The store is always the one the token was issued for; you never pass a store id.
+
+## Base URL and conventions
+
+```
+https://api.crafterpayments.com/v1
+```
+
+The Apps API follows the same rules as the rest of the API: JSON only, `Crafter-Version` and `X-Request-Id` on every response, the `{ "error": { type, message, param, details, requestId } }` error body, and `Idempotency-Key` on `POST`. See [API reference](/en/api-reference/introduction) for headers, idempotency and the error format.
+
+## Authentication
+
+```
+Authorization: Bearer crft_aat_…
+```
+
+Access tokens live 1 hour; refresh them with the refresh token. A token stops working when the store owner uninstalls or disables the app, or when the grant is revoked: `401 app_token_invalid`.
+
+## Endpoints and scopes
+
+| Method | Path | Scope |
+| --- | --- | --- |
+| `GET` | [`/v1/store`](/en/api-reference/apps/store) | `read_store` |
+| `GET` | [`/v1/products`](/en/api-reference/apps/products) | `read_products` |
+| `GET` | [`/v1/products/{id}`](/en/api-reference/apps/products) | `read_products` |
+| `GET` | [`/v1/categories`](/en/api-reference/apps/categories) | `read_products` |
+| `GET` | [`/v1/orders`](/en/api-reference/apps/orders) | `read_orders` |
+| `GET` | [`/v1/orders/{id}`](/en/api-reference/apps/orders) | `read_orders` |
+| `GET` | [`/v1/customers/{id}`](/en/api-reference/apps/customers) | `read_customers` |
+| `GET` | [`/v1/webhook_endpoints`](/en/api-reference/apps/webhook-endpoints) | `webhooks:read` |
+| `POST` | [`/v1/webhook_endpoints`](/en/api-reference/apps/webhook-endpoints) | `webhooks:write` |
+| `DELETE` | [`/v1/webhook_endpoints/{id}`](/en/api-reference/apps/webhook-endpoints) | `webhooks:write` |
+
+A token without the required scope gets `403 app_token_scope_missing` with `details.required`. A write scope includes its read scope (`webhooks:write` includes `webhooks:read`, `write_customers` includes `read_customers`). The scopes your app can request come from its manifest; the store owner approves them on the consent screen.
+
+Customer name and email are personal data. On orders they are filled only when the token has `read_customers`; otherwise they are `null`.
+
+## Objects
+
+- Every object has `id` (the same id the panel and webhooks use), `object` (`store`, `product`, `category`, `order`, `customer`, `webhook_endpoint`) and `livemode`.
+- Orders carry their own mode: test-mode orders have `livemode: false`. Store, catalog and customer objects are shared by both modes and always return `livemode: true`.
+- Dates are ISO 8601 strings. Amounts are numbers in the major unit of `currency` (for example `9.99`).
+- A record of another store does not exist for your token: it returns `404`.
+
+## Pagination
+
+List endpoints return newest first:
+
+```json
+{ "object": "list", "data": [ … ], "hasMore": true, "url": "/v1/products" }
+```
+
+| Parameter | Description |
+| --- | --- |
+| `limit` | 1 to 100, default 10 |
+| `starting_after` | `id` of the last object you received. Returns the next page. An id that is not in the list returns `400 validation_failed` with `param: "starting_after"`. |
+
+Unknown query parameters return `400 validation_failed`.
+
+## Rate limits
+
+120 requests per minute per installation (all endpoints together), on top of the per-IP limit. Responses carry `X-RateLimit-Limit` and `X-RateLimit-Remaining`. Over the limit you get `429 too_many_requests` with `Retry-After` (seconds).
+
+## Versioning and deprecation
+
+The version is a date sent in `Crafter-Version` (current: `2026-12`). Within a version fields are only added, never renamed or removed, so ignore fields you do not know. A breaking change ships as a new version; the previous version keeps working for at least 6 months after the new one is announced in the changelog and by email to app developers.
+
+## Errors
+
+| Type | Status | When |
+| --- | --- | --- |
+| `app_token_invalid` | 401 | Missing, expired or revoked token, or the app is uninstalled / disabled |
+| `app_token_scope_missing` | 403 | The token lacks the endpoint's scope (`details.required`) |
+| `product_not_found`, `order_not_found`, `user_not_found` | 404 | No such object in this store |
+| `validation_failed` | 400 | Invalid query or body (`param` names the field) |
+| `too_many_requests` | 429 | Rate limit, see `Retry-After` |
