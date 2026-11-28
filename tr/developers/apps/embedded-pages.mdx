@@ -1,0 +1,93 @@
+---
+title: "Gömülü sayfalar ve oturum token'ları"
+description: "Uygulamanızı Crafter panelinin içinde gösterme ve sayfayı kimin açtığını Crafter'ın imzaladığı kısa ömürlü oturum token'ıyla doğrulama."
+---
+
+Bir uygulamanın Crafter panelinde bir sayfası olabilir. Mağaza sahibi onu mağazanın **Uygulamalar** sayfasından açar; panel **Panel sayfası adresinizi** bir iframe içinde yükler.
+
+## Panelin yüklediği adres
+
+Sayfa her açıldığında panel Crafter'dan yeni bir oturum adresi ister ve şunu yükler:
+
+```
+https://app.example.com/embed?session=<JWT>&store=<mağazaKimliği>&lang=<tr|en>
+```
+
+- `session`: imzalı oturum token'ı, **60 saniye** geçerli.
+- `store`: mağaza kimliği. Ancak token'daki `store` değeriyle eşleştikten sonra güvenin.
+- `lang`: panel dili.
+
+iframe sandbox içindedir (`allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox`), `referrerpolicy="no-referrer"` ile yüklenir ve panoyu kullanabilir. Panel ile `postMessage` kanalı yoktur.
+
+## Oturum token'ı
+
+**Ed25519** (`alg: EdDSA`) ile imzalanmış kompakt bir JWT.
+
+```json Başlık
+{ "alg": "EdDSA", "typ": "JWT", "kid": "…" }
+```
+
+```json Değerler
+{
+  "iss": "https://api.crafter.net.tr",
+  "aud": "capp_…",
+  "sub": "Qm9…",
+  "store": "…",
+  "app": "example-orders-viewer",
+  "iat": 1764930000,
+  "exp": 1764930060,
+  "jti": "1b4c…"
+}
+```
+
+| Değer | Anlamı |
+| --- | --- |
+| `iss` | Crafter API adresi (dev'de `https://dev-api.crafter.net.tr`) |
+| `aud` | Client id'niz |
+| `sub` | Panel kullanıcısının takma kimliği: aynı kullanıcı ve uygulama için hep aynı, her uygulama için farklı. Kullanıcının hesap kimliği değildir. |
+| `store` | Mağaza kimliği |
+| `app` | Uygulama kimliğiniz |
+| `exp` | `iat` + 60 saniye |
+| `jti` | Token'ın tekil kimliği |
+
+## Doğrulama
+
+Açık anahtarlar: `GET https://api.crafter.net.tr/apps/.well-known/jwks.json` (5 dakika önbelleğe alınabilir). Anahtar değişimi sırasında iki anahtar listelenir; token'ın `kid` değerine uyanı seçin.
+
+1. Token'ı başlık, gövde ve imza olarak ayırın (base64url).
+2. `alg` = `EdDSA` olmasını şart koşun. Algoritmayı token'a seçtirmeyin.
+3. Token'ın `kid` değerine uyan JWK'yi bulun. Bilinmiyorsa JWKS'yi yeniden çekin (en sık 30 saniyede bir).
+4. `başlık.gövde` üzerindeki imzayı doğrulayın.
+5. `aud` = client id'niz, `iss`, `exp` gelecekte ve `iat` gelecekte değil (birkaç saniyelik saat farkına izin verin).
+6. `store` değerinin `store` sorgu parametresine eşit olduğunu kontrol edin.
+7. İsteğe bağlı: daha önce gördüğünüz bir `jti`'yi reddedin.
+
+```js Node.js (JWT kütüphanesi olmadan)
+import { createPublicKey, verify } from 'node:crypto';
+
+export async function verifySession(token, { clientId, issuer, jwksUrl, store }) {
+  const [h, p, s] = token.split('.');
+  const header = JSON.parse(Buffer.from(h, 'base64url'));
+  if (header.alg !== 'EdDSA') throw new Error('unexpected alg');
+  const { keys } = await (await fetch(jwksUrl)).json(); // canlıda önbelleğe alın
+  const jwk = keys.find((key) => key.kid === header.kid);
+  if (!jwk) throw new Error('unknown key');
+  const key = createPublicKey({ key: { kty: 'OKP', crv: 'Ed25519', x: jwk.x }, format: 'jwk' });
+  if (!verify(null, Buffer.from(`${h}.${p}`), key, Buffer.from(s, 'base64url'))) throw new Error('bad signature');
+  const claims = JSON.parse(Buffer.from(p, 'base64url'));
+  const now = Math.floor(Date.now() / 1000);
+  if (claims.aud !== clientId || claims.iss !== issuer) throw new Error('wrong audience or issuer');
+  if (claims.exp + 5 < now || claims.iat - 5 > now) throw new Error('expired');
+  if (claims.store !== store) throw new Error('store mismatch');
+  return claims;
+}
+```
+
+Doğrulamadan sonra API'yi çağırmak için `claims.store` mağazasının sakladığınız erişim token'ını kullanın. Oturum token'ı API token'ı değildir.
+
+## Sayfanız
+
+- Sayfayı yalnızca Crafter panelinin çerçevelemesine izin verin: `Content-Security-Policy: frame-ancestors https://app.crafter.net.tr` (dev'de: `https://dev-app.crafter.net.tr`).
+- `Cache-Control: no-store` gönderin ve adresi loglamayın (token içerir).
+- Token 60 saniye yaşar. iframe içinde daha uzun bir oturum gerekiyorsa doğrulamadan sonra kendi oturumunuzu başlatın (iframe içindeki çerez `SameSite=None; Secure`, üçüncü taraf çerezlerini bölen tarayıcılarda ayrıca `Partitioned` ister).
+- Sayfa yeniden yüklendiğinde panel yeni token ister; yeniden yükleme her zaman çalışır.

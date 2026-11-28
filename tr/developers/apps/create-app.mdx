@@ -1,0 +1,92 @@
+---
+title: "Uygulama oluşturma"
+description: "Crafter panelinde herkese açık ya da özel uygulama oluşturma, kimlik bilgilerini alma ve uygulamayı geliştirici API'siyle yönetme."
+---
+
+## Panelde
+
+**Geliştirici > Uygulamalar** sayfasını açın ve **Uygulama oluştur**'a tıklayın.
+
+| Alan | Açıklama |
+| --- | --- |
+| **Uygulama adı** | Onay ekranında ve uygulama mağazasında görünür. En çok 64 karakter. |
+| **Uygulama kimliği** | Küçük harf, rakam, nokta ve tire; 3-64 karakter. Sonradan değiştirilemez ve [manifestinizdeki](/tr/developers/apps/manifest) `id` ile aynı olmalıdır. `crafter.` ve `mcp.` ayrılmıştır. |
+| **Uygulama türü** | **Herkese açık**: incelemeden sonra listelenir, her mağaza kurabilir. **Özel**: yalnızca seçtiğiniz mağazaya kurulur, inceleme gerekmez ve listelenmez. Bkz. [uygulama türleri](/tr/developers/apps/overview). |
+| **Mağaza** | Yalnızca özel uygulamalarda: uygulamayı kurabilecek tek mağaza. Sahibi siz olmalısınız. |
+| **Yönlendirme adresleri** | Onay ekranından sonra tarayıcının döneceği adresler. En az 1, en çok 10. Karakteri karakterine eşleşmelidir. |
+| **Uygulama adresi** | Crafter'ın kurulumu başlatmak için mağaza sahibini gönderdiği adres: `<Uygulama adresi>?store=<mağazaKimliği>&lang=<tr\|en>`. |
+| **Panel sayfası adresi** | İsteğe bağlı. Crafter'ın panel içinde gösterdiği sayfa. Bkz. [gömülü sayfalar](/tr/developers/apps/embedded-pages). |
+| **Webhook adresi** | İsteğe bağlı. Uygulamayı kuran her mağaza olaylarını uygulamanın webhook secret'ıyla imzalayarak buraya gönderir. Yalnızca herkese açık `https` adresi. Bkz. [webhook'lar](/tr/developers/apps/webhooks). |
+| **Geliştirici** | Tanıtım sayfasında görünen adınız, web siteniz ve destek e-postanız. |
+
+Adresler `https` olmalıdır. Özel uygulamalar geliştirme sırasında `http://localhost` da kullanabilir. İç ağlara işaret eden adresler reddedilir.
+
+## Kimlik bilgileri
+
+Uygulamayı oluşturduktan sonra panel şunları gösterir:
+
+- **Client ID** (`capp_…`): gizli değildir, yetkilendirme adresine yazılır.
+- **Client secret** (`crft_acs_…`): **yalnızca bir kez** gösterilir. Sunucunuzun gizli anahtar deposuna kopyalayın. Crafter yalnızca özetini saklar.
+- **Webhook secret** (`whsec_…`), webhook adresi girdiyseniz: **yalnızca bir kez** gösterilir. Bütün mağazaların webhook'larını bununla doğrularsınız. Webhook adresini sonradan eklerseniz secret'ı görmek için bir kez yenileyin.
+
+Bir secret'ı kaybettiniz ya da sızdı mı? Yenileyin. Yenilenen **client** secret hemen geçersiz olur; sunucunuzu hemen güncelleyin. **Webhook** secret'ı yenilendikten sonra teslimatlar 24 saat boyunca yeni ve eski secret'la imzalanır.
+
+<Warning>
+Client secret'ı tarayıcıya, mobil uygulamaya, kod deposuna ya da loglara koymayın. Sunucunuz onu yalnızca token ucuna gönderir.
+</Warning>
+
+## Sonraki adımlar
+
+1. Manifest ve tanıtım metniyle bir sürüm oluşturup gönderin. Özel uygulamalar hemen yayımlanır; herkese açık uygulamalar [incelemeye](/tr/developers/apps/publishing) gider.
+2. [Kurulum akışını](/tr/developers/apps/oauth) yazın.
+3. Denemek için uygulamayı kendi mağazanıza kurun.
+
+## Sınırlar
+
+- Geliştirici hesabı başına en çok **10 uygulama**.
+- Uygulama başına en çok 10 yönlendirme adresi.
+
+## Geliştirici API'si
+
+Paneldeki her işlem API'den de yapılabilir: panel oturumunuzla ya da `apps:read` / `apps:write` kapsamlı bir geliştirici token'ıyla (CLI). Yanıtlar `{ "success": true, "data": … }`, hatalar `{ "success": false, "type", "message", "details" }` biçimindedir.
+
+| Yöntem | Yol | Açıklama |
+| --- | --- | --- |
+| `POST` | `/developer/apps` | Uygulama oluşturur. `clientSecret`'ı (ve webhook adresi verildiyse `webhookSecret`'ı) bir kez döner. |
+| `GET` | `/developer/apps` | Uygulamalarınız |
+| `GET` | `/developer/apps/{appId}` | Tek uygulama (secret dönmez) |
+| `PATCH` | `/developer/apps/{appId}` | Ad, simge, yönlendirme adresleri, uygulama adresi, webhook adresi, panel sayfası adresi ya da geliştirici bilgileri |
+| `POST` | `/developer/apps/{appId}/rotate-secret` | `{ "kind": "client" }` ya da `{ "kind": "webhook" }`; yeni secret'ı bir kez döner |
+| `POST` | `/developer/apps/{appId}/media` | Simge ya da ekran görüntüsü yükler (PNG, JPEG ya da WebP, en çok 2 MB ve 1920 px) |
+| `POST` | `/developer/apps/{appId}/versions` | Sürüm oluşturur |
+| `GET` | `/developer/apps/{appId}/versions` | Durumu, kontrolleri ve inceleme yazışmasıyla sürümler |
+| `POST` | `/developer/apps/{appId}/versions/{version}/submit` | İncelemeye gönderir (özel uygulamada yayımlar) |
+| `POST` | `/developer/apps/{appId}/versions/{version}/comments` | İnceleme yazışmasına yanıt (en çok 2000 karakter) |
+| `GET` | `/developer/apps/{appId}/installs` | Uygulamayı kuran mağazalar (mağaza kimlikleri maskelenir) |
+| `GET` | `/developer/apps/{appId}/webhook-deliveries` | Son webhook teslimatları: olay, durum, deneme sayısı, son HTTP durumu (gövde ve mağaza yok) |
+
+Oluşturma isteği:
+
+```json
+{
+  "appId": "example-orders-viewer",
+  "name": "Example Orders Viewer",
+  "kind": "public",
+  "redirectUris": ["https://app.example.com/oauth/callback"],
+  "appUrl": "https://app.example.com/install",
+  "webhookUrl": "https://app.example.com/webhooks/crafter",
+  "embedUrl": "https://app.example.com/embed",
+  "developer": { "name": "Example Studio", "url": "https://example.com", "supportEmail": "support@example.com" }
+}
+```
+
+Hatalar:
+
+| Tür | Durum | Ne zaman |
+| --- | --- | --- |
+| `app_manifest_invalid` | 400 | Bir alan geçersiz; `details.errors` `{ path, message }` listesini verir |
+| `app_id_taken` | 409 | Uygulama kimliği kullanımda |
+| `app_id_reserved` | 403 | Uygulama kimliği `crafter.` ya da `mcp.` ile başlıyor |
+| `app_private_store_mismatch` | 403 | Özel uygulamanın mağazası sizin değil |
+| `app_limit_reached` | 429 | Zaten 10 uygulamanız var |
+| `app_not_found` | 404 | Böyle bir uygulama yok ya da sizin değil |

@@ -1,0 +1,64 @@
+---
+title: "App manifest"
+description: "crafter-app.json: the declarative description of your app's identity, compatible games, scopes, settings and events."
+---
+
+The manifest describes **what** your app is and what it needs. It holds no code and no URLs. You send it with every [version](/en/developers/apps/publishing); the manifest of the published version decides which scopes a store owner can grant.
+
+## Example
+
+```json crafter-app.json
+{
+  "manifestVersion": 1,
+  "id": "example-orders-viewer",
+  "name": "Example Orders Viewer",
+  "version": "1.0.0",
+  "description": "Shows the store's latest orders in the Crafter panel.",
+  "compatibleGames": ["*"],
+  "scopes": ["read_store", "read_orders"],
+  "settings": { "type": "object", "properties": {} },
+  "events": ["app.installed", "app.uninstalled", "order.paid"],
+  "themeBlocks": [],
+  "connectors": []
+}
+```
+
+## Fields
+
+| Field | Required | Rules |
+| --- | --- | --- |
+| `manifestVersion` | yes | Always `1` |
+| `id` | yes | Your app id. Must equal the app id you created in the panel. Lowercase letters, digits, dots and hyphens (`^[a-z0-9]+(?:[.-][a-z0-9]+)*$`), 3 to 64 characters. `crafter.` and `mcp.` are reserved. |
+| `name` | yes | Up to 64 characters |
+| `version` | yes | Semantic version (`1.2.0`, `1.3.0-beta.1`). Every new version must be greater than the previous one. |
+| `description` | no | Up to 500 characters |
+| `compatibleGames` | yes | Game ids the app works with, or exactly `["*"]` for every store (including stores that sell only digital products). `*` cannot be combined with other values. |
+| `scopes` | yes | [Permission scopes](/en/developers/apps/oauth#scopes) the app may request. Only the scopes available at launch are accepted. |
+| `scopeReasons` | for personal data scopes | Why the app needs a scope, shown to the store owner on the consent screen. Up to 300 characters each. Required for `read_customers` and `read_customers:limited`. |
+| `settings` | yes | A small JSON Schema subset (an object with `properties`). Use `{ "type": "object", "properties": {} }` when the app has no settings. |
+| `events` | yes | [Webhook events](/en/developers/apps/webhooks#events) sent to your Webhook URL. Every event's scope must also be in `scopes`. `app.installed` and `app.uninstalled` are always sent. |
+| `themeBlocks` | yes | Use `[]`. Theme blocks from apps are not available yet. |
+| `connectors` | yes | Use `[]`. Game server connectors from apps are not available yet. |
+
+Unknown fields are rejected.
+
+## Scopes and reasons
+
+Ask only for what you use. Scopes that reach personal data appear in a separate section of the consent screen together with your reason, and a version that adds them needs two reviewers.
+
+```json
+{
+  "scopes": ["read_store", "read_orders", "read_customers"],
+  "scopeReasons": {
+    "read_customers": "Shows the buyer's name on the order list."
+  }
+}
+```
+
+## Changing scopes
+
+When a new version adds scopes, stores that already installed the app keep their old grant. The app can use the new scopes on a store only after the owner approves them again (send them through the install flow once more). Removing scopes needs no consent.
+
+## Settings schema
+
+`settings` uses these keywords: `type` (`string`, `integer`, `number`, `boolean`, `array`, `object`), `title`, `description`, `default`, `enum`, `minimum`, `maximum`, `minLength`, `maxLength`, `pattern`, `format` (`uri`, `email`, `color`), `items`, `minItems`, `maxItems`, `properties`, `required`, `additionalProperties`, `writeOnly`. Property names are `camelCase` or `snake_case`, nesting up to 4 levels.

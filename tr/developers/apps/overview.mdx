@@ -1,0 +1,59 @@
+---
+title: "Uygulamalara genel bakış"
+description: "Mağaza sahiplerinin Crafter uygulama mağazasından kurduğu uygulamalar: nasıl çalışır, herkese açık ve özel uygulamalar, lansmanda neler var."
+---
+
+Uygulamalar Crafter mağazalarına özellik ekler. Uygulama **kendi sunucunuzda** çalışır, mağaza sahibi onu uygulama mağazasından kurar; uygulama mağazanın verisiyle API, webhook'lar ve isteğe bağlı olarak Crafter panelindeki bir sayfa üzerinden çalışır.
+
+## Uygulama nasıl çalışır
+
+1. Uygulamayı panelde oluşturursunuz ve bir **client id** ile **client secret** alırsınız.
+2. Bir **sürüm** yayımlarsınız: uygulamanın ihtiyaç duyduğu kapsamları ve olayları içeren [manifest](/tr/developers/apps/manifest) (`crafter-app.json`) ve mağaza tanıtım metni.
+3. Mağaza sahibi **Kur**'a tıklar. Crafter onu **uygulama adresinize** gönderir, uygulamanız [PKCE ile OAuth](/tr/developers/apps/oauth) akışını başlatır, mağaza sahibi onay ekranında kapsamları onaylar ve uygulamanız o mağaza için token alır.
+4. Uygulamanız erişim token'ıyla [`/v1` API'sini](/tr/api-reference/apps/overview) çağırır, [webhook](/tr/developers/apps/webhooks) alır ve panelde bir [gömülü sayfa](/tr/developers/apps/embedded-pages) gösterebilir.
+5. Mağaza sahibi uygulamayı kaldırınca bütün token'lar iptal edilir ve uygulamanıza `app.uninstalled` gelir.
+
+Token her zaman tek bir mağazaya, tek bir uygulamaya ve mağaza sahibinin onayladığı kapsamlara bağlıdır. API'ye mağaza kimliği gönderilmez.
+
+## Uygulama türleri
+
+| | Herkese açık | Özel |
+| --- | --- | --- |
+| Kimler kurabilir | Bütün mağazalar | Yalnızca uygulamayı oluştururken seçtiğiniz tek mağaza (sahibi siz olmalısınız) |
+| Uygulama mağazasında listelenir | Evet, incelemeden sonra | Hayır |
+| İnceleme | Her sürüm Crafter tarafından incelenir | İnceleme yok: gönderilen sürüm hemen yayımlanır |
+| Adresler | Yalnızca `https` | `https` ya da geliştirme sırasında `http://localhost` |
+| Onay ekranı | Normal | Uygulamanın incelenmediği gösterilir |
+| Ücretli | Olabilir ([ücretli uygulamalar](/tr/developers/apps/paid-apps)) | Uygulama mağazasında satılmaz |
+
+Geliştirirken kendi mağazanızda özel bir uygulamayla başlayın; listelemeye hazır olduğunuzda herkese açık bir uygulama oluşturun.
+
+## Lansmanda neler var
+
+- PKCE'li OAuth 2.0 authorization code akışı, yenileme token'ı rotasyonu.
+- Mağaza, ürün, kategori, sipariş ve müşteri verisine okuma erişimi ve uygulamanın kendi webhook uçları. Bkz. [lansmanda açık kapsamlar](/tr/developers/apps/oauth#kapsamlar).
+- Webhook'lar: `order.*`, `checkout.*`, `app.installed`, `app.uninstalled`.
+- Panelde bir gömülü sayfa.
+- Ücretsiz uygulamalar; ücretli uygulamalar açıldığında tek seferlik ücretli uygulamalar.
+
+Yazma kapsamları (örneğin `write_products`) ve oyun sunucusu komutları katalogda yer alır ama henüz verilmez. Bunları isteyen sürüm reddedilir.
+
+## Örnek uygulama
+
+<Card title="Node örnek uygulaması" icon="github" href="https://github.com/crafterhq/sdk/tree/main/examples/app-node">
+  Akışın tamamını içeren Express uygulaması: PKCE ile kurulum, token yenileme, `/v1/store` ve `/v1/orders`, webhook doğrulama, `app.uninstalled` ve gömülü sayfa.
+</Card>
+
+## Bu bölümdeki sayfalar
+
+<CardGroup cols={2}>
+  <Card title="Manifest" icon="file-code" href="/tr/developers/apps/manifest">`crafter-app.json` alanları ve kuralları.</Card>
+  <Card title="Uygulama oluşturma" icon="plus" href="/tr/developers/apps/create-app">Panel adımları, kimlik bilgileri ve geliştirici API'si.</Card>
+  <Card title="OAuth ve kapsamlar" icon="key" href="/tr/developers/apps/oauth">PKCE ile kurulum, token'lar, yenileme, iptal ve kapsamlar.</Card>
+  <Card title="API referansı" icon="code" href="/tr/api-reference/apps/overview">Uygulamalar için `/v1` uçları.</Card>
+  <Card title="Webhook'lar" icon="bell" href="/tr/developers/apps/webhooks">Uçlar, olaylar ve imza doğrulama.</Card>
+  <Card title="Gömülü sayfalar" icon="window-maximize" href="/tr/developers/apps/embedded-pages">Panel sayfası ve oturum token'ları.</Card>
+  <Card title="Sürümler ve inceleme" icon="list-check" href="/tr/developers/apps/publishing">Sürümler, tanıtım metni, kontroller, inceleme ve yayın.</Card>
+  <Card title="Ücretli uygulamalar" icon="coins" href="/tr/developers/apps/paid-apps">Fiyatlandırma, kimlik doğrulama ve gelir paylaşımı.</Card>
+  <Card title="Sınırlar" icon="gauge" href="/tr/developers/apps/limits">Hız sınırları ve diğer sınırlar.</Card>
+</CardGroup>

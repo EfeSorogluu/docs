@@ -1,0 +1,64 @@
+---
+title: "Uygulama manifesti"
+description: "crafter-app.json: uygulamanızın kimliğini, uyumlu oyunlarını, kapsamlarını, ayarlarını ve olaylarını tanımlayan dosya."
+---
+
+Manifest uygulamanızın **ne olduğunu** ve neye ihtiyaç duyduğunu anlatır. Kod ya da adres içermez. Her [sürümle](/tr/developers/apps/publishing) birlikte gönderilir; mağaza sahibinin hangi kapsamları verebileceğini yayımlanmış sürümün manifesti belirler.
+
+## Örnek
+
+```json crafter-app.json
+{
+  "manifestVersion": 1,
+  "id": "example-orders-viewer",
+  "name": "Example Orders Viewer",
+  "version": "1.0.0",
+  "description": "Mağazanın son siparişlerini Crafter panelinde gösterir.",
+  "compatibleGames": ["*"],
+  "scopes": ["read_store", "read_orders"],
+  "settings": { "type": "object", "properties": {} },
+  "events": ["app.installed", "app.uninstalled", "order.paid"],
+  "themeBlocks": [],
+  "connectors": []
+}
+```
+
+## Alanlar
+
+| Alan | Zorunlu | Kurallar |
+| --- | --- | --- |
+| `manifestVersion` | evet | Her zaman `1` |
+| `id` | evet | Uygulama kimliğiniz. Panelde oluşturduğunuz uygulama kimliğiyle aynı olmalıdır. Küçük harf, rakam, nokta ve tire (`^[a-z0-9]+(?:[.-][a-z0-9]+)*$`), 3-64 karakter. `crafter.` ve `mcp.` ayrılmıştır. |
+| `name` | evet | En çok 64 karakter |
+| `version` | evet | Anlamsal sürüm (`1.2.0`, `1.3.0-beta.1`). Her yeni sürüm öncekinden büyük olmalıdır. |
+| `description` | hayır | En çok 500 karakter |
+| `compatibleGames` | evet | Uygulamanın çalıştığı oyun kimlikleri ya da bütün mağazalar için (yalnızca dijital ürün satanlar dahil) tam olarak `["*"]`. `*` başka değerle birlikte kullanılamaz. |
+| `scopes` | evet | Uygulamanın isteyebileceği [izin kapsamları](/tr/developers/apps/oauth#kapsamlar). Yalnızca lansmanda açık kapsamlar kabul edilir. |
+| `scopeReasons` | kişisel veri kapsamlarında | Uygulamanın kapsama neden ihtiyaç duyduğu; onay ekranında mağaza sahibine gösterilir. Her biri en çok 300 karakter. `read_customers` ve `read_customers:limited` için zorunludur. |
+| `settings` | evet | Küçük bir JSON Schema alt kümesi (`properties` içeren bir nesne). Ayarı olmayan uygulama `{ "type": "object", "properties": {} }` yazar. |
+| `events` | evet | Webhook adresinize gönderilen [webhook olayları](/tr/developers/apps/webhooks#olaylar). Her olayın kapsamı `scopes` içinde de olmalıdır. `app.installed` ve `app.uninstalled` her zaman gönderilir. |
+| `themeBlocks` | evet | `[]` yazın. Uygulamalardan tema blokları henüz açık değildir. |
+| `connectors` | evet | `[]` yazın. Uygulamalardan oyun sunucusu bağlayıcıları henüz açık değildir. |
+
+Bilinmeyen alanlar reddedilir.
+
+## Kapsamlar ve gerekçeler
+
+Yalnızca kullandığınız kapsamları isteyin. Kişisel veriye erişen kapsamlar onay ekranında gerekçenizle birlikte ayrı bir bölümde gösterilir ve bu kapsamları ekleyen sürümü iki ayrı inceleyici onaylar.
+
+```json
+{
+  "scopes": ["read_store", "read_orders", "read_customers"],
+  "scopeReasons": {
+    "read_customers": "Sipariş listesinde alıcının adını gösterir."
+  }
+}
+```
+
+## Kapsam değişiklikleri
+
+Yeni bir sürüm kapsam eklediğinde, uygulamayı önceden kurmuş mağazalar eski izinleriyle devam eder. Uygulama yeni kapsamları bir mağazada ancak mağaza sahibi onları yeniden onayladıktan sonra kullanabilir (sahibi kurulum akışından bir kez daha geçirin). Kapsam kaldırmak onay gerektirmez.
+
+## Ayar şeması
+
+`settings` şu anahtarları kullanır: `type` (`string`, `integer`, `number`, `boolean`, `array`, `object`), `title`, `description`, `default`, `enum`, `minimum`, `maximum`, `minLength`, `maxLength`, `pattern`, `format` (`uri`, `email`, `color`), `items`, `minItems`, `maxItems`, `properties`, `required`, `additionalProperties`, `writeOnly`. Alan adları `camelCase` ya da `snake_case` olur, en çok 4 düzey iç içe geçebilir.

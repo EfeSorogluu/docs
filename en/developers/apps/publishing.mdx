@@ -1,0 +1,82 @@
+---
+title: "Versions, review and publishing"
+description: "Create app versions with a manifest and a Markdown listing, pass the automatic checks, go through review and publish."
+---
+
+Everything a store sees comes from the **published version**: the manifest (scopes, events), the listing, the screenshots and the price. You change them only by publishing a new version.
+
+## Create a version
+
+In **Developer > Apps > your app > Versions**, or with `POST /developer/apps/{appId}/versions`:
+
+| Field | Rules |
+| --- | --- |
+| `manifest` | The [manifest](/en/developers/apps/manifest). `manifest.id` must be your app id; `manifest.version` must be greater than every earlier version. |
+| `listing` | Markdown per language: `en` is required, `tr` is recommended. Up to 50,000 characters each, with front matter (below). |
+| `changelog` | Markdown, up to 20,000 characters |
+| `screenshots` | 1 to 8 images uploaded through the media endpoint (PNG, JPEG or WebP, up to 2 MB and 1920 px) |
+| `pricing` | `{ "model": "free" }` or `{ "model": "one_time", "priceTry": 499, "priceUsd": 15 }`. See [paid apps](/en/developers/apps/paid-apps). |
+
+### Listing front matter
+
+```markdown
+---
+tagline: See your latest orders in the panel
+games: [minecraft]
+categories: [analytics]
+features: [Latest orders, Order status]
+---
+# Example Orders Viewer
+
+## Overview
+…
+```
+
+| Key | Rules |
+| --- | --- |
+| `tagline` | Up to 90 characters |
+| `games` | Game ids, or `*` |
+| `categories` | Up to 5, lowercase with hyphens |
+| `features` | Up to 10, up to 80 characters each |
+
+Write the listing for store owners: what the app does, which games it supports and how to get support. Keep to the facts: no prices or coupons in the text, no superlatives or competitor names, and external links only to your support and documentation pages.
+
+## Automatic checks
+
+Every version is checked when you create it and again when you submit it. An **error** blocks submission (`422 app_checks_failed`); a **warning** is shown to you and to the reviewer.
+
+| Check | Level | Meaning |
+| --- | --- | --- |
+| `scope_not_available` | error | A scope that apps cannot get yet |
+| `scope_reason_missing` | error | A personal data scope without `scopeReasons` |
+| `event_scope_missing` | error | An event whose scope is not in `scopes` |
+| `event_not_delivered` | warning | An event that is not delivered to apps yet |
+| `scope_escalation` | warning | The version adds scopes; existing stores must consent again |
+| `listing_tr_missing` | warning | No Turkish listing; Turkish stores see the English text |
+
+## Submit
+
+`POST /developer/apps/{appId}/versions/{version}/submit`
+
+- **Private app**: the version is published at once.
+- **Public app**: the version goes to `pending_review`. Only one version can be in review at a time (`409 app_review_in_progress`).
+
+## Review
+
+Crafter reviews every version of a public app: the manifest and scope changes against the previous version, the listing, the screenshots and the price. A version that requests a personal data scope needs **two different reviewers**. Apps are never approved automatically when their scopes change.
+
+| Status | Meaning |
+| --- | --- |
+| `draft` | Created, not submitted |
+| `pending_review` | Waiting for review |
+| `changes_requested` | The reviewer asked for changes in the thread. Fix them and submit the same version again. |
+| `rejected` | Rejected with a note. Create a new version. |
+| `published` | Live. The previous published version becomes `superseded`. |
+
+You and the reviewer talk in the version's **review thread** (`POST …/versions/{version}/comments`). You get an e-mail on every decision.
+
+## After publishing
+
+- The first published version of a public app makes it visible in the app store.
+- Stores that already installed the app keep their granted scopes. New scopes need their consent again.
+- Crafter can **suspend** an app that breaks the rules. A suspended app disappears from the app store, cannot be installed, and its tokens stop working on the API within 60 seconds (`401 app_token_invalid`).

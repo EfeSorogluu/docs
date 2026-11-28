@@ -3,7 +3,7 @@ title: "Uygulama API'sine genel bakış"
 description: "Kurulu uygulamalar için REST API v1: uygulama erişim token'ları, izin kapsamları, nesneler, sayfalama, hız sınırları ve sürümleme."
 ---
 
-Uygulamalar kendi sunucularında çalışır ve mağaza verisini, OAuth kurulum akışından (authorization code + PKCE) aldıkları erişim token'ıyla bu API üzerinden okur. Mağaza her zaman token'ın verildiği mağazadır; mağaza kimliği gönderilmez.
+Uygulamalar kendi sunucularında çalışır ve mağaza verisini, [OAuth kurulum akışından](/tr/developers/apps/oauth) (authorization code + PKCE) aldıkları erişim token'ıyla bu API üzerinden okur. Uygulamalara yeni misiniz? [Uygulamalara genel bakış](/tr/developers/apps/overview) sayfasından başlayın. Mağaza her zaman token'ın verildiği mağazadır; mağaza kimliği gönderilmez.
 
 ## Taban adres ve kurallar
 
@@ -64,7 +64,7 @@ Bilinmeyen sorgu parametresi `400 validation_failed` döner.
 
 ## Hız sınırları
 
-Kurulum başına dakikada 120 istek (bütün uçlar birlikte); IP başına sınır ayrıca geçerlidir. Yanıtlarda `X-RateLimit-Limit` ve `X-RateLimit-Remaining` başlıkları gelir. Sınır aşılırsa `429 too_many_requests` ve `Retry-After` (saniye) döner.
+Kurulum başına dakikada 120 istek (bütün uçlar birlikte) ve uygulama başına, bütün kurulumları birlikte dakikada 3.000 istek; IP başına sınır ayrıca geçerlidir. Yanıtlarda `X-RateLimit-Limit` / `X-RateLimit-Remaining` (kurulum) ve `X-RateLimit-App-Limit` / `X-RateLimit-App-Remaining` (uygulama) başlıkları gelir. Sınır aşılırsa `429 too_many_requests`, `Retry-After` (saniye) ve `details.limitScope` (`installation` ya da `app`) döner. Ayrıntı: [Sınırlar](/tr/developers/apps/limits).
 
 ## Sürümleme ve kullanımdan kaldırma
 
@@ -74,7 +74,7 @@ Sürüm, `Crafter-Version` başlığında gönderilen bir tarihtir (güncel: `20
 
 | Tip | Durum | Ne zaman |
 | --- | --- | --- |
-| `app_token_invalid` | 401 | Token yok, süresi dolmuş ya da iptal edilmiş; uygulama kaldırılmış ya da kapatılmış |
+| `app_token_invalid` | 401 | Token yok, süresi dolmuş ya da iptal edilmiş; uygulama kaldırılmış, kapatılmış ya da askıya alınmış (askıya alma 60 saniye içinde geçerli olur) |
 | `app_token_scope_missing` | 403 | Token'da ucun kapsamı yok (`details.required`) |
 | `product_not_found`, `order_not_found`, `user_not_found` | 404 | Bu mağazada böyle bir nesne yok |
 | `validation_failed` | 400 | Geçersiz sorgu ya da gövde (`param` alanı gösterir) |

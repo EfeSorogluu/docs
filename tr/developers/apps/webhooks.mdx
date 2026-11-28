@@ -1,0 +1,130 @@
+---
+title: "Uygulama webhook'ları"
+description: "Olayları uygulamanızın webhook adresinde alma, imzayı doğrulama, tekrarları ayıklama ve gerektiğinde ek uç oluşturma."
+---
+
+Panelde uygulamanıza bir **Webhook adresi** girin. Bundan sonra uygulamayı kuran her mağazanın olayları bu adrese, uygulamanızın **webhook secret**'ıyla imzalanarak gönderilir. Mağaza başına bir şey oluşturmanız gerekmez.
+
+## Nasıl çalışır
+
+- Bir mağaza uygulamayı kurduğunda Crafter, `app.installed` gönderilmeden **önce** o mağazada webhook adresiniz için bir uç oluşturur. Bu yüzden `app.installed` ilk kurulum dahil her kurulumda gelir.
+- Uç, manifestinizdeki `events` listesinden mağazanın kapsamını verdiği olaylara ve her zaman `app.installed` ile `app.uninstalled` olaylarına abonedir.
+- Canlı ve test modu olaylarının ikisini de alır. Hangisi olduğunu gövdedeki `livemode` söyler.
+- Her teslimat uygulamanın webhook secret'ıyla imzalanır: **bütün mağazalar için tek secret**.
+- Mağaza sahibi yeni kapsamları onayladığında ucun olayları güncellenir.
+- Kaldırmada önce `app.uninstalled` gönderilir, sonra uç kapatılır. Yeniden kurulum ucu tekrar açar.
+- Panelde webhook adresini değiştirmek ya da secret'ı yenilemek bütün mağazaların uçlarını günceller. Webhook adresini sonradan eklemek, uygulamayı zaten kurmuş mağazalar için de uç oluşturur. Adresi kaldırmak uçları kapatır.
+
+Webhook adresi herkese açık bir `https` adresi olmalıdır. Özel uygulamanın `http://localhost` adresi için uç oluşturulmaz; geliştirirken bir HTTPS tüneli kullanın.
+
+## Webhook secret'ı
+
+Secret (`whsec_…`) **yalnızca bir kez** gösterilir: uygulamayı webhook adresiyle oluşturduğunuzda ya da webhook secret'ını yenilediğinizde (`POST /developer/apps/{appId}/rotate-secret`, gövde `{ "kind": "webhook" }`). Webhook adresini mevcut bir uygulamaya eklerseniz secret'ı görmek için bir kez yenileyin. Sunucunuzun diğer gizli bilgileriyle birlikte saklayın.
+
+Yenilemeden sonra Crafter her teslimatı **24 saat** boyunca hem yeni hem eski secret'la imzalar; başlıkta iki `v1` değeri olur. Bu süre içinde sunucunuzu yeni secret'a geçirin; arada ikisini de kabul edin.
+
+## Olaylar
+
+| Olay | Kapsam | Ne zaman |
+| --- | --- | --- |
+| `app.installed` | | Uygulama kuruldu. Token alma sırasında kuyruğa girer; dönüş adresiniz token'ları kaydetmeden önce gelebilir. |
+| `app.uninstalled` | | Uygulama kaldırıldı. Kurulumun aldığı son olaydır; token'ları zaten iptal edilmiştir. |
+| `order.paid` | `read_orders` | Sipariş ödendi |
+| `order.refunded` | `read_orders` | Sipariş iade edildi |
+| `order.delivery_failed` | `read_orders` | Ödenmiş siparişin teslimatı başarısız oldu |
+| `order.chargeback` | `read_orders` | Ters ibraz açıldı, kazanıldı ya da kaybedildi |
+| `checkout.completed` | `read_orders` | API ile oluşturulan ödeme oturumu tamamlandı |
+| `checkout.expired` | `read_orders` | API ile oluşturulan ödeme oturumunun süresi doldu |
+
+`order.*` olayları yalnızca mağazanın paketinde webhook varsa gönderilir. Kurulumda `read_customers` yoksa gövdedeki müşteri adı ve e-postası `null` olur. `order.*` ve `checkout.*` gövdeleri: [olay kataloğu](/tr/developers/payments/webhooks).
+
+`app.installed` / `app.uninstalled` gövdesi:
+
+```json
+{
+  "event": "app.installed",
+  "id": "whd_…",
+  "version": "2026-12",
+  "createdAt": "2026-12-05T10:00:00.000Z",
+  "livemode": true,
+  "data": {
+    "appId": "example-orders-viewer",
+    "installationId": "…",
+    "websiteId": "…",
+    "version": "1.0.0"
+  }
+}
+```
+
+## İstek
+
+```
+POST https://app.example.com/webhooks/crafter
+Content-Type: application/json
+User-Agent: Crafter-Webhooks/1.0
+X-Crafter-Event: app.installed
+X-Crafter-Delivery: whd_…
+X-Crafter-Timestamp: 1764930000
+X-Crafter-Signature: t=1764930000,v1=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce8e108d8bd
+X-Crafter-Webhook-Version: 2026-12
+```
+
+## Her isteği doğrulayın
+
+1. **Ham gövdeyi** okuyun (JSON'a çevirmeden önceki baytların kendisi).
+2. `X-Crafter-Signature`'ı `,` ile bölün: `t` zaman damgası, her `v1` onaltılık bir HMAC'tir. Birden fazla `v1` olabilir; herhangi biri eşleşirse isteği kabul edin.
+3. `t` sunucu saatinizden **5 dakikadan** fazla uzaksa isteği reddedin.
+4. `HMAC-SHA256(secret, t + "." + hamGövde)` değerini onaltılık hesaplayın ve her `v1` ile **sabit sürede** karşılaştırın. Yenileme sırasında yeni ve eski secret'ı deneyin.
+5. Tekrarları ayıklayın: bu `X-Crafter-Delivery`'yi daha önce işlediyseniz `200` dönün ve durun. Yeniden denemeler aynı kimliği kullanır.
+
+```js Node.js
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
+export function verifyCrafterSignature(rawBody, header, secrets, toleranceSeconds = 300) {
+  let t = NaN;
+  const given = [];
+  for (const part of String(header || '').split(',')) {
+    const [key, value] = part.trim().split('=');
+    if (key === 't') t = Number(value);
+    if (key === 'v1' && /^[0-9a-f]{64}$/i.test(value)) given.push(Buffer.from(value, 'hex'));
+  }
+  if (!Number.isFinite(t) || given.length === 0) return false;
+  if (Math.abs(Date.now() / 1000 - t) > toleranceSeconds) return false;
+  return secrets.some((secret) => {
+    const expected = createHmac('sha256', secret).update(`${t}.`).update(rawBody).digest();
+    return given.some((v) => v.length === expected.length && timingSafeEqual(v, expected));
+  });
+}
+```
+
+Express'te webhook yolunda gövdeyi `express.raw({ type: 'application/json' })` ile okuyun; JSON ayrıştırıcı baytları değiştirir.
+
+## Yanıt ve yeniden denemeler
+
+- **10 saniye** içinde herhangi bir `2xx` ile yanıt verin. Uzun işleri yanıttan sonra yapın.
+- Başka her sonuç (farklı durum kodu, zaman aşımı, yönlendirme) üstel bekleme ile yeniden denenir: yaklaşık 1 dakika, sonra 3, 9, 27 dakika ve devamı; denemeler arası en çok 6 saat, yaklaşık 12 saatte **8 deneme**.
+- **En az 3 gün boyunca art arda 40 kez** başarısız olan uç kapatılır. O mağazadaki bir sonraki kurulum ya da yeniden onay uygulama düzeyindeki ucu tekrar açar.
+- Teslimat kayıtları 90 gün tutulur. Uygulamanızın son teslimatları (olay, durum, deneme sayısı, son HTTP durumu; gövde ve mağaza yok): `GET /developer/apps/{appId}/webhook-deliveries?limit=50`.
+
+## `app.uninstalled` geldiğinde
+
+Mağazanın erişim ve yenileme token'larını silin (zaten iptal edilmişlerdir) ve o mağaza için zamanlanmış işleri durdurun.
+
+## Ek uçlar (isteğe bağlı)
+
+Çoğu uygulamaya webhook adresi yeter. Bir mağaza için başka bir adrese ya da olayların bir alt kümesine ihtiyacınız varsa, uygulama erişim token'ı ve `webhooks:write` kapsamıyla ek uç oluşturabilir:
+
+```bash
+curl https://api.crafterpayments.com/v1/webhook_endpoints \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
+  -H "Crafter-Version: 2026-12" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{ "url": "https://app.example.com/webhooks/orders", "events": ["order.paid"], "livemode": true }'
+```
+
+- Her ek ucun **kendi** secret'ı vardır; oluşturma yanıtında bir kez döner.
+- `livemode: true` yalnızca canlı olayları, `false` yalnızca test olaylarını alır.
+- Kurulum başına en çok 5 ek uç. Webhook adresi için oluşturulan uç bu sayıya girmez ve bu listede görünmez.
+
+Ayrıntılı referans: [Webhook uçları](/tr/api-reference/apps/webhook-endpoints).

@@ -1,0 +1,130 @@
+---
+title: "App webhooks"
+description: "Receive events on your app's Webhook URL, verify the signature, drop duplicates, and add extra endpoints when you need them."
+---
+
+Set a **Webhook URL** on your app in the panel. From then on, every store that installs the app sends its events there, signed with your app's **webhook secret**. You do not create anything per store.
+
+## How it works
+
+- When a store installs the app, Crafter creates a webhook endpoint for your Webhook URL on that store, **before** `app.installed` is sent. So `app.installed` arrives on every install, the first one included.
+- The endpoint is subscribed to the events in your manifest's `events` whose scopes the store granted, plus `app.installed` and `app.uninstalled` (always).
+- It receives live and test-mode events alike. The body's `livemode` tells them apart.
+- Every delivery is signed with the app's webhook secret: **one secret for every store**.
+- When the store owner approves new scopes, the endpoint's events are updated.
+- On uninstall, `app.uninstalled` is sent, then the endpoint is turned off. A reinstall turns it back on.
+- Changing the Webhook URL or rotating the secret in the panel updates the endpoints of every store. Adding a Webhook URL later creates the endpoints for stores that already installed the app. Removing it turns them off.
+
+The Webhook URL must be a public `https` address. A private app's `http://localhost` URL never gets an endpoint; use an HTTPS tunnel while you develop.
+
+## The webhook secret
+
+The secret (`whsec_…`) is shown **once**: when you create the app with a Webhook URL, or when you rotate the webhook secret (`POST /developer/apps/{appId}/rotate-secret` with `{ "kind": "webhook" }`). If you add the Webhook URL to an existing app, rotate the webhook secret once to see it. Store it with your other server secrets.
+
+After a rotation Crafter signs every delivery with **both** the new and the old secret for **24 hours**, so the header carries two `v1` values. Switch your server to the new secret within that window; accept either one meanwhile.
+
+## Events
+
+| Event | Scope | When |
+| --- | --- | --- |
+| `app.installed` | | The app was installed. Queued while the code is exchanged, so it can arrive before your callback has stored the tokens. |
+| `app.uninstalled` | | The app was uninstalled. The last event an installation gets; its tokens are already revoked. |
+| `order.paid` | `read_orders` | An order was paid |
+| `order.refunded` | `read_orders` | An order was refunded |
+| `order.delivery_failed` | `read_orders` | Delivery of a paid order failed |
+| `order.chargeback` | `read_orders` | A chargeback was opened, won or lost |
+| `checkout.completed` | `read_orders` | A checkout session created through the API completed |
+| `checkout.expired` | `read_orders` | A checkout session created through the API expired |
+
+`order.*` events are sent only when the store's plan includes webhooks. Customer name and e-mail in the body are `null` unless the installation holds `read_customers`. Bodies of the `order.*` and `checkout.*` events: [event catalog](/en/developers/payments/webhooks).
+
+`app.installed` / `app.uninstalled` body:
+
+```json
+{
+  "event": "app.installed",
+  "id": "whd_…",
+  "version": "2026-12",
+  "createdAt": "2026-12-05T10:00:00.000Z",
+  "livemode": true,
+  "data": {
+    "appId": "example-orders-viewer",
+    "installationId": "…",
+    "websiteId": "…",
+    "version": "1.0.0"
+  }
+}
+```
+
+## Request
+
+```
+POST https://app.example.com/webhooks/crafter
+Content-Type: application/json
+User-Agent: Crafter-Webhooks/1.0
+X-Crafter-Event: app.installed
+X-Crafter-Delivery: whd_…
+X-Crafter-Timestamp: 1764930000
+X-Crafter-Signature: t=1764930000,v1=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce8e108d8bd
+X-Crafter-Webhook-Version: 2026-12
+```
+
+## Verify every request
+
+1. Read the **raw body** (the exact bytes, before JSON parsing).
+2. Split `X-Crafter-Signature` on `,`: `t` is the timestamp, every `v1` is a hex HMAC. There can be more than one `v1`; accept the request if any of them matches.
+3. Reject the request if `t` is more than **5 minutes** away from your clock.
+4. Compute `HMAC-SHA256(secret, t + "." + rawBody)` as hex and compare it with each `v1` in **constant time**. During a rotation, try the new and the old secret.
+5. Drop duplicates: if you have already handled this `X-Crafter-Delivery`, answer `200` and stop. Retries use the same id.
+
+```js Node.js
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
+export function verifyCrafterSignature(rawBody, header, secrets, toleranceSeconds = 300) {
+  let t = NaN;
+  const given = [];
+  for (const part of String(header || '').split(',')) {
+    const [key, value] = part.trim().split('=');
+    if (key === 't') t = Number(value);
+    if (key === 'v1' && /^[0-9a-f]{64}$/i.test(value)) given.push(Buffer.from(value, 'hex'));
+  }
+  if (!Number.isFinite(t) || given.length === 0) return false;
+  if (Math.abs(Date.now() / 1000 - t) > toleranceSeconds) return false;
+  return secrets.some((secret) => {
+    const expected = createHmac('sha256', secret).update(`${t}.`).update(rawBody).digest();
+    return given.some((v) => v.length === expected.length && timingSafeEqual(v, expected));
+  });
+}
+```
+
+With Express, read the body with `express.raw({ type: 'application/json' })` on the webhook route; a JSON parser changes the bytes.
+
+## Responding and retries
+
+- Answer with any `2xx` within **10 seconds**. Do slow work after you answer.
+- Anything else (another status, a timeout, a redirect) is retried with exponential backoff: about 1 minute, then 3, 9, 27 minutes and so on, up to 6 hours between attempts, **8 attempts** in about 12 hours.
+- An endpoint that fails **40 times in a row over at least 3 days** is disabled. The next install or re-consent on that store turns the app-level endpoint back on.
+- Delivery records are kept for 90 days. Your app's latest deliveries (event, status, attempts, last HTTP status; no body, no store): `GET /developer/apps/{appId}/webhook-deliveries?limit=50`.
+
+## Handling `app.uninstalled`
+
+Delete the store's access and refresh tokens (they are already revoked) and stop any scheduled work for that store.
+
+## Extra endpoints (optional)
+
+Most apps need only the Webhook URL. If you need another URL for one store, or a subset of events, the app can create extra endpoints with its access token and the `webhooks:write` scope:
+
+```bash
+curl https://api.crafterpayments.com/v1/webhook_endpoints \
+  -H "Authorization: Bearer $ACCESS_TOKEN" \
+  -H "Crafter-Version: 2026-12" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{ "url": "https://app.example.com/webhooks/orders", "events": ["order.paid"], "livemode": true }'
+```
+
+- Each extra endpoint has **its own** secret, returned once in the create response.
+- `livemode: true` receives live events only, `false` test events only.
+- At most 5 extra endpoints per installation. The endpoint created for the Webhook URL does not count and does not appear in this list.
+
+Full reference: [Webhook endpoints](/en/api-reference/apps/webhook-endpoints).

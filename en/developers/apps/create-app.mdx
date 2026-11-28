@@ -1,0 +1,92 @@
+---
+title: "Create an app"
+description: "Create a public or private app in the Crafter panel, get its credentials and manage it through the developer API."
+---
+
+## In the panel
+
+Open **Developer > Apps** and click **Create app**.
+
+| Field | Description |
+| --- | --- |
+| **App name** | Shown on the consent screen and in the app store. Up to 64 characters. |
+| **App ID** | Lowercase letters, digits, dots and hyphens; 3 to 64 characters. It cannot be changed later and must match `id` in your [manifest](/en/developers/apps/manifest). `crafter.` and `mcp.` are reserved. |
+| **App type** | **Public**: listed after review, any store can install it. **Private**: installs only on the store you pick, needs no review and is not listed. See [app kinds](/en/developers/apps/overview#app-kinds). |
+| **Store** | Private apps only: the one store that can install the app. You must own it. |
+| **Redirect URLs** | Where the browser returns after the consent screen. At least 1, at most 10. Matched exactly, character for character. |
+| **App URL** | Where Crafter sends the store owner to start an install: `<App URL>?store=<storeId>&lang=<tr\|en>`. |
+| **Panel page URL** | Optional. The page Crafter shows inside the panel. See [embedded pages](/en/developers/apps/embedded-pages). |
+| **Webhook URL** | Optional. Every store that installs the app sends its events here, signed with the app's webhook secret. Public `https` address only. See [webhooks](/en/developers/apps/webhooks). |
+| **Developer** | Your name, website and support e-mail, shown on the listing. |
+
+URLs must be `https`. Private apps may also use `http://localhost` while you develop. Addresses that point to private networks are refused.
+
+## Credentials
+
+After you create the app, the panel shows:
+
+- **Client ID** (`capp_…`): public, goes into the authorize URL.
+- **Client secret** (`crft_acs_…`): shown **only once**. Copy it into your server's secret store. Crafter keeps only a hash of it.
+- **Webhook secret** (`whsec_…`), when you set a Webhook URL: shown **only once**. It verifies the webhooks of every store. If you add the Webhook URL later, rotate the webhook secret once to see it.
+
+Lost a secret, or it leaked? Rotate it. A rotated **client** secret stops working at once, so update your server right after. After a **webhook** secret rotation, deliveries are signed with the new and the old secret for 24 hours.
+
+<Warning>
+Never put the client secret in a browser, a mobile app, a repository or a log. Your server sends it only to the token endpoint.
+</Warning>
+
+## Next steps
+
+1. Create a version with your manifest and listing, and submit it. Private apps are published at once; public apps go to [review](/en/developers/apps/publishing).
+2. Implement the [install flow](/en/developers/apps/oauth).
+3. Install the app on your own store to test it.
+
+## Limits
+
+- Up to **10 apps** per developer account.
+- Up to 10 redirect URLs per app.
+
+## Developer API
+
+Everything in the panel is also available through the API, with your panel session or a developer token (CLI) with the `apps:read` / `apps:write` scopes. Responses use `{ "success": true, "data": … }`; errors use `{ "success": false, "type", "message", "details" }`.
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `POST` | `/developer/apps` | Create an app. Returns `clientSecret` (and `webhookSecret` when a webhook URL is set) once. |
+| `GET` | `/developer/apps` | Your apps |
+| `GET` | `/developer/apps/{appId}` | One app (never returns secrets) |
+| `PATCH` | `/developer/apps/{appId}` | Change name, icon, redirect URLs, app URL, webhook URL, panel page URL or developer details |
+| `POST` | `/developer/apps/{appId}/rotate-secret` | `{ "kind": "client" }` or `{ "kind": "webhook" }`; returns the new secret once |
+| `POST` | `/developer/apps/{appId}/media` | Upload an icon or screenshot (PNG, JPEG or WebP, up to 2 MB and 1920 px) |
+| `POST` | `/developer/apps/{appId}/versions` | Create a version |
+| `GET` | `/developer/apps/{appId}/versions` | Versions with status, checks and review thread |
+| `POST` | `/developer/apps/{appId}/versions/{version}/submit` | Submit for review (private: publish) |
+| `POST` | `/developer/apps/{appId}/versions/{version}/comments` | Reply in the review thread (up to 2000 characters) |
+| `GET` | `/developer/apps/{appId}/installs` | Stores that installed the app (store ids are masked) |
+| `GET` | `/developer/apps/{appId}/webhook-deliveries` | Latest webhook deliveries: event, status, attempts, last HTTP status (no body, no store) |
+
+Create request:
+
+```json
+{
+  "appId": "example-orders-viewer",
+  "name": "Example Orders Viewer",
+  "kind": "public",
+  "redirectUris": ["https://app.example.com/oauth/callback"],
+  "appUrl": "https://app.example.com/install",
+  "webhookUrl": "https://app.example.com/webhooks/crafter",
+  "embedUrl": "https://app.example.com/embed",
+  "developer": { "name": "Example Studio", "url": "https://example.com", "supportEmail": "support@example.com" }
+}
+```
+
+Errors:
+
+| Type | Status | When |
+| --- | --- | --- |
+| `app_manifest_invalid` | 400 | A field is invalid; `details.errors` lists `{ path, message }` |
+| `app_id_taken` | 409 | The app id exists |
+| `app_id_reserved` | 403 | The app id starts with `crafter.` or `mcp.` |
+| `app_private_store_mismatch` | 403 | A private app's store is not one you own |
+| `app_limit_reached` | 429 | You already have 10 apps |
+| `app_not_found` | 404 | No such app, or it is not yours |

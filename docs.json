@@ -168,6 +168,20 @@
                 ]
               },
               {
+                "group": "Uygulamalar",
+                "pages": [
+                  "tr/developers/apps/overview",
+                  "tr/developers/apps/manifest",
+                  "tr/developers/apps/create-app",
+                  "tr/developers/apps/oauth",
+                  "tr/developers/apps/webhooks",
+                  "tr/developers/apps/embedded-pages",
+                  "tr/developers/apps/publishing",
+                  "tr/developers/apps/paid-apps",
+                  "tr/developers/apps/limits"
+                ]
+              },
+              {
                 "group": "Ödemeler (headless)",
                 "pages": [
                   "tr/developers/payments/overview",
@@ -368,6 +382,20 @@
                 "group": "Getting Started",
                 "pages": [
                   "en/developers/index"
+                ]
+              },
+              {
+                "group": "Apps",
+                "pages": [
+                  "en/developers/apps/overview",
+                  "en/developers/apps/manifest",
+                  "en/developers/apps/create-app",
+                  "en/developers/apps/oauth",
+                  "en/developers/apps/webhooks",
+                  "en/developers/apps/embedded-pages",
+                  "en/developers/apps/publishing",
+                  "en/developers/apps/paid-apps",
+                  "en/developers/apps/limits"
                 ]
               },
               {

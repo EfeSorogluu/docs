@@ -1,0 +1,65 @@
+---
+title: "Limits"
+description: "Rate limits of the app API and the OAuth endpoints, and other limits for apps."
+---
+
+## API rate limits
+
+| Limit | Value |
+| --- | --- |
+| Per installation (one app on one store) | 120 requests per minute, all `/v1` endpoints together |
+| Per app (all of its installations together) | 3,000 requests per minute |
+
+Every `/v1` response carries:
+
+| Header | Meaning |
+| --- | --- |
+| `X-RateLimit-Limit`, `X-RateLimit-Remaining` | Installation limit and what is left in this minute |
+| `X-RateLimit-App-Limit`, `X-RateLimit-App-Remaining` | App limit and what is left in this minute |
+
+Over a limit you get `429 too_many_requests` with `Retry-After` (seconds) and `details.limitScope` (`installation` or `app`). Wait `Retry-After` seconds before you try again; do not retry in a tight loop. A per-IP limit applies on top of these.
+
+## OAuth endpoints
+
+| Endpoint | Limit |
+| --- | --- |
+| `GET /apps/oauth/authorize` | 60 per minute per IP |
+| `POST /apps/oauth/token` | 30 per minute per IP and 60 per minute per client id |
+| `POST /apps/oauth/revoke` | 30 per minute per IP |
+| `GET /apps/.well-known/jwks.json` | 120 per minute per IP (cache it for 5 minutes) |
+
+## Tokens
+
+| | Lifetime |
+| --- | --- |
+| Authorization code | 120 seconds, one use |
+| Access token | 1 hour |
+| Refresh token | 90 days, rotated on every use (10 second grace for a repeated request) |
+| Embedded page session token | 60 seconds |
+
+## Apps and versions
+
+| | Limit |
+| --- | --- |
+| Apps per developer | 10 |
+| Redirect URLs per app | 10, up to 512 characters each |
+| Versions in review at the same time | 1 per app |
+| Listing | 50,000 characters per language |
+| Changelog | 20,000 characters |
+| Screenshots | 1 to 8, PNG / JPEG / WebP, up to 2 MB and 1920 px |
+| Review thread message | 2,000 characters |
+
+## Webhooks
+
+| | Limit |
+| --- | --- |
+| Webhook URL endpoint | 1 per installation, created by Crafter |
+| Extra endpoints per installation (`/v1/webhook_endpoints`) | 5 |
+| Events per endpoint | 50 |
+| Response time | 10 seconds |
+| Retries | 8 attempts over about 12 hours |
+| Automatic disable | 40 failures in a row over at least 3 days |
+
+## Paging
+
+List endpoints return 1 to 100 objects per page (default 10). Use `starting_after` with the last id you received.

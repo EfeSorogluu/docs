@@ -1,0 +1,172 @@
+---
+title: "OAuth and scopes"
+description: "Install flow with OAuth 2.0 authorization code and PKCE, the token endpoint, refresh token rotation, revocation and the permission scopes available at launch."
+---
+
+Apps get access to a store with the OAuth 2.0 **authorization code** flow and **PKCE** (`S256`, required). The store owner approves the scopes on a consent screen in the Crafter panel; your server exchanges the code for tokens bound to that store.
+
+| | Production | Dev |
+| --- | --- | --- |
+| OAuth endpoints | `https://api.crafter.net.tr/apps/oauth/…` | `https://dev-api.crafter.net.tr/apps/oauth/…` |
+| `/v1` API | `https://api.crafterpayments.com/v1` | `https://dev-api.crafterpayments.com/v1` |
+
+## Flow
+
+1. The owner clicks **Install** in the app store. Crafter checks the install rules (published version, store compatibility, license for paid apps) and sends the browser to your **app URL**: `https://app.example.com/install?store=<storeId>&lang=tr`.
+2. Your server creates a `code_verifier`, its challenge and a `state`, remembers them, and redirects to the authorize endpoint.
+3. Crafter shows the consent screen. Only the store owner can approve.
+4. The browser returns to your redirect URL with `code` and `state`.
+5. Your server checks `state` and exchanges the code (with the `code_verifier`) for tokens.
+
+## 1. Authorize
+
+```
+GET https://api.crafter.net.tr/apps/oauth/authorize
+```
+
+| Parameter | Required | Description |
+| --- | --- | --- |
+| `response_type` | yes | `code` |
+| `client_id` | yes | Your client id (`capp_…`) |
+| `redirect_uri` | yes | One of the registered redirect URLs, exactly |
+| `scope` | yes | Space-separated scopes. Must be a subset of the scopes in your **published** manifest. |
+| `state` | yes | 8 to 512 characters of `A-Z a-z 0-9 - . _ ~`. Random per request; check it on return. |
+| `code_challenge` | yes | `BASE64URL(SHA256(code_verifier))` |
+| `code_challenge_method` | yes | `S256` |
+| `store` | no | The store id from the app URL, to preselect the store |
+| `lang` | no | `tr` or `en` for the consent screen |
+
+PKCE in Node.js:
+
+```js
+import { createHash, randomBytes } from 'node:crypto';
+
+const codeVerifier = randomBytes(32).toString('base64url');
+const codeChallenge = createHash('sha256').update(codeVerifier).digest('base64url');
+const state = randomBytes(24).toString('base64url');
+```
+
+If `client_id` or `redirect_uri` is wrong, the panel shows the error and does **not** redirect. Other problems (missing PKCE, invalid state, a scope that is not published or not available) are shown on the consent screen.
+
+## 2. Callback
+
+Approved:
+
+```
+https://app.example.com/oauth/callback?code=crft_aac_…&state=…
+```
+
+Declined:
+
+```
+https://app.example.com/oauth/callback?error=access_denied&state=…
+```
+
+Compare `state` with the value you stored before you do anything else. The code is valid for **120 seconds** and only once.
+
+## 3. Token exchange
+
+```
+POST https://api.crafter.net.tr/apps/oauth/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic base64(client_id:client_secret)
+```
+
+| Field | Value |
+| --- | --- |
+| `grant_type` | `authorization_code` |
+| `code` | The code from the callback |
+| `redirect_uri` | The same redirect URL as in the authorize request |
+| `code_verifier` | The verifier you created in step 1 |
+
+Client authentication: HTTP Basic (`client_secret_basic`) or `client_id` and `client_secret` in the body (`client_secret_post`). Not both.
+
+```json 200
+{
+  "access_token": "crft_aat_…",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "crft_art_…",
+  "refresh_token_expires_in": 7776000,
+  "scope": "read_store read_orders",
+  "app_id": "example-orders-viewer",
+  "store": { "id": "…", "name": "Example Store", "url": "https://example-store.com" }
+}
+```
+
+`store.id` tells you which store installed the app. Store the token pair per store, encrypted at rest.
+
+A successful exchange **is** the install. If the app has a Webhook URL, `app.installed` is queued during the exchange, so it can reach your webhook handler before your callback has stored the tokens.
+
+## Refresh
+
+| Token | Lifetime |
+| --- | --- |
+| Authorization code | 120 seconds, one use |
+| Access token (`crft_aat_`) | 1 hour |
+| Refresh token (`crft_art_`) | 90 days, rotated on every use |
+
+```
+POST https://api.crafter.net.tr/apps/oauth/token
+grant_type=refresh_token&refresh_token=crft_art_…
+```
+
+Every refresh returns a **new** access token and a **new** refresh token. Save the new pair before you use it; the old refresh token is dead.
+
+- If the same old refresh token comes back within 10 seconds (a lost response, a retry), you get the same new pair again.
+- After that, an old refresh token counts as **reused**: Crafter revokes the whole grant and the store has to install the app again.
+- Refresh one store at a time (single-flight). Two parallel refreshes with the same token are the most common cause of a revoked grant.
+- Optional `scope` narrows the new access token to a subset of the grant. It can never widen it.
+
+## Revoke
+
+```
+POST https://api.crafter.net.tr/apps/oauth/revoke
+token=crft_art_…
+```
+
+Same client authentication as the token endpoint (RFC 7009). A refresh token revokes the whole grant, an access token only itself. Unknown tokens return `200` too.
+
+## Uninstall
+
+When the owner uninstalls the app, every token of the installation is revoked at once and your Webhook URL receives `app.uninstalled`. Delete the store's tokens when it arrives. Customer data you stored must be deleted according to your privacy policy.
+
+## Errors
+
+Token and revoke endpoints return RFC 6749 errors:
+
+```json 400
+{ "error": "invalid_grant", "error_description": "code expired" }
+```
+
+| `error` | Status | Typical cause |
+| --- | --- | --- |
+| `invalid_client` | 401 | Wrong client id or secret |
+| `invalid_request` | 400 | Basic and body credentials at the same time |
+| `invalid_grant` | 400 | Code expired, used or for another redirect URL; `code_verifier` mismatch; refresh token expired, revoked or reused; the store cannot have the app any more |
+| `invalid_scope` | 400 | Refresh `scope` outside the grant |
+| `unsupported_grant_type` | 400 | Not `authorization_code` or `refresh_token` |
+
+## Scopes
+
+A token can do only what its scopes allow; a write scope includes its read scope. On the API a missing scope returns `403 app_token_scope_missing`.
+
+### Available at launch
+
+| Scope | Gives | Personal data |
+| --- | --- | --- |
+| `read_store` | Store name, address, currency and languages (`GET /v1/store`) | |
+| `read_products` | Products, categories, prices and stock | |
+| `read_orders` | Orders (`GET /v1/orders`); customer name and e-mail stay `null` without `read_customers` | |
+| `read_customers` | Customers, and customer name and e-mail on orders and webhooks | yes |
+| `read_customers:limited` | Only non-identifying customer fields | yes |
+| `webhooks:read` | The app's extra webhook endpoints | |
+| `webhooks:write` | Create and delete extra webhook endpoints (includes `webhooks:read`). Not needed for the Webhook URL. | |
+
+Personal data scopes need a reason in `scopeReasons`, appear in a separate section of the consent screen and need two reviewers.
+
+### Not available yet
+
+`write_products`, `write_orders`, `read_deliveries`, `write_deliveries`, `read_coupons`, `write_coupons`, `read_players`, `write_players`, `read_roles`, `write_roles`, `write_customers`, `send_commands`, `read_storefront_blocks`, `write_storefront_blocks`.
+
+They are in the catalog but have no API behind them yet. A version that asks for them fails with `scope_not_available`, and the consent screen refuses them. The full catalog with descriptions: `GET https://api.crafter.net.tr/apps/scopes`.
