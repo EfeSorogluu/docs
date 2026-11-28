@@ -38,7 +38,25 @@ By the end of this guide you will have opened a checkout session from your serve
       }'
     ```
 
-    ```js Node.js
+    ```ts Node.js (SDK)
+    import { CrafterPayments } from '@crafterpayments/node';
+
+    const crafter = new CrafterPayments(process.env.CRAFTER_SECRET_KEY); // pins Crafter-Version: 2026-12
+
+    const session = await crafter.checkoutSessions.create(
+      {
+        lineItems: [{ productId: 'PRODUCT_ID', quantity: 1 }],
+        customer: { email: 'player@example.com', externalId: 'user_42' },
+        successUrl: 'https://shop.example.com/thanks?session={CHECKOUT_SESSION_ID}',
+        cancelUrl: 'https://shop.example.com/cart',
+        clientReferenceId: 'order_1234',
+      },
+      { idempotencyKey: 'order_1234' }, // optional: the SDK generates one and reuses it on retries
+    );
+    // session.url -> "https://checkout.crafterpayments.com/c/cs_test_…"
+    ```
+
+    ```js Node.js (fetch)
     import crypto from 'node:crypto';
 
     const res = await fetch('https://api.crafterpayments.com/v1/checkout/sessions', {
@@ -68,6 +86,8 @@ By the end of this guide you will have opened a checkout session from your serve
 
     </CodeGroup>
 
+    The Node.js SDK is `@crafterpayments/node` (Preview, 0.1.0; Node.js 18+). It adds the `Idempotency-Key`, retries network errors, `429` and `5xx` with the same key, and throws typed errors (`error.type`, `error.requestId`). The constructor rejects publishable keys.
+
     `amountTotal` and `currency` come back as **`null`**. Tax is calculated on the payment page from the buyer's billing country, so the final total and the charge currency are known only after payment starts. If you need to show an amount before that, use `amountSubtotal` (the catalog total in the store currency, before coupon and tax).
 
     If you know the buyer's player identity, send it in `customer.player` (for example `{ "type": "minecraft_java", "username": "Notch" }`). If you do not and the cart has items that need in-game delivery, the payment page asks for it.
@@ -84,6 +104,8 @@ By the end of this guide you will have opened a checkout session from your serve
     ```
 
     The session stays open for 30 minutes by default (`expiresInSeconds`: 900 to 86400).
+
+    To open the payment page in a popup, a modal or embedded in your page instead, see [Checkout modes](/en/developers/payments/checkout-modes).
   </Step>
 
   <Step title="Handle the return">
@@ -102,7 +124,20 @@ By the end of this guide you will have opened a checkout session from your serve
 
     Verify the signature **on your server** and use it only to show the right screen:
 
-    ```js Node.js
+    <CodeGroup>
+
+    ```ts Node.js (SDK)
+    import { verifyReturnSignature } from '@crafterpayments/node';
+
+    app.get('/thanks', (req, res) => {
+      const result = verifyReturnSignature(req.query, process.env.CRAFTER_RETURN_SECRET); // crs_…, or pass the full URL
+      if (!result) return res.redirect('/cart');
+      // result = { sessionId, status, timestamp }; default tolerance 600 seconds
+      res.render('thanks', { status: result.status });
+    });
+    ```
+
+    ```js Node.js (crypto)
     import crypto from 'node:crypto';
 
     export function verifyReturn(query, secret, toleranceSec = 600) {
@@ -120,6 +155,8 @@ By the end of this guide you will have opened a checkout session from your serve
     }
     ```
 
+    </CodeGroup>
+
     <Warning>
     The return signature only means "Crafter redirected the buyer to this screen". Do not tie delivery or crediting items to it; use step 5. The return signing secret is per mode and must stay secret.
     </Warning>
@@ -131,11 +168,22 @@ By the end of this guide you will have opened a checkout session from your serve
     - **Webhook (recommended):** Add an endpoint under your store webhooks in the dashboard and subscribe to `checkout.completed`. Verify the signature with the `X-Crafter-Signature` header. See [Webhook events](/en/developers/payments/webhooks).
     - **Reading the session:** If `status` is `complete` in the `GET /v1/checkout/sessions/{id}` response, the payment was received.
 
-    ```bash
+    <CodeGroup>
+
+    ```bash curl
     curl https://api.crafterpayments.com/v1/checkout/sessions/cs_test_... \
       -H "Authorization: Bearer $CRAFTER_SECRET_KEY" \
       -H "Crafter-Version: 2026-12"
     ```
+
+    ```ts Node.js (SDK)
+    const session = await crafter.checkoutSessions.retrieve('cs_test_...');
+    if (session.status === 'complete') {
+      // payment received
+    }
+    ```
+
+    </CodeGroup>
 
     When completing the order on your side, find your own record with `clientReferenceId` and `metadata`. Store the webhook's `X-Crafter-Delivery` value so you never process the same event twice.
   </Step>
@@ -143,12 +191,13 @@ By the end of this guide you will have opened a checkout session from your serve
 
 ## Going live
 
-- In test mode, pay with a test card such as `4242 4242 4242 4242` (any future date, any CVC). No real money moves and delivery is simulated. See [Test cards](/en/developers/payments/keys-and-modes#test-cards).
+- In test mode, pay with a test card such as `4242 4242 4242 4242` (any future date, any CVC). No real money moves and delivery is simulated. See [Test mode](/en/developers/payments/test-mode).
 - In live mode, return URLs must use `https`. In test mode, `http://localhost` is allowed automatically.
-- In live mode, a monthly session quota applies based on your plan. See [Limits](/en/api-reference/introduction#limits).
+- In live mode, a monthly session quota applies based on your plan. See [Plans and limits](/en/developers/payments/plans-and-limits).
 
 ## Next steps
 
+- [Checkout modes](/en/developers/payments/checkout-modes)
 - [API reference](/en/api-reference/introduction)
 - [Keys, modes and allowed origins](/en/developers/payments/keys-and-modes)
 - [Platform rules](/en/developers/payments/platform-rules)

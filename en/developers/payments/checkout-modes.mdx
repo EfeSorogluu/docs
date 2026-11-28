@@ -1,0 +1,336 @@
+---
+title: "Checkout modes: redirect, popup and embedded"
+description: "Open the CrafterPayments payment page from your site with @crafterpayments/js or @crafterpayments/react: redirect, popup, modal and embedded checkout."
+---
+
+You can show the payment page in four ways. In every mode, **your server** creates the session with a secret key ([Quickstart](/en/developers/payments/quickstart)); the browser only gets the publishable key (`cp_pk_…`), the session id and, when needed, the `clientSecret`.
+
+| Mode | What the buyer sees | Session `uiMode` | Plan |
+| --- | --- | --- | --- |
+| `redirect` | The payment page opens in the same tab. | `hosted` | Every plan |
+| `popup` | The payment page opens in a separate window; your page stays open. | `hosted` | Every plan |
+| `modal` | The payment page opens in a modal (iframe) over your page. | `embedded` | Pro and above |
+| Embedded | The payment page is placed inside an element on your page (iframe). | `embedded` | Pro and above |
+
+`auto` (the default) uses a popup on desktop and a same-tab redirect on phones (width under 800 px, a short viewport or a narrow touch screen). Change the phone behavior with `mobile: 'new_tab'` or `mobile: 'modal'`.
+
+<Note>
+`@crafterpayments/js` and `@crafterpayments/react` are in **Preview** (0.1.0). The API can still change before 1.0.
+</Note>
+
+<Warning>
+Browser events (`complete`, `onComplete`, …) are **not proof of payment**. Deliver items only on the `checkout.completed` webhook or a server-side `GET /v1/checkout/sessions/{id}`. See [Webhook events](/en/developers/payments/webhooks).
+</Warning>
+
+## Install
+
+<CodeGroup>
+
+```bash JavaScript
+npm install @crafterpayments/js
+```
+
+```bash React
+npm install @crafterpayments/react
+```
+
+</CodeGroup>
+
+`@crafterpayments/react` installs `@crafterpayments/js` with it and works with React 18 and 19 (the Next.js App Router included; `"use client"` is built in).
+
+Without a bundler, load the versioned file with a script tag; the package is then available as `window.CrafterPayments`:
+
+```html
+<script src="https://js.crafterpayments.com/v1/crafterpayments-0.1.0.umd.min.js"
+        integrity="sha384-oa/Dy4TVny/MN2Q010/zqEsA144biaW67M95hzraMO4U32Klp48p3x0wCD3scBYi"
+        crossorigin="anonymous"></script>
+```
+
+`https://js.crafterpayments.com/v1/crafter.js` always serves the latest v1 build. Its content changes, so it cannot be used with `integrity` (SRI); use the versioned file when you need SRI.
+
+## Load the client
+
+<CodeGroup>
+
+```js JavaScript
+import { loadCrafterPayments } from '@crafterpayments/js';
+
+const crafter = await loadCrafterPayments('cp_pk_test_...');
+// Returns null on the server (SSR). Calling it again with the same key returns the same client.
+```
+
+```tsx React
+'use client';
+
+import { CrafterPaymentsProvider } from '@crafterpayments/react';
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <CrafterPaymentsProvider
+      publishableKey="cp_pk_test_..."
+      options={{ locale: 'en', appearance: { theme: 'auto' } }}
+    >
+      {children}
+    </CrafterPaymentsProvider>
+  );
+}
+```
+
+</CodeGroup>
+
+Passing a secret key (`cp_sk_…`) to either package throws `secret_key_in_browser`. If a secret key has reached a browser, roll it in the dashboard right away.
+
+## Your server endpoint
+
+The examples below call an endpoint on your own server that creates the session and returns only what the browser needs:
+
+```ts Next.js route handler
+// app/api/checkout/route.ts
+import { CrafterPayments } from '@crafterpayments/node';
+
+const crafter = new CrafterPayments(process.env.CRAFTER_SECRET_KEY!); // cp_sk_test_... / cp_sk_live_...
+
+export async function POST(request: Request) {
+  const { productId } = await request.json();
+  const origin = new URL(request.url).origin;
+  const session = await crafter.checkoutSessions.create({
+    lineItems: [{ productId, quantity: 1 }],
+    uiMode: 'hosted', // 'embedded' for the modal and embedded modes
+    successUrl: `${origin}/checkout/return`,
+    cancelUrl: `${origin}/checkout/return`,
+  });
+  // Only these go to the browser
+  return Response.json({ sessionId: session.id, clientSecret: session.clientSecret, url: session.url });
+}
+```
+
+Your site's origin must be on the store's [allowed origins](/en/developers/payments/keys-and-modes#allowed-origins). Return URLs, browser status reads and embedding are all checked against that list.
+
+## Redirect
+
+The simplest mode. You can also redirect from your server with `303 See Other` without any browser SDK ([Quickstart, step 3](/en/developers/payments/quickstart)).
+
+<CodeGroup>
+
+```js JavaScript
+await crafter.redirectToCheckout({ sessionId: 'cs_test_...' });
+// or with the session url:
+// await crafter.redirectToCheckout({ url: session.url });
+```
+
+```tsx React
+import { useCheckout } from '@crafterpayments/react';
+
+const checkout = useCheckout();
+// ...
+checkout.redirect({ sessionId });
+```
+
+</CodeGroup>
+
+Only session URLs on `checkout.crafterpayments.com` are accepted (`invalid_checkout_url` otherwise).
+
+## Popup
+
+<Warning>
+**Call `open()` inside the click handler.** Browsers allow a popup only when it opens synchronously within a user click. Do not put an `await`, a `setTimeout` or a state update round trip before `open()`. If you need to create the session first, pass `createSession` instead of awaiting it yourself.
+</Warning>
+
+<CodeGroup>
+
+```js JavaScript
+button.addEventListener('click', () => {
+  const checkout = crafter.open({
+    mode: 'popup',
+    createSession: async () => {
+      const res = await fetch('/api/checkout', { method: 'POST' }); // your server
+      return res.json(); // { sessionId, clientSecret, url }
+    },
+  });
+  checkout.on('complete', (r) => showThanks(r.orderId));
+  checkout.on('cancel', () => {});
+  checkout.on('error', ({ error }) => console.error(error.code));
+});
+```
+
+```tsx React
+import { CheckoutButton } from '@crafterpayments/react';
+
+export function BuyButton({ productId }: { productId: string }) {
+  return (
+    <CheckoutButton
+      mode="popup"
+      createSession={async () => {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId }),
+        });
+        if (!res.ok) throw new Error('Could not start checkout');
+        return res.json(); // { sessionId, clientSecret, url }
+      }}
+      onComplete={(result) => console.log('paid', result.orderId)} // show a thank-you state; deliver on the webhook
+      onError={(error) => console.error(error.code)}
+    >
+      Buy now
+    </CheckoutButton>
+  );
+}
+```
+
+</CodeGroup>
+
+With `createSession`, the window opens on the click with a loading state and the payment page loads once your server responds. `<CheckoutButton>` already calls `open` correctly; it is disabled and `aria-busy` while the client loads and while the session is being created.
+
+With the `useCheckout` hook:
+
+```tsx React
+// Works: open() runs directly in the click
+<button onClick={() => checkout.open({ createSession, mode: 'popup' })}>Pay</button>
+
+// Blocked as a popup: the window opens after an await
+<button onClick={async () => { const s = await createSession(); checkout.open(s); }}>Pay</button>
+```
+
+### How the popup result arrives
+
+The payment page sends `Cross-Origin-Opener-Policy: same-origin`, so there is no direct message between the popup and your page. The SDK gets the result in two ways:
+
+1. Your `successUrl` / `cancelUrl` page (on your own origin) calls `handleReturn()` (React: `useCheckoutReturn()`). It passes the result to the original tab and closes the popup.
+2. As a fallback, the SDK reads `GET /v1/checkout/sessions/{id}/public` every 2 seconds for up to 10 minutes. This needs the `clientSecret`.
+
+If the popup is blocked, the SDK falls back to a same-tab redirect. With `onPopupBlocked: 'error'` it emits an `error` event (`popup_blocked`) instead.
+
+## Return page
+
+Your `successUrl` / `cancelUrl` page handles the return in every mode:
+
+<CodeGroup>
+
+```js JavaScript
+import { handleReturn } from '@crafterpayments/js';
+
+const result = await handleReturn(); // { sessionId, status, signed, openedByCheckout } | null
+```
+
+```tsx React
+'use client';
+
+import { useCheckoutReturn } from '@crafterpayments/react';
+
+export default function CheckoutReturn() {
+  const { result, loading } = useCheckoutReturn();
+  if (loading) return <p>Checking your payment…</p>;
+  if (result?.status === 'complete') return <p>Thank you! Your order is being delivered.</p>;
+  return <p>Payment was not completed.</p>;
+}
+```
+
+</CodeGroup>
+
+The status in the URL only decides which screen to show. To check the `cp_sig` return signature on your server, see [Quickstart, step 4](/en/developers/payments/quickstart).
+
+## Modal and embedded (Pro and above)
+
+Create the session with `uiMode: "embedded"`. On the Free plan this returns `403 plan_feature_unavailable`; the plan is checked again when the embedded page loads, so the page does not open if the store's plan no longer includes it.
+
+The embedded page can be framed only by the session's allowed **web** origins (`https://…` and verified wildcard subdomains). App schemes such as `mygame://` can never frame it. Add the origin of the page that hosts the checkout to the allowed origins.
+
+### Embedded in your page
+
+<CodeGroup>
+
+```js JavaScript
+const checkout = crafter.mountCheckout('#checkout', {
+  clientSecret, // sessionId is derived from it
+  appearance: {
+    theme: 'dark',
+    variables: { colorPrimary: '#7c3aed', borderRadius: '10px', fontFamily: 'Inter, sans-serif' },
+  },
+});
+checkout.on('complete', (r) => {/* r.verified: confirmed via /public */});
+// Remove it with checkout.destroy()
+```
+
+```tsx React
+'use client';
+
+import { EmbeddedCheckout } from '@crafterpayments/react';
+
+export function Payment({ clientSecret }: { clientSecret: string }) {
+  return (
+    <EmbeddedCheckout
+      clientSecret={clientSecret}
+      appearance={{ theme: 'dark', variables: { colorPrimary: '#7c3aed', borderRadius: '10px' } }}
+      onComplete={(result) => console.log('paid', result.verified)}
+      onPaymentFailed={({ code }) => console.warn('declined', code)} // the buyer can retry in place
+      onError={(error) => console.error(error.code)}
+    />
+  );
+}
+```
+
+</CodeGroup>
+
+If the page does not report `ready` within 15 seconds (`loadTimeoutMs`), the SDK emits `error` with `embed_load_timeout`. `<EmbeddedCheckout>` renders an empty `<div>` on the server, mounts the iframe in the browser and removes it on unmount, or when `clientSecret`, `sessionId`, `locale` or the appearance changes. It is safe under React StrictMode.
+
+### As a modal
+
+<CodeGroup>
+
+```js JavaScript
+button.addEventListener('click', () => {
+  crafter.open({ mode: 'modal', createSession }); // or { mode: 'modal', clientSecret }
+});
+```
+
+```tsx React
+<CheckoutButton mode="modal" createSession={createSession}>Pay</CheckoutButton>
+```
+
+</CodeGroup>
+
+Modal options: `closeOnEscape` (default `true`), `closeOnBackdrop` (default `false`), `autoCloseOnComplete` (default `true`).
+
+### Security
+
+- The `clientSecret` is never put in the iframe URL. The SDK sends it with `postMessage`, only to the payment page origin, after the iframe reports `ready`.
+- The SDK ignores every message that does not come from the payment page origin and from its own iframe.
+- Card details are typed only into the payment fields inside the payment page. Neither your page nor Crafter code can read card data.
+- Some payment methods cannot run inside an iframe. For those the SDK emits `redirect_required` and opens a separate window.
+
+## Appearance
+
+`appearance` works in the modal and embedded modes. There is no free-form CSS; invalid values are dropped with a console warning. Logo, store name and other branding come from the store's checkout settings.
+
+| Field | Values |
+| --- | --- |
+| `theme` | `light`, `dark`, `auto` |
+| `variables.colorPrimary`, `colorBackground`, `colorText`, `colorTextSecondary`, `colorTextPlaceholder`, `colorDanger`, `colorBorder`, `colorFocusRing` | `#rgb[a]`, `#rrggbb[aa]`, `rgb()` / `rgba()`, `hsl()` / `hsla()`, `transparent` |
+| `variables.fontFamily` | Letters, digits, spaces, commas, quotes, `-`, `_` |
+| `variables.fontSizeBase`, `borderRadius`, `borderWidth`, `spacingUnit` | `0` or a `px` / `rem` / `em` value |
+| `variables.fontWeightNormal` | `normal`, `bold`, `100`–`900` |
+| `showCardBrandIcon` | `true` / `false` |
+
+## Events
+
+| Event (JS) | React callback | Payload | When |
+| --- | --- | --- | --- |
+| `ready` | `onLoaded` | `{ sessionId }` | The payment page loaded or the window opened |
+| `complete` | `onComplete` | `{ sessionId, status, orderId?, verified }` | Payment completed |
+| `cancel` | `onCancel` | `{ sessionId, status: 'canceled', verified }` | The buyer went back, or the session was canceled. Going back does not cancel the session on the server. |
+| `expired` | `onExpired` | `{ sessionId, status: 'expired', verified }` | The session expired |
+| `payment_failed` | `onPaymentFailed` | `{ sessionId, code? }` | The payment was declined; the buyer can try again |
+| `redirect_required` | | `{ sessionId, url }` | A payment method that cannot run in the iframe; the SDK opens a separate window |
+| `close` | `onClose` | `{ sessionId? }` | The modal or popup closed without payment |
+| `error` | `onError` | `{ sessionId?, error }` | See the error codes below |
+
+`verified: true` means the status was read from `GET /v1/checkout/sessions/{id}/public`. It is still not proof of payment. In JavaScript, `checkout.result` is a Promise of the outcome (`null` after `close()`, rejected on error).
+
+`useCheckout` returns `{ open, redirect, close, status, result, error, ready }`. `status` goes `idle` → `opening` → `open` → `complete` / `canceled` / `expired`, or `closed`, `redirecting`, `error`.
+
+### SDK error codes
+
+`error.code` on `CrafterPaymentsError`: `not_browser`, `invalid_publishable_key`, `secret_key_in_browser`, `invalid_session_id`, `invalid_client_secret`, `invalid_checkout_url`, `invalid_options`, `mount_target_not_found`, `popup_blocked`, `embed_load_timeout`, `create_session_failed`, `result_timeout`, `network_error`, `api_error`. For `api_error`, `error.type`, `error.status` and `error.requestId` come from the [API error body](/en/api-reference/introduction#errors).
+
+Browser support: ES2020 (Chrome and Edge 80+, Firefox 74+, Safari 14+). Without `BroadcastChannel`, the popup result comes from polling only.

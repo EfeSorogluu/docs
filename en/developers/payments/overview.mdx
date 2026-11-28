@@ -12,7 +12,7 @@ The headless payments API is available to stores that use CrafterPayments in the
 ## Flow
 
 1. Your server creates a **checkout session** with a secret key (`POST /v1/checkout/sessions`). The request only carries product ids and quantities; the price always comes from the store catalog.
-2. You redirect the buyer to the `url` in the response.
+2. You redirect the buyer to the `url` in the response, or open it in a popup, a modal or embedded in your page with `@crafterpayments/js` ([Checkout modes](/en/developers/payments/checkout-modes)).
 3. The buyer enters a billing country, tax and the final total are calculated there, and the buyer pays.
 4. Crafter sends the buyer back to your `successUrl` (or `cancelUrl` if they leave) with signed parameters.
 5. Your server receives the `checkout.completed` webhook, or reads the session with `GET /v1/checkout/sessions/{id}`, and completes the order on your side.
@@ -29,7 +29,7 @@ The parameters on the return URL only tell you that "Crafter redirected the buye
 | Secret key | `cp_sk_test_…` / `cp_sk_live_…`. Server-side only. |
 | Publishable key | `cp_pk_test_…` / `cp_pk_live_…`. In the browser, only to read session status. |
 | Checkout session | `cs_test_…` / `cs_live_…`. Stays open for 30 minutes by default (configurable from 15 minutes to 24 hours). |
-| Test and live mode | The key's mode decides the session's mode. See [Keys, modes and allowed origins](/en/developers/payments/keys-and-modes). |
+| Test and live mode | The key's mode decides the session's mode. See [Test mode](/en/developers/payments/test-mode). |
 | Allowed origins | Where return URLs and browser requests may come from. Your store's domains are allowed automatically. |
 
 ## Session statuses

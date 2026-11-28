@@ -13,6 +13,16 @@ The API works over HTTPS with JSON only. Request bodies must use `Content-Type: 
 
 OpenAPI 3 definition: [`crafterpayments-v1.openapi.json`](https://github.com/EfeSorogluu/docs/blob/main/api-reference/crafterpayments-v1.openapi.json)
 
+## SDKs
+
+| Package | Where | Use |
+| --- | --- | --- |
+| `@crafterpayments/node` | Your server (Node.js 18+) | Create, read and cancel sessions; verify webhooks and the return signature. See [Quickstart](/en/developers/payments/quickstart). |
+| `@crafterpayments/js` | Browser | Redirect, popup, modal and embedded checkout. See [Checkout modes](/en/developers/payments/checkout-modes). |
+| `@crafterpayments/react` | React 18 / 19 | Provider, hooks, `<CheckoutButton>` and `<EmbeddedCheckout>`. See [Checkout modes](/en/developers/payments/checkout-modes). |
+
+All three are in Preview (0.1.0) and send `Crafter-Version: 2026-12` by default.
+
 ## Endpoints
 
 | Method | Path | Key |
@@ -46,6 +56,15 @@ Key types and modes: [Keys, modes and allowed origins](/en/developers/payments/k
 | `Retry-After` | Response | On `429`, how many seconds to wait. |
 
 Responses are sent with `Cache-Control: no-store`.
+
+## Versioning
+
+The API version is a date sent in the `Crafter-Version` header. The only supported version is `2026-12`.
+
+- If you omit the header, the latest version is used. Send it on every request so a future version cannot change your integration's behavior.
+- Every response carries the `Crafter-Version` that was used.
+- An unsupported value returns `400 crafter_version_unsupported`; `details.supported` lists the supported versions.
+- Webhooks are versioned separately: the body's `version` field and the `X-Crafter-Webhook-Version` header (currently `2026-12`). See [Webhook events](/en/developers/payments/webhooks#event-catalog).
 
 ## Idempotency
 
@@ -120,7 +139,7 @@ Error messages are always in English. `message` is derived from `type`; if a new
 | Requests per key (per minute) | 30 | 100 |
 | Embedded payment page (`uiMode: "embedded"`) | No | Yes |
 
-Test-mode sessions do not count towards the quota. For current plan contents, see the [pricing page](https://crafter.net.tr/en/pricing).
+Test-mode sessions do not count towards the quota. Details and what happens at each limit: [Plans and limits](/en/developers/payments/plans-and-limits).
 
 ### Request limits
 

@@ -129,6 +129,93 @@ Uygulama uç noktaları canlı ya da test için ayrı açılır: canlı uç nokt
 
 ## İmzayı doğrulama
 
+### `@crafterpayments/node` ile
+
+`CrafterPayments.webhooks.constructEvent(rawBody, signatureHeader, secret, toleranceSec?)` imzayı sabit sürede karşılaştırır, şu andan `toleranceSec` (varsayılan 300 saniye) fazla uzak zaman damgalarını reddeder ve ayrıştırılmış olayı döndürür. İstek gövdesini **ham** olarak verin (string ya da `Buffer`).
+
+<Note>
+`@crafterpayments/node` **Önizleme** (0.1.0) aşamasındadır. API, 1.0 öncesinde değişebilir.
+</Note>
+
+<CodeGroup>
+
+```ts Express
+import express from 'express';
+import { CrafterPayments } from '@crafterpayments/node';
+
+const app = express();
+
+// Bu rotayı genel app.use(express.json()) çağrısından önce tanımlayın; yoksa gövde ayrıştırılmış gelir
+app.post('/webhooks/crafter', express.raw({ type: 'application/json' }), (req, res) => {
+  let event;
+  try {
+    event = CrafterPayments.webhooks.constructEvent(
+      req.body, // express.raw sayesinde Buffer
+      req.header('x-crafter-signature'),
+      process.env.CRAFTER_WEBHOOK_SECRET!, // whsec_...
+    );
+  } catch (error) {
+    return res.status(400).send('Invalid signature');
+  }
+
+  if (event.event === 'checkout.completed') {
+    const { checkoutSession, orderId, amount, currency } = event.data;
+    // event.id ile tekilleştirin, sonra checkoutSession.clientReferenceId için siparişi tamamlayın
+  }
+  res.sendStatus(200);
+});
+```
+
+```ts Next.js
+// app/api/webhooks/crafter/route.ts
+import { CrafterPayments } from '@crafterpayments/node';
+
+export const runtime = 'nodejs';
+
+export async function POST(request: Request) {
+  const body = await request.text(); // ham gövde
+  try {
+    const event = CrafterPayments.webhooks.constructEvent(
+      body,
+      request.headers.get('x-crafter-signature'),
+      process.env.CRAFTER_WEBHOOK_SECRET!,
+    );
+    if (event.event === 'checkout.completed') {
+      // event.id ile tekilleştirin, sonra siparişi tamamlayın
+    }
+    return new Response(null, { status: 200 });
+  } catch {
+    return new Response('Invalid signature', { status: 400 });
+  }
+}
+```
+
+</CodeGroup>
+
+Sırrı yenilerken iki sırrı birden verin; herhangi biriyle eşleşen imza kabul edilir:
+
+```ts
+CrafterPayments.webhooks.constructEvent(body, header, [
+  process.env.CRAFTER_WEBHOOK_SECRET!,
+  process.env.CRAFTER_WEBHOOK_SECRET_OLD!,
+]);
+```
+
+Doğrulama başarısız olursa `CrafterPaymentsSignatureVerificationError` fırlatılır. `type` değeri şunlardan biridir:
+
+| `type` | Neden |
+| --- | --- |
+| `webhook_signature_missing` | `X-Crafter-Signature` başlığı yok. |
+| `webhook_signature_malformed` | Başlık `t=…,v1=…` biçiminde değil. |
+| `webhook_signature_legacy_format` | Uç nokta hâlâ eski `sha256=…` biçimini kullanıyor. Panelden uç noktayı `2026-12` biçimine geçirin. |
+| `webhook_timestamp_outside_tolerance` | `t` şu andan çok uzak. |
+| `webhook_signature_mismatch` | Hiçbir imza eşleşmiyor. Sırrı ve gövdeyi ham, değiştirilmemiş haliyle verdiğinizi kontrol edin. |
+| `webhook_payload_invalid` | İmza geçerli ama gövde geçerli bir JSON değil. |
+
+`generateTestHeader({ payload, secret })` testler için geçerli bir başlık üretir. Ayrıntı: [Test modu](/tr/developers/payments/test-mode).
+
+### SDK olmadan
+
 1. `X-Crafter-Signature` başlığından `t` değerini ve **bütün** `v1` değerlerini ayırın.
 2. `t` şu andan en fazla 5 dakika farklı olmalı (eski isteğin tekrar gönderilmesini engeller).
 3. `t + "." + ham gövde` için sırrınızla HMAC-SHA256 hesaplayın ve `v1` değerlerinden herhangi biriyle sabit sürede karşılaştırın. Biri tutuyorsa imza geçerlidir.

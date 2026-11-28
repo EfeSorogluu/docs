@@ -1,0 +1,75 @@
+---
+title: "Test mode and test cards"
+description: "Build and test your integration with test keys: what test mode does, test cards, testing webhooks and going live."
+---
+
+Use test keys (`cp_sk_test_…` on your server, `cp_pk_test_…` in the browser) while you build. Test sessions (`cs_test_…`) never move real money and are kept apart from live data. You switch between **Test** and **Live** at the top of **Settings → Advanced → Headless & API** in the dashboard; each mode has its own keys, allowed origins and return signing secret.
+
+The key's mode decides everything: a session created with a test key is `cs_test_…`, one created with a live key is `cs_live_…`, and the `livemode` field in the session follows. A key in one mode cannot see sessions of the other mode (`404 checkout_session_not_found`).
+
+## What is different in test mode
+
+| | Test | Live |
+| --- | --- | --- |
+| Monthly session quota | Not counted | Based on your plan |
+| `http://localhost` return URL | Allowed automatically | Not allowed |
+| `http://` allowed origin | Accepted | `https://` only |
+| Payment | Test cards only, no real money moves | Real cards |
+| Orders | Marked **Test**, listed under the **Test** filter in Orders | Listed under **Live** |
+| Delivery | Simulated: no in-game commands, stock, licenses or roles | Real delivery |
+| Balance, payouts, invoices, tax, fees, statistics | Not affected | Included |
+| Emails to the buyer | Receipt only, subject starts with `[TEST]` | All order emails |
+| Webhooks | `livemode: false` | `livemode: true` |
+| Allowed origins and return signing secret | Separate | Separate |
+
+## Test cards
+
+A test session is paid on the same payment page with test card numbers; real cards are declined in test mode. Use any future expiry date, any three-digit CVC and any postal code.
+
+| Card number | Result |
+| --- | --- |
+| `4242 4242 4242 4242` | Payment succeeds |
+| `4000 0025 0000 3155` | Asks for 3D Secure authentication, then succeeds |
+| `4000 0000 0000 9995` | Declined (insufficient funds) |
+| `4000 0000 0000 0002` | Declined (generic decline) |
+
+<Note>
+Test orders never reach your balance or payouts and do not appear in statistics. Delivery is simulated, so no command runs on your game server. If test payments are not configured on the environment, paying a test session returns `checkout_test_payments_unavailable`.
+</Note>
+
+## Testing your webhook handler
+
+Test-mode payments send real webhook deliveries with `livemode: false` to your store endpoints, so you can test the whole flow end to end. Store endpoints receive both modes: check `livemode` before you deliver anything.
+
+To unit test your handler without a payment, build a valid signature header with `@crafterpayments/node`:
+
+```ts
+import { CrafterPayments, generateTestHeader } from '@crafterpayments/node';
+
+const payload = JSON.stringify({
+  event: 'checkout.completed',
+  id: 'whd_test_1',
+  version: '2026-12',
+  createdAt: new Date().toISOString(),
+  livemode: false,
+  data: {},
+});
+const secret = 'whsec_test_...';
+const header = generateTestHeader({ payload, secret });
+
+const event = CrafterPayments.webhooks.constructEvent(payload, header, secret);
+```
+
+## Checking the mode in code
+
+- In API responses and webhook bodies, `livemode` is `false` in test mode.
+- In `@crafterpayments/node`, `crafter.livemode` tells you which mode the client's key is in.
+- Test and live keys and sessions cannot be mixed: a live key cannot read a `cs_test_…` session.
+
+## Going live
+
+1. Switch the dashboard to **Live** and create a live secret key (`cp_sk_live_…`). Use the live publishable key (`cp_pk_live_…`) in the browser.
+2. Check the live **allowed origins**: only `https://` web origins are accepted, and `http://localhost` is not allowed. Your store's own domains are added automatically.
+3. Put the live **return signing secret** (`crs_…`) on your server; it is different from the test one.
+4. Make sure your webhook handler delivers only `livemode: true` events.
+5. Check your plan's monthly live session quota and request limit on [Plans and limits](/en/developers/payments/plans-and-limits).
