@@ -1,0 +1,336 @@
+---
+title: "Checkout modları: yönlendirme, açılır pencere ve gömülü"
+description: "CrafterPayments ödeme sayfasını @crafterpayments/js ya da @crafterpayments/react ile sitenizden açın: yönlendirme, açılır pencere, modal ve gömülü checkout."
+---
+
+Ödeme sayfasını dört şekilde gösterebilirsiniz. Her modda oturumu **sunucunuz** gizli anahtarla oluşturur ([Hızlı başlangıç](/tr/developers/payments/quickstart)); tarayıcıya yalnızca yayınlanabilir anahtar (`cp_pk_…`), oturum kimliği ve gerektiğinde `clientSecret` gider.
+
+| Mod | Alıcının gördüğü | Oturumun `uiMode` değeri | Paket |
+| --- | --- | --- | --- |
+| `redirect` | Ödeme sayfası aynı sekmede açılır. | `hosted` | Her pakette |
+| `popup` | Ödeme sayfası ayrı bir pencerede açılır; sayfanız açık kalır. | `hosted` | Her pakette |
+| `modal` | Ödeme sayfası sayfanızın üstünde bir modal (iframe) içinde açılır. | `embedded` | Pro ve üstü |
+| Gömülü | Ödeme sayfası sayfanızdaki bir öğenin içine yerleşir (iframe). | `embedded` | Pro ve üstü |
+
+`auto` (varsayılan) masaüstünde açılır pencere, telefonda (genişlik 800 px'ten az, kısa ekran ya da dar dokunmatik ekran) aynı sekmede yönlendirme kullanır. Telefondaki davranışı `mobile: 'new_tab'` ya da `mobile: 'modal'` ile değiştirebilirsiniz.
+
+<Note>
+`@crafterpayments/js` ve `@crafterpayments/react` **Önizleme** (0.1.0) aşamasındadır. API, 1.0 öncesinde değişebilir.
+</Note>
+
+<Warning>
+Tarayıcı olayları (`complete`, `onComplete`, …) **ödemenin kanıtı değildir**. Ürünleri yalnızca `checkout.completed` webhook'unda ya da sunucudan yapılan `GET /v1/checkout/sessions/{id}` okumasında teslim edin. Ayrıntı: [Webhook olayları](/tr/developers/payments/webhooks).
+</Warning>
+
+## Kurulum
+
+<CodeGroup>
+
+```bash JavaScript
+npm install @crafterpayments/js
+```
+
+```bash React
+npm install @crafterpayments/react
+```
+
+</CodeGroup>
+
+`@crafterpayments/react`, `@crafterpayments/js` paketini de birlikte kurar; React 18 ve 19 ile çalışır (Next.js App Router dahil; `"use client"` paketin içindedir).
+
+Paketleyici kullanmıyorsanız sürümlü dosyayı script etiketiyle yükleyin; paket `window.CrafterPayments` olarak kullanılabilir:
+
+```html
+<script src="https://js.crafterpayments.com/v1/crafterpayments-0.1.0.umd.min.js"
+        integrity="sha384-oa/Dy4TVny/MN2Q010/zqEsA144biaW67M95hzraMO4U32Klp48p3x0wCD3scBYi"
+        crossorigin="anonymous"></script>
+```
+
+`https://js.crafterpayments.com/v1/crafter.js` her zaman v1 kanalındaki son sürümü verir. İçeriği değiştiği için `integrity` (SRI) ile kullanılamaz; SRI gerekiyorsa sürümlü dosyayı kullanın.
+
+## İstemciyi yükleme
+
+<CodeGroup>
+
+```js JavaScript
+import { loadCrafterPayments } from '@crafterpayments/js';
+
+const crafter = await loadCrafterPayments('cp_pk_test_...');
+// Sunucuda (SSR) null döner. Aynı anahtarla tekrar çağırmak aynı istemciyi döndürür.
+```
+
+```tsx React
+'use client';
+
+import { CrafterPaymentsProvider } from '@crafterpayments/react';
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <CrafterPaymentsProvider
+      publishableKey="cp_pk_test_..."
+      options={{ locale: 'tr', appearance: { theme: 'auto' } }}
+    >
+      {children}
+    </CrafterPaymentsProvider>
+  );
+}
+```
+
+</CodeGroup>
+
+İki pakete de gizli anahtar (`cp_sk_…`) verilirse `secret_key_in_browser` hatası fırlatılır. Bir gizli anahtar tarayıcıya ulaştıysa panelden hemen yenileyin.
+
+## Sunucu uç noktanız
+
+Aşağıdaki örnekler, kendi sunucunuzda oturumu oluşturan ve tarayıcıya yalnızca gerekenleri döndüren bir uç noktayı çağırır:
+
+```ts Next.js route handler
+// app/api/checkout/route.ts
+import { CrafterPayments } from '@crafterpayments/node';
+
+const crafter = new CrafterPayments(process.env.CRAFTER_SECRET_KEY!); // cp_sk_test_... / cp_sk_live_...
+
+export async function POST(request: Request) {
+  const { productId } = await request.json();
+  const origin = new URL(request.url).origin;
+  const session = await crafter.checkoutSessions.create({
+    lineItems: [{ productId, quantity: 1 }],
+    uiMode: 'hosted', // modal ve gömülü mod için 'embedded'
+    successUrl: `${origin}/checkout/return`,
+    cancelUrl: `${origin}/checkout/return`,
+  });
+  // Tarayıcıya yalnızca bunlar gider
+  return Response.json({ sessionId: session.id, clientSecret: session.clientSecret, url: session.url });
+}
+```
+
+Sitenizin adresi mağazanın [izinli adreslerinde](/tr/developers/payments/keys-and-modes) olmalıdır. Dönüş adresleri, tarayıcıdan durum okuma ve gömme işlemi bu listeye göre kontrol edilir.
+
+## Yönlendirme
+
+En basit mod. Tarayıcı SDK'sı olmadan sunucunuzdan `303 See Other` ile de yönlendirebilirsiniz ([Hızlı başlangıç, 3. adım](/tr/developers/payments/quickstart)).
+
+<CodeGroup>
+
+```js JavaScript
+await crafter.redirectToCheckout({ sessionId: 'cs_test_...' });
+// ya da oturum adresiyle:
+// await crafter.redirectToCheckout({ url: session.url });
+```
+
+```tsx React
+import { useCheckout } from '@crafterpayments/react';
+
+const checkout = useCheckout();
+// ...
+checkout.redirect({ sessionId });
+```
+
+</CodeGroup>
+
+Yalnızca `checkout.crafterpayments.com` üzerindeki oturum adresleri kabul edilir (aksi halde `invalid_checkout_url`).
+
+## Açılır pencere
+
+<Warning>
+**`open()` çağrısını tıklama işleyicisinin içinde yapın.** Tarayıcılar açılır pencereye yalnızca kullanıcı tıklamasıyla eş zamanlı açıldığında izin verir. `open()` öncesine `await`, `setTimeout` ya da state güncellemesi turu koymayın. Önce oturum oluşturmanız gerekiyorsa kendiniz beklemek yerine `createSession` verin.
+</Warning>
+
+<CodeGroup>
+
+```js JavaScript
+button.addEventListener('click', () => {
+  const checkout = crafter.open({
+    mode: 'popup',
+    createSession: async () => {
+      const res = await fetch('/api/checkout', { method: 'POST' }); // sunucunuz
+      return res.json(); // { sessionId, clientSecret, url }
+    },
+  });
+  checkout.on('complete', (r) => showThanks(r.orderId));
+  checkout.on('cancel', () => {});
+  checkout.on('error', ({ error }) => console.error(error.code));
+});
+```
+
+```tsx React
+import { CheckoutButton } from '@crafterpayments/react';
+
+export function BuyButton({ productId }: { productId: string }) {
+  return (
+    <CheckoutButton
+      mode="popup"
+      createSession={async () => {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId }),
+        });
+        if (!res.ok) throw new Error('Ödeme başlatılamadı');
+        return res.json(); // { sessionId, clientSecret, url }
+      }}
+      onComplete={(result) => console.log('ödendi', result.orderId)} // teşekkür ekranı gösterin; teslimatı webhook'ta yapın
+      onError={(error) => console.error(error.code)}
+    >
+      Satın al
+    </CheckoutButton>
+  );
+}
+```
+
+</CodeGroup>
+
+`createSession` ile pencere tıklamada yükleniyor durumuyla açılır, ödeme sayfası sunucunuz yanıt verince yüklenir. `<CheckoutButton>` `open` çağrısını zaten doğru yapar; istemci yüklenirken ve oturum oluşturulurken devre dışı ve `aria-busy` olur.
+
+`useCheckout` hook'u ile:
+
+```tsx React
+// Çalışır: open() doğrudan tıklamada çalışır
+<button onClick={() => checkout.open({ createSession, mode: 'popup' })}>Öde</button>
+
+// Açılır pencere engellenir: pencere bir await'ten sonra açılıyor
+<button onClick={async () => { const s = await createSession(); checkout.open(s); }}>Öde</button>
+```
+
+### Açılır pencerenin sonucu nasıl gelir
+
+Ödeme sayfası `Cross-Origin-Opener-Policy: same-origin` gönderir; bu yüzden açılır pencere ile sayfanız arasında doğrudan mesaj yoktur. SDK sonucu iki yoldan alır:
+
+1. `successUrl` / `cancelUrl` sayfanız (kendi adresinizde) `handleReturn()` çağırır (React: `useCheckoutReturn()`). Sonucu ilk sekmeye iletir ve açılır pencereyi kapatır.
+2. Yedek olarak SDK, `GET /v1/checkout/sessions/{id}/public` adresini 2 saniyede bir, en fazla 10 dakika okur. Bunun için `clientSecret` gerekir.
+
+Açılır pencere engellenirse SDK aynı sekmede yönlendirmeye geçer. `onPopupBlocked: 'error'` verirseniz bunun yerine `error` olayı (`popup_blocked`) gelir.
+
+## Dönüş sayfası
+
+`successUrl` / `cancelUrl` sayfanız her modda dönüşü karşılar:
+
+<CodeGroup>
+
+```js JavaScript
+import { handleReturn } from '@crafterpayments/js';
+
+const result = await handleReturn(); // { sessionId, status, signed, openedByCheckout } | null
+```
+
+```tsx React
+'use client';
+
+import { useCheckoutReturn } from '@crafterpayments/react';
+
+export default function CheckoutReturn() {
+  const { result, loading } = useCheckoutReturn();
+  if (loading) return <p>Ödemeniz kontrol ediliyor…</p>;
+  if (result?.status === 'complete') return <p>Teşekkürler! Siparişiniz teslim ediliyor.</p>;
+  return <p>Ödeme tamamlanmadı.</p>;
+}
+```
+
+</CodeGroup>
+
+Adresteki durum yalnızca hangi ekranın gösterileceğini belirler. `cp_sig` dönüş imzasını sunucunuzda doğrulamak için [Hızlı başlangıç, 4. adım](/tr/developers/payments/quickstart).
+
+## Modal ve gömülü (Pro ve üstü)
+
+Oturumu `uiMode: "embedded"` ile oluşturun. Free pakette bu istek `403 plan_feature_unavailable` döner. Paket, gömülü sayfa yüklenirken yeniden kontrol edilir; mağazanın paketi artık bu özelliği içermiyorsa sayfa açılmaz.
+
+Gömülü sayfa yalnızca oturumun izinli **web** adreslerinden (`https://…` ve doğrulanmış joker alt alan adları) çerçevelenebilir. `mygame://` gibi uygulama şemaları hiçbir zaman çerçeveleyemez. Checkout'u gösteren sayfanın adresini izinli adreslere ekleyin.
+
+### Sayfanıza gömülü
+
+<CodeGroup>
+
+```js JavaScript
+const checkout = crafter.mountCheckout('#checkout', {
+  clientSecret, // sessionId bundan çıkarılır
+  appearance: {
+    theme: 'dark',
+    variables: { colorPrimary: '#7c3aed', borderRadius: '10px', fontFamily: 'Inter, sans-serif' },
+  },
+});
+checkout.on('complete', (r) => {/* r.verified: /public ile doğrulandı */});
+// Kaldırmak için checkout.destroy()
+```
+
+```tsx React
+'use client';
+
+import { EmbeddedCheckout } from '@crafterpayments/react';
+
+export function Payment({ clientSecret }: { clientSecret: string }) {
+  return (
+    <EmbeddedCheckout
+      clientSecret={clientSecret}
+      appearance={{ theme: 'dark', variables: { colorPrimary: '#7c3aed', borderRadius: '10px' } }}
+      onComplete={(result) => console.log('ödendi', result.verified)}
+      onPaymentFailed={({ code }) => console.warn('reddedildi', code)} // alıcı aynı yerde tekrar deneyebilir
+      onError={(error) => console.error(error.code)}
+    />
+  );
+}
+```
+
+</CodeGroup>
+
+Sayfa 15 saniye içinde (`loadTimeoutMs`) `ready` bildirmezse SDK `embed_load_timeout` koduyla `error` olayı verir. `<EmbeddedCheckout>` sunucuda boş bir `<div>` çizer, iframe'i tarayıcıda yerleştirir; bileşen kaldırıldığında ya da `clientSecret`, `sessionId`, `locale` veya görünüm değiştiğinde iframe'i kaldırır. React StrictMode ile güvenle çalışır.
+
+### Modal olarak
+
+<CodeGroup>
+
+```js JavaScript
+button.addEventListener('click', () => {
+  crafter.open({ mode: 'modal', createSession }); // ya da { mode: 'modal', clientSecret }
+});
+```
+
+```tsx React
+<CheckoutButton mode="modal" createSession={createSession}>Öde</CheckoutButton>
+```
+
+</CodeGroup>
+
+Modal seçenekleri: `closeOnEscape` (varsayılan `true`), `closeOnBackdrop` (varsayılan `false`), `autoCloseOnComplete` (varsayılan `true`).
+
+### Güvenlik
+
+- `clientSecret` hiçbir zaman iframe adresine konmaz. SDK onu iframe `ready` bildirdikten sonra `postMessage` ile yalnızca ödeme sayfasının adresine gönderir.
+- SDK, ödeme sayfasının adresinden ve kendi iframe'inden gelmeyen her mesajı yok sayar.
+- Kart bilgileri yalnızca ödeme sayfasının içindeki ödeme alanlarına yazılır. Ne sayfanız ne de Crafter kodu kart verisini okuyabilir.
+- Bazı ödeme yöntemleri iframe içinde çalışamaz. Bunlar için SDK `redirect_required` olayı verir ve ayrı bir pencere açar.
+
+## Görünüm
+
+`appearance` modal ve gömülü modda çalışır. Serbest CSS yoktur; geçersiz değerler konsolda uyarıyla atlanır. Logo, mağaza adı ve diğer marka öğeleri mağazanın checkout ayarlarından gelir.
+
+| Alan | Değerler |
+| --- | --- |
+| `theme` | `light`, `dark`, `auto` |
+| `variables.colorPrimary`, `colorBackground`, `colorText`, `colorTextSecondary`, `colorTextPlaceholder`, `colorDanger`, `colorBorder`, `colorFocusRing` | `#rgb[a]`, `#rrggbb[aa]`, `rgb()` / `rgba()`, `hsl()` / `hsla()`, `transparent` |
+| `variables.fontFamily` | Harf, rakam, boşluk, virgül, tırnak, `-`, `_` |
+| `variables.fontSizeBase`, `borderRadius`, `borderWidth`, `spacingUnit` | `0` ya da `px` / `rem` / `em` değeri |
+| `variables.fontWeightNormal` | `normal`, `bold`, `100`–`900` |
+| `showCardBrandIcon` | `true` / `false` |
+
+## Olaylar
+
+| Olay (JS) | React geri çağrısı | İçerik | Ne zaman |
+| --- | --- | --- | --- |
+| `ready` | `onLoaded` | `{ sessionId }` | Ödeme sayfası yüklendi ya da pencere açıldı |
+| `complete` | `onComplete` | `{ sessionId, status, orderId?, verified }` | Ödeme tamamlandı |
+| `cancel` | `onCancel` | `{ sessionId, status: 'canceled', verified }` | Alıcı geri döndü ya da oturum iptal edildi. Geri dönmek oturumu sunucuda iptal etmez. |
+| `expired` | `onExpired` | `{ sessionId, status: 'expired', verified }` | Oturumun süresi doldu |
+| `payment_failed` | `onPaymentFailed` | `{ sessionId, code? }` | Ödeme reddedildi; alıcı tekrar deneyebilir |
+| `redirect_required` | | `{ sessionId, url }` | iframe içinde çalışamayan bir ödeme yöntemi; SDK ayrı bir pencere açar |
+| `close` | `onClose` | `{ sessionId? }` | Modal ya da açılır pencere ödeme yapılmadan kapandı |
+| `error` | `onError` | `{ sessionId?, error }` | Aşağıdaki hata kodlarına bakın |
+
+`verified: true`, durumun `GET /v1/checkout/sessions/{id}/public` ile okunduğu anlamına gelir. Yine de ödemenin kanıtı değildir. JavaScript'te `checkout.result` sonucu veren bir Promise'tir (`close()` sonrası `null`, hatada reddedilir).
+
+`useCheckout` şunu döndürür: `{ open, redirect, close, status, result, error, ready }`. `status` sırası: `idle` → `opening` → `open` → `complete` / `canceled` / `expired`; ya da `closed`, `redirecting`, `error`.
+
+### SDK hata kodları
+
+`CrafterPaymentsError` üzerindeki `error.code`: `not_browser`, `invalid_publishable_key`, `secret_key_in_browser`, `invalid_session_id`, `invalid_client_secret`, `invalid_checkout_url`, `invalid_options`, `mount_target_not_found`, `popup_blocked`, `embed_load_timeout`, `create_session_failed`, `result_timeout`, `network_error`, `api_error`. `api_error` için `error.type`, `error.status` ve `error.requestId` [API hata gövdesinden](/tr/api-reference/introduction) gelir.
+
+Tarayıcı desteği: ES2020 (Chrome ve Edge 80+, Firefox 74+, Safari 14+). `BroadcastChannel` yoksa açılır pencerenin sonucu yalnızca yoklamayla gelir.

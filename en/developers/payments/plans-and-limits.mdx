@@ -1,0 +1,50 @@
+---
+title: "Plans and limits"
+description: "Headless checkout on every Crafter plan: monthly live sessions, request rate limit, embedded checkout and what happens when you reach a limit."
+---
+
+Headless checkout is available on every plan. The Free plan has a monthly session quota, a lower request limit and no embedded checkout; Pro and above have no session quota.
+
+| | Free | Pro | Business |
+| --- | --- | --- | --- |
+| Live sessions per month | 100 | Unlimited | Unlimited |
+| API requests per key, per minute | 30 | 100 | 100 |
+| Redirect and popup checkout | Yes | Yes | Yes |
+| Embedded and modal checkout (`uiMode: "embedded"`) | No | Yes | Yes |
+| `checkout.completed`, `checkout.expired` webhooks | Yes | Yes | Yes |
+| `order.*` webhooks (for example `order.chargeback`) | No | Yes | Yes |
+
+For current plan contents and prices, see the [pricing page](https://crafter.net.tr/en/pricing). The **Plan and usage** section on **Settings → Advanced → Headless & API** shows this month's session count, your request limit and whether embedded checkout is available.
+
+## Monthly session quota
+
+- Only **live** sessions created **through the API** count. Test-mode sessions and your store's own cart checkout do not.
+- The month is the calendar month in UTC.
+- When the quota is used up, `POST /v1/checkout/sessions` with a live key returns `403 plan_limit_reached` (`details.limit`). Sessions that are already open can still be paid.
+
+## Request rate limit
+
+- The limit applies **per API key**, in one-minute windows.
+- Above the limit the API returns `429 too_many_requests` with `details.limit`, `details.windowSeconds` (60) and a `Retry-After` header (seconds until the next window).
+- `@crafterpayments/node` retries `429` responses automatically after the `Retry-After` delay (up to `maxRetries`, default 2).
+
+## Embedded checkout
+
+- Creating a session with `uiMode: "embedded"` on the Free plan returns `403 plan_feature_unavailable`.
+- The plan is checked again when the embedded page loads. If you move to a plan without embedded checkout, the feature turns off at the end of your billing period, and embedded pages of open sessions stop loading from then on. Redirect and popup keep working.
+
+## Other limits
+
+| Limit | Value |
+| --- | --- |
+| Active secret keys | Up to 10 per mode |
+| Extra allowed origins | Up to 20 per mode (your store's domains are added automatically) |
+| Line items per session | 1–50, quantity 1–99 per line |
+| Session lifetime | 900–86400 seconds (default 1800) |
+| Payment attempts | Up to 5 per session |
+
+Field limits (`metadata`, `clientReferenceId`, `customer.*`, return URLs) are listed in [API reference, Limits](/en/api-reference/introduction#limits).
+
+## Fees
+
+Every sale carries a commission and a transaction fee based on your plan. See [Commission and transaction fee](/en/crafterpayments/fees).

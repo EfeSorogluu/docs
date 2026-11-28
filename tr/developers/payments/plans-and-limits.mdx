@@ -1,0 +1,50 @@
+---
+title: "Paketler ve sınırlar"
+description: "Headless checkout her Crafter paketinde: aylık canlı oturum, istek sınırı, gömülü checkout ve bir sınıra ulaştığınızda olanlar."
+---
+
+Headless checkout her pakette açıktır. Free pakette aylık oturum kotası ve daha düşük bir istek sınırı vardır, gömülü checkout yoktur; Pro ve üstünde oturum kotası yoktur.
+
+| | Free | Pro | Business |
+| --- | --- | --- | --- |
+| Aylık canlı oturum | 100 | Sınırsız | Sınırsız |
+| Anahtar başına API isteği (dakikada) | 30 | 100 | 100 |
+| Yönlendirme ve açılır pencere checkout | Var | Var | Var |
+| Gömülü ve modal checkout (`uiMode: "embedded"`) | Yok | Var | Var |
+| `checkout.completed`, `checkout.expired` webhook'ları | Var | Var | Var |
+| `order.*` webhook'ları (ör. `order.chargeback`) | Yok | Var | Var |
+
+Güncel paket içerikleri ve fiyatlar için [fiyatlandırma sayfasına](https://crafter.net.tr/tr/pricing) bakın. **Ayarlar → Gelişmiş → Headless ve API** sayfasındaki **Paket ve kullanım** bölümü bu ayki oturum sayısını, istek sınırınızı ve gömülü checkout'un açık olup olmadığını gösterir.
+
+## Aylık oturum kotası
+
+- Yalnızca **API ile** açılan **canlı** oturumlar sayılır. Test modu oturumları ve mağazanızın kendi sepet ödemesi sayılmaz.
+- Ay, UTC'ye göre takvim ayıdır.
+- Kota dolduğunda canlı anahtarla `POST /v1/checkout/sessions` isteği `403 plan_limit_reached` döner (`details.limit`). Önceden açılmış oturumlar yine ödenebilir.
+
+## İstek sınırı
+
+- Sınır **API anahtarı başına**, bir dakikalık pencerelerle uygulanır.
+- Sınır aşılınca API `429 too_many_requests` döner; `details.limit`, `details.windowSeconds` (60) ve `Retry-After` başlığı (bir sonraki pencereye kalan saniye) gelir.
+- `@crafterpayments/node`, `429` yanıtlarını `Retry-After` süresinden sonra kendiliğinden tekrar dener (en fazla `maxRetries`, varsayılan 2).
+
+## Gömülü checkout
+
+- Free pakette `uiMode: "embedded"` ile oturum açmak `403 plan_feature_unavailable` döner.
+- Paket, gömülü sayfa yüklenirken yeniden kontrol edilir. Gömülü checkout içermeyen bir pakete geçerseniz özellik fatura döneminizin sonunda kapanır; o andan sonra açık oturumların gömülü sayfası da yüklenmez. Yönlendirme ve açılır pencere çalışmaya devam eder.
+
+## Diğer sınırlar
+
+| Sınır | Değer |
+| --- | --- |
+| Etkin gizli anahtar | Mod başına en fazla 10 |
+| Ek izinli adres | Mod başına en fazla 20 (mağazanızın alan adları kendiliğinden eklenir) |
+| Oturum başına satır | 1–50, satır başına adet 1–99 |
+| Oturum süresi | 900–86400 saniye (varsayılan 1800) |
+| Ödeme denemesi | Oturum başına en fazla 5 |
+
+Alan sınırları (`metadata`, `clientReferenceId`, `customer.*`, dönüş adresleri) [API referansı, Sınırlar](/tr/api-reference/introduction) bölümündedir.
+
+## Ücretler
+
+Her satıştan paketinize göre komisyon ve işlem ücreti düşülür. Ayrıntı: [Komisyon ve işlem ücreti](/tr/crafterpayments/fees).

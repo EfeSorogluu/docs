@@ -12,7 +12,7 @@ Headless ödeme API'si, CrafterPayments'ı küresel satıcı (MoR) modelinde kul
 ## Akış
 
 1. Sunucunuz gizli anahtarla bir **checkout oturumu** oluşturur (`POST /v1/checkout/sessions`). İstekte yalnızca ürün kimliği ve adet gönderilir; fiyat her zaman mağaza kataloğundan gelir.
-2. Yanıttaki `url` adresine alıcıyı yönlendirirsiniz.
+2. Yanıttaki `url` adresine alıcıyı yönlendirirsiniz ya da `@crafterpayments/js` ile açılır pencerede, modalda veya sayfanıza gömülü açarsınız ([Checkout modları](/tr/developers/payments/checkout-modes)).
 3. Alıcı fatura ülkesini girer, vergi ve son tutar burada hesaplanır, ödemeyi yapar.
 4. Crafter alıcıyı `successUrl` (ya da vazgeçerse `cancelUrl`) adresinize imzalı parametrelerle geri gönderir.
 5. Sunucunuz `checkout.completed` webhook'unu alır ya da oturumu `GET /v1/checkout/sessions/{id}` ile okur ve siparişi kendi tarafında tamamlar.
@@ -29,7 +29,7 @@ Dönüş adresine gelen parametreler yalnızca "alıcıyı Crafter yönlendirdi"
 | Gizli anahtar | `cp_sk_test_…` / `cp_sk_live_…`. Yalnızca sunucuda kullanılır. |
 | Yayınlanabilir anahtar | `cp_pk_test_…` / `cp_pk_live_…`. Tarayıcıda yalnızca durum okumak için. |
 | Checkout oturumu | `cs_test_…` / `cs_live_…`. Varsayılan 30 dakika açık kalır (15 dakika ile 24 saat arasında ayarlanabilir). |
-| Test ve canlı mod | Anahtarın modu oturumun modunu belirler. Ayrıntı: [Anahtarlar, modlar ve izinli adresler](/tr/developers/payments/keys-and-modes) |
+| Test ve canlı mod | Anahtarın modu oturumun modunu belirler. Ayrıntı: [Test modu](/tr/developers/payments/test-mode) |
 | İzinli adresler | Dönüş adreslerinin ve tarayıcı isteklerinin geleceği adresler. Mağazanızın alan adları kendiliğinden izinlidir. |
 
 ## Oturum durumları

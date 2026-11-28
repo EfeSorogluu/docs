@@ -172,8 +172,11 @@
                 "pages": [
                   "tr/developers/payments/overview",
                   "tr/developers/payments/quickstart",
+                  "tr/developers/payments/checkout-modes",
                   "tr/developers/payments/keys-and-modes",
+                  "tr/developers/payments/test-mode",
                   "tr/developers/payments/webhooks",
+                  "tr/developers/payments/plans-and-limits",
                   "tr/developers/payments/platform-rules"
                 ]
               },
@@ -375,8 +378,11 @@
                 "pages": [
                   "en/developers/payments/overview",
                   "en/developers/payments/quickstart",
+                  "en/developers/payments/checkout-modes",
                   "en/developers/payments/keys-and-modes",
+                  "en/developers/payments/test-mode",
                   "en/developers/payments/webhooks",
+                  "en/developers/payments/plans-and-limits",
                   "en/developers/payments/platform-rules"
                 ]
               },

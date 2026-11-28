@@ -129,6 +129,93 @@ App endpoints are created for live or for test: a live endpoint receives only `l
 
 ## Verifying the signature
 
+### With `@crafterpayments/node`
+
+`CrafterPayments.webhooks.constructEvent(rawBody, signatureHeader, secret, toleranceSec?)` checks the signature in constant time, rejects timestamps more than `toleranceSec` (default 300 seconds) away from the current time and returns the parsed event. Pass the **raw** request body (a string or `Buffer`).
+
+<Note>
+`@crafterpayments/node` is in **Preview** (0.1.0). The API can still change before 1.0.
+</Note>
+
+<CodeGroup>
+
+```ts Express
+import express from 'express';
+import { CrafterPayments } from '@crafterpayments/node';
+
+const app = express();
+
+// Register this route before any global app.use(express.json()), or the body arrives already parsed
+app.post('/webhooks/crafter', express.raw({ type: 'application/json' }), (req, res) => {
+  let event;
+  try {
+    event = CrafterPayments.webhooks.constructEvent(
+      req.body, // Buffer, thanks to express.raw
+      req.header('x-crafter-signature'),
+      process.env.CRAFTER_WEBHOOK_SECRET!, // whsec_...
+    );
+  } catch (error) {
+    return res.status(400).send('Invalid signature');
+  }
+
+  if (event.event === 'checkout.completed') {
+    const { checkoutSession, orderId, amount, currency } = event.data;
+    // Deduplicate on event.id, then complete the order for checkoutSession.clientReferenceId
+  }
+  res.sendStatus(200);
+});
+```
+
+```ts Next.js
+// app/api/webhooks/crafter/route.ts
+import { CrafterPayments } from '@crafterpayments/node';
+
+export const runtime = 'nodejs';
+
+export async function POST(request: Request) {
+  const body = await request.text(); // raw body
+  try {
+    const event = CrafterPayments.webhooks.constructEvent(
+      body,
+      request.headers.get('x-crafter-signature'),
+      process.env.CRAFTER_WEBHOOK_SECRET!,
+    );
+    if (event.event === 'checkout.completed') {
+      // Deduplicate on event.id, then complete the order
+    }
+    return new Response(null, { status: 200 });
+  } catch {
+    return new Response('Invalid signature', { status: 400 });
+  }
+}
+```
+
+</CodeGroup>
+
+While you rotate the secret, pass both secrets; a signature that matches either one is accepted:
+
+```ts
+CrafterPayments.webhooks.constructEvent(body, header, [
+  process.env.CRAFTER_WEBHOOK_SECRET!,
+  process.env.CRAFTER_WEBHOOK_SECRET_OLD!,
+]);
+```
+
+On failure it throws `CrafterPaymentsSignatureVerificationError`. Its `type` is one of:
+
+| `type` | Cause |
+| --- | --- |
+| `webhook_signature_missing` | No `X-Crafter-Signature` header. |
+| `webhook_signature_malformed` | The header is not in the `t=…,v1=…` format. |
+| `webhook_signature_legacy_format` | The endpoint still uses the legacy `sha256=…` format. Switch the endpoint to the `2026-12` format in the dashboard. |
+| `webhook_timestamp_outside_tolerance` | `t` is too far from the current time. |
+| `webhook_signature_mismatch` | No signature matches. Check the secret, and that you pass the raw, unmodified body. |
+| `webhook_payload_invalid` | The signature is valid but the body is not valid JSON. |
+
+`generateTestHeader({ payload, secret })` builds a valid header for tests. See [Test mode](/en/developers/payments/test-mode#testing-your-webhook-handler).
+
+### Without the SDK
+
 1. Split `t` and **every** `v1` value out of the `X-Crafter-Signature` header.
 2. `t` must be within 5 minutes of the current time (this blocks replays of old requests).
 3. Compute HMAC-SHA256 of `t + "." + raw body` with your secret and compare it to each `v1` in constant time. The signature is valid if any of them matches.

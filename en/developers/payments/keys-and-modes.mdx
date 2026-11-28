@@ -29,35 +29,7 @@ All of these settings are on **Settings → Advanced → Headless & API** in the
 
 ## Test and live mode
 
-The key's mode decides everything: a session created with a test key is `cs_test_…`, one created with a live key is `cs_live_…`, and the `livemode` field in the session follows. A key in one mode cannot see sessions of the other mode (`404 checkout_session_not_found`).
-
-| | Test | Live |
-| --- | --- | --- |
-| Monthly session quota | Not counted | Based on your plan |
-| `http://localhost` return URL | Allowed automatically | Not allowed |
-| `http://` allowed origin | Accepted | `https://` only |
-| Payment | Test cards only, no real money moves | Real cards |
-| Orders | Marked **Test**, listed under the **Test** filter in Orders | Listed under **Live** |
-| Delivery | Simulated: no in-game commands, stock, licenses or roles | Real delivery |
-| Balance, payouts, invoices, tax, fees, statistics | Not affected | Included |
-| Emails to the buyer | Receipt only, subject starts with `[TEST]` | All order emails |
-| Webhooks | `livemode: false` | `livemode: true` |
-| Allowed origins and return signing secret | Separate | Separate |
-
-### Test cards
-
-A test session is paid on the same payment page with test card numbers; real cards are declined in test mode. Use any future expiry date, any three-digit CVC and any postal code.
-
-| Card number | Result |
-| --- | --- |
-| `4242 4242 4242 4242` | Payment succeeds |
-| `4000 0025 0000 3155` | Asks for 3D Secure authentication, then succeeds |
-| `4000 0000 0000 9995` | Declined (insufficient funds) |
-| `4000 0000 0000 0002` | Declined (generic decline) |
-
-<Note>
-Test orders never reach your balance or payouts and do not appear in statistics. Delivery is simulated, so no command runs on your game server. If test payments are not configured on the environment, paying a test session returns `checkout_test_payments_unavailable`.
-</Note>
+The key's mode decides the session's mode: a test key creates `cs_test_…` sessions, a live key creates `cs_live_…` sessions, and a key in one mode cannot see sessions of the other mode (`404 checkout_session_not_found`). What differs between the modes, and the test cards, are on [Test mode](/en/developers/payments/test-mode).
 
 ## Return signing secret
 
@@ -86,4 +58,4 @@ The allowed list is copied into the session when it is created. An origin you la
 
 ## Plan limits
 
-The **Plan and usage** section on the same dashboard page shows this month's session count, your request limit and whether the embedded payment page is available. For the values, see [API reference, Limits](/en/api-reference/introduction#limits).
+The **Plan and usage** section on the same dashboard page shows this month's session count, your request limit and whether the embedded payment page is available. For the values, see [Plans and limits](/en/developers/payments/plans-and-limits).

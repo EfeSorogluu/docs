@@ -38,7 +38,25 @@ Bu rehberin sonunda sunucunuzdan bir checkout oturumu açmış, alıcıyı Craft
       }'
     ```
 
-    ```js Node.js
+    ```ts Node.js (SDK)
+    import { CrafterPayments } from '@crafterpayments/node';
+
+    const crafter = new CrafterPayments(process.env.CRAFTER_SECRET_KEY); // Crafter-Version: 2026-12 sabitlenir
+
+    const session = await crafter.checkoutSessions.create(
+      {
+        lineItems: [{ productId: 'PRODUCT_ID', quantity: 1 }],
+        customer: { email: 'oyuncu@example.com', externalId: 'user_42' },
+        successUrl: 'https://shop.example.com/tesekkurler?session={CHECKOUT_SESSION_ID}',
+        cancelUrl: 'https://shop.example.com/sepet',
+        clientReferenceId: 'order_1234',
+      },
+      { idempotencyKey: 'order_1234' }, // isteğe bağlı: SDK kendisi üretir ve tekrar denemelerde aynısını kullanır
+    );
+    // session.url -> "https://checkout.crafterpayments.com/c/cs_test_…"
+    ```
+
+    ```js Node.js (fetch)
     import crypto from 'node:crypto';
 
     const res = await fetch('https://api.crafterpayments.com/v1/checkout/sessions', {
@@ -68,6 +86,8 @@ Bu rehberin sonunda sunucunuzdan bir checkout oturumu açmış, alıcıyı Craft
 
     </CodeGroup>
 
+    Node.js SDK'sı `@crafterpayments/node` paketidir (Önizleme, 0.1.0; Node.js 18+). `Idempotency-Key` başlığını ekler, ağ hatalarını, `429` ve `5xx` yanıtlarını aynı anahtarla tekrar dener ve tipli hatalar fırlatır (`error.type`, `error.requestId`). Yayınlanabilir anahtarı reddeder.
+
     Yanıtta `amountTotal` ve `currency` **`null`** gelir. Vergi, ödeme sayfasında alıcının fatura ülkesine göre hesaplanır; son tutar ve tahsilat para birimi ödeme başladıktan sonra belli olur. Ödemeden önce bir tutar göstermeniz gerekiyorsa `amountSubtotal` (mağaza para biriminde, kupon ve vergi öncesi katalog toplamı) alanını kullanın.
 
     Alıcının oyuncu kimliğini biliyorsanız `customer.player` ile gönderin (ör. `{ "type": "minecraft_java", "username": "Notch" }`). Göndermezseniz ve sepette oyun içi teslimat gereken ürün varsa ödeme sayfası alıcıdan ister.
@@ -84,6 +104,8 @@ Bu rehberin sonunda sunucunuzdan bir checkout oturumu açmış, alıcıyı Craft
     ```
 
     Oturum varsayılan olarak 30 dakika açık kalır (`expiresInSeconds`: 900 ile 86400 arası).
+
+    Ödeme sayfasını bunun yerine açılır pencerede, modalda ya da sayfanıza gömülü açmak için: [Checkout modları](/tr/developers/payments/checkout-modes).
   </Step>
 
   <Step title="Dönüşü karşılayın">
@@ -102,7 +124,20 @@ Bu rehberin sonunda sunucunuzdan bir checkout oturumu açmış, alıcıyı Craft
 
     İmzayı **sunucunuzda** doğrulayın ve yalnızca doğru ekranı göstermek için kullanın:
 
-    ```js Node.js
+    <CodeGroup>
+
+    ```ts Node.js (SDK)
+    import { verifyReturnSignature } from '@crafterpayments/node';
+
+    app.get('/tesekkurler', (req, res) => {
+      const result = verifyReturnSignature(req.query, process.env.CRAFTER_RETURN_SECRET); // crs_… ya da adresin tamamı
+      if (!result) return res.redirect('/sepet');
+      // result = { sessionId, status, timestamp }; varsayılan tolerans 600 saniye
+      res.render('tesekkurler', { status: result.status });
+    });
+    ```
+
+    ```js Node.js (crypto)
     import crypto from 'node:crypto';
 
     export function verifyReturn(query, secret, toleranceSec = 600) {
@@ -120,6 +155,8 @@ Bu rehberin sonunda sunucunuzdan bir checkout oturumu açmış, alıcıyı Craft
     }
     ```
 
+    </CodeGroup>
+
     <Warning>
     Dönüş imzası yalnızca "bu ekrana alıcıyı Crafter yönlendirdi" bilgisidir. Teslimatı ya da hesaba ürün yazmayı bu imzaya bağlamayın; 5. adımı kullanın. Dönüş imza sırrı mod başınadır ve gizli kalmalıdır.
     </Warning>
@@ -131,11 +168,22 @@ Bu rehberin sonunda sunucunuzdan bir checkout oturumu açmış, alıcıyı Craft
     - **Webhook (önerilen):** Panelde mağaza webhook'larına bir uç nokta ekleyin ve `checkout.completed` olayına abone olun. İmzayı `X-Crafter-Signature` başlığıyla doğrulayın. Ayrıntı: [Webhook olayları](/tr/developers/payments/webhooks).
     - **Oturumu okuma:** `GET /v1/checkout/sessions/{id}` yanıtında `status` `complete` ise ödeme alınmıştır.
 
-    ```bash
+    <CodeGroup>
+
+    ```bash curl
     curl https://api.crafterpayments.com/v1/checkout/sessions/cs_test_... \
       -H "Authorization: Bearer $CRAFTER_SECRET_KEY" \
       -H "Crafter-Version: 2026-12"
     ```
+
+    ```ts Node.js (SDK)
+    const session = await crafter.checkoutSessions.retrieve('cs_test_...');
+    if (session.status === 'complete') {
+      // ödeme alındı
+    }
+    ```
+
+    </CodeGroup>
 
     Siparişi kendi tarafınızda tamamlarken `clientReferenceId` ve `metadata` alanlarıyla kendi kaydınızı bulun. Aynı olayı iki kez işlememek için webhook'taki `X-Crafter-Delivery` değerini saklayın.
   </Step>
@@ -143,12 +191,13 @@ Bu rehberin sonunda sunucunuzdan bir checkout oturumu açmış, alıcıyı Craft
 
 ## Canlıya geçiş
 
-- Test modunda `4242 4242 4242 4242` gibi bir test kartıyla (ileri bir tarih, herhangi bir CVC) ödeme yapın. Gerçek para hareketi olmaz, teslimat simüle edilir. Ayrıntılar: [Anahtarlar ve modlar, Test kartları](/tr/developers/payments/keys-and-modes).
+- Test modunda `4242 4242 4242 4242` gibi bir test kartıyla (ileri bir tarih, herhangi bir CVC) ödeme yapın. Gerçek para hareketi olmaz, teslimat simüle edilir. Ayrıntılar: [Test modu](/tr/developers/payments/test-mode).
 - Canlı modda dönüş adresleri `https` olmalıdır. Test modunda `http://localhost` kendiliğinden izinlidir.
-- Canlı modda aylık oturum kotası paketinize göre uygulanır. Ayrıntı: [Sınırlar](/tr/api-reference/introduction).
+- Canlı modda aylık oturum kotası paketinize göre uygulanır. Ayrıntı: [Paketler ve sınırlar](/tr/developers/payments/plans-and-limits).
 
 ## Sonraki adımlar
 
+- [Checkout modları](/tr/developers/payments/checkout-modes)
 - [API referansı](/tr/api-reference/introduction)
 - [Anahtarlar, modlar ve izinli adresler](/tr/developers/payments/keys-and-modes)
 - [Platform kuralları](/tr/developers/payments/platform-rules)

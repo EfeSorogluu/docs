@@ -13,6 +13,16 @@ API yalnızca HTTPS üzerinden ve JSON ile çalışır. İstek gövdesi `Content
 
 OpenAPI 3 tanımı: [`crafterpayments-v1.openapi.json`](https://github.com/EfeSorogluu/docs/blob/main/api-reference/crafterpayments-v1.openapi.json)
 
+## SDK'lar
+
+| Paket | Nerede | Kullanım |
+| --- | --- | --- |
+| `@crafterpayments/node` | Sunucunuz (Node.js 18+) | Oturum oluşturma, okuma ve iptal; webhook ve dönüş imzası doğrulama. Ayrıntı: [Hızlı başlangıç](/tr/developers/payments/quickstart). |
+| `@crafterpayments/js` | Tarayıcı | Yönlendirme, açılır pencere, modal ve gömülü checkout. Ayrıntı: [Checkout modları](/tr/developers/payments/checkout-modes). |
+| `@crafterpayments/react` | React 18 / 19 | Provider, hook'lar, `<CheckoutButton>` ve `<EmbeddedCheckout>`. Ayrıntı: [Checkout modları](/tr/developers/payments/checkout-modes). |
+
+Üçü de Önizleme (0.1.0) aşamasındadır ve varsayılan olarak `Crafter-Version: 2026-12` gönderir.
+
 ## Uç noktalar
 
 | Yöntem | Yol | Anahtar |
@@ -46,6 +56,15 @@ Anahtar türleri ve modlar: [Anahtarlar, modlar ve izinli adresler](/tr/develope
 | `Retry-After` | Yanıt | `429` yanıtında, kaç saniye beklemeniz gerektiği. |
 
 Yanıtlar `Cache-Control: no-store` ile gelir.
+
+## Sürüm
+
+API sürümü, `Crafter-Version` başlığında gönderilen bir tarihtir. Desteklenen tek sürüm `2026-12`.
+
+- Başlığı göndermezseniz en güncel sürüm kullanılır. İleride çıkacak bir sürümün entegrasyonunuzun davranışını değiştirmemesi için her istekte gönderin.
+- Her yanıt, kullanılan `Crafter-Version` değerini taşır.
+- Desteklenmeyen değer `400 crafter_version_unsupported` döner; `details.supported` desteklenen sürümleri listeler.
+- Webhook'ların sürümü ayrıdır: gövdedeki `version` alanı ve `X-Crafter-Webhook-Version` başlığı (şu an `2026-12`). Ayrıntı: [Webhook olayları](/tr/developers/payments/webhooks).
 
 ## Idempotency
 
@@ -120,7 +139,7 @@ Hata mesajları (`message`) her zaman İngilizcedir ve `type`'tan üretilir; hen
 | Anahtar başına istek (dakikada) | 30 | 100 |
 | Gömülü ödeme sayfası (`uiMode: "embedded"`) | Yok | Var |
 
-Test modu oturumları kotaya sayılmaz. Güncel paket içerikleri için [fiyatlandırma sayfası](https://crafter.net.tr/tr/pricing).
+Test modu oturumları kotaya sayılmaz. Ayrıntılar ve her sınırda olanlar: [Paketler ve sınırlar](/tr/developers/payments/plans-and-limits).
 
 ### İstek sınırları
 
