@@ -1,0 +1,172 @@
+---
+title: "OAuth ve kapsamlar"
+description: "OAuth 2.0 authorization code ve PKCE ile kurulum akışı, token ucu, yenileme token'ı rotasyonu, iptal ve lansmanda açık izin kapsamları."
+---
+
+Uygulamalar bir mağazaya OAuth 2.0 **authorization code** akışı ve **PKCE** (`S256`, zorunlu) ile erişir. Mağaza sahibi kapsamları Crafter panelindeki onay ekranında onaylar; sunucunuz kodu o mağazaya bağlı token'larla değiştirir.
+
+| | Canlı | Dev |
+| --- | --- | --- |
+| OAuth uçları | `https://api.crafter.net.tr/apps/oauth/…` | `https://dev-api.crafter.net.tr/apps/oauth/…` |
+| `/v1` API | `https://api.crafterpayments.com/v1` | `https://dev-api.crafterpayments.com/v1` |
+
+## Akış
+
+1. Mağaza sahibi uygulama mağazasında **Kur**'a tıklar. Crafter kurulum kurallarını (yayımlanmış sürüm, mağaza uyumu, ücretli uygulamada lisans) kontrol eder ve tarayıcıyı **uygulama adresinize** gönderir: `https://app.example.com/install?store=<mağazaKimliği>&lang=tr`.
+2. Sunucunuz bir `code_verifier`, onun challenge değeri ve bir `state` üretir, bunları saklar ve yetkilendirme ucuna yönlendirir.
+3. Crafter onay ekranını gösterir. Yalnızca mağaza sahibi onaylayabilir.
+4. Tarayıcı `code` ve `state` ile yönlendirme adresinize döner.
+5. Sunucunuz `state`'i kontrol eder ve kodu (`code_verifier` ile) token'larla değiştirir.
+
+## 1. Yetkilendirme
+
+```
+GET https://api.crafter.net.tr/apps/oauth/authorize
+```
+
+| Parametre | Zorunlu | Açıklama |
+| --- | --- | --- |
+| `response_type` | evet | `code` |
+| `client_id` | evet | Client id'niz (`capp_…`) |
+| `redirect_uri` | evet | Kayıtlı yönlendirme adreslerinden biri, birebir |
+| `scope` | evet | Boşlukla ayrılmış kapsamlar. **Yayımlanmış** manifestinizdeki kapsamların alt kümesi olmalıdır. |
+| `state` | evet | `A-Z a-z 0-9 - . _ ~` karakterlerinden 8-512 karakter. Her istekte rastgele; dönüşte kontrol edin. |
+| `code_challenge` | evet | `BASE64URL(SHA256(code_verifier))` |
+| `code_challenge_method` | evet | `S256` |
+| `store` | hayır | Mağazayı önceden seçmek için uygulama adresine gelen mağaza kimliği |
+| `lang` | hayır | Onay ekranı için `tr` ya da `en` |
+
+Node.js'te PKCE:
+
+```js
+import { createHash, randomBytes } from 'node:crypto';
+
+const codeVerifier = randomBytes(32).toString('base64url');
+const codeChallenge = createHash('sha256').update(codeVerifier).digest('base64url');
+const state = randomBytes(24).toString('base64url');
+```
+
+`client_id` ya da `redirect_uri` yanlışsa panel hatayı gösterir ve yönlendirme **yapmaz**. Diğer sorunlar (eksik PKCE, geçersiz state, yayımlanmamış ya da henüz açık olmayan kapsam) onay ekranında gösterilir.
+
+## 2. Dönüş
+
+Onaylandı:
+
+```
+https://app.example.com/oauth/callback?code=crft_aac_…&state=…
+```
+
+Reddedildi:
+
+```
+https://app.example.com/oauth/callback?error=access_denied&state=…
+```
+
+Başka bir şey yapmadan önce `state`'i sakladığınız değerle karşılaştırın. Kod **120 saniye** geçerlidir ve yalnızca bir kez kullanılabilir.
+
+## 3. Token alma
+
+```
+POST https://api.crafter.net.tr/apps/oauth/token
+Content-Type: application/x-www-form-urlencoded
+Authorization: Basic base64(client_id:client_secret)
+```
+
+| Alan | Değer |
+| --- | --- |
+| `grant_type` | `authorization_code` |
+| `code` | Dönüşte gelen kod |
+| `redirect_uri` | Yetkilendirme isteğindekiyle aynı yönlendirme adresi |
+| `code_verifier` | 1. adımda ürettiğiniz verifier |
+
+İstemci kimlik doğrulaması: HTTP Basic (`client_secret_basic`) ya da gövdede `client_id` ve `client_secret` (`client_secret_post`). İkisi birden olmaz.
+
+```json 200
+{
+  "access_token": "crft_aat_…",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "crft_art_…",
+  "refresh_token_expires_in": 7776000,
+  "scope": "read_store read_orders webhooks:write",
+  "app_id": "example-orders-viewer",
+  "store": { "id": "…", "name": "Örnek Mağaza", "url": "https://ornek-magaza.com" }
+}
+```
+
+`store.id` uygulamayı hangi mağazanın kurduğunu söyler. Token çiftini mağaza başına, şifreli olarak saklayın.
+
+Başarılı token alma işleminin kendisi **kurulumdur**. `app.installed` yalnızca o anda var olan webhook uçlarına gider; ilk kurulumda gelmez (uygulamanızın uç oluşturacak token'ı henüz yoktur).
+
+## Yenileme
+
+| Token | Süre |
+| --- | --- |
+| Yetkilendirme kodu | 120 saniye, tek kullanım |
+| Erişim token'ı (`crft_aat_`) | 1 saat |
+| Yenileme token'ı (`crft_art_`) | 90 gün, her kullanımda yenilenir |
+
+```
+POST https://api.crafter.net.tr/apps/oauth/token
+grant_type=refresh_token&refresh_token=crft_art_…
+```
+
+Her yenileme **yeni** bir erişim token'ı ve **yeni** bir yenileme token'ı döner. Yeni çifti kullanmadan önce kaydedin; eski yenileme token'ı artık geçersizdir.
+
+- Aynı eski yenileme token'ı 10 saniye içinde yeniden gelirse (kaybolan yanıt, tekrar deneme) aynı yeni çift döner.
+- Bu süreden sonra eski yenileme token'ı **yeniden kullanılmış** sayılır: Crafter yetkinin tamamını iptal eder ve mağazanın uygulamayı yeniden kurması gerekir.
+- Bir mağazanın token'ını aynı anda tek bir işlem yenilesin. Aynı token'la iki paralel yenileme, iptal edilen yetkilerin en sık nedenidir.
+- İsteğe bağlı `scope` yeni erişim token'ını iznin bir alt kümesine daraltır; hiçbir zaman genişletmez.
+
+## İptal
+
+```
+POST https://api.crafter.net.tr/apps/oauth/revoke
+token=crft_art_…
+```
+
+Token ucuyla aynı istemci kimlik doğrulaması (RFC 7009). Yenileme token'ı yetkinin tamamını, erişim token'ı yalnızca kendisini iptal eder. Bilinmeyen token'lar da `200` döner.
+
+## Kaldırma
+
+Mağaza sahibi uygulamayı kaldırınca kurulumun bütün token'ları hemen iptal edilir ve uçlarınıza `app.uninstalled` gelir. Geldiğinde o mağazanın token'larını silin. Sakladığınız müşteri verilerini gizlilik politikanıza göre silin.
+
+## Hatalar
+
+Token ve iptal uçları RFC 6749 hataları döner:
+
+```json 400
+{ "error": "invalid_grant", "error_description": "code expired" }
+```
+
+| `error` | Durum | Tipik neden |
+| --- | --- | --- |
+| `invalid_client` | 401 | Yanlış client id ya da secret |
+| `invalid_request` | 400 | Basic ve gövde kimlik bilgileri birlikte |
+| `invalid_grant` | 400 | Kodun süresi dolmuş, kullanılmış ya da başka bir yönlendirme adresine ait; `code_verifier` uyuşmuyor; yenileme token'ının süresi dolmuş, iptal edilmiş ya da yeniden kullanılmış; mağaza artık uygulamayı kullanamıyor |
+| `invalid_scope` | 400 | Yenilemedeki `scope` iznin dışında |
+| `unsupported_grant_type` | 400 | `authorization_code` ya da `refresh_token` değil |
+
+## Kapsamlar
+
+Token yalnızca kapsamlarının izin verdiğini yapabilir; yazma kapsamı okuma kapsamını da içerir. API'de eksik kapsam `403 app_token_scope_missing` döner.
+
+### Lansmanda açık
+
+| Kapsam | Verdiği erişim | Kişisel veri |
+| --- | --- | --- |
+| `read_store` | Mağaza adı, adresi, para birimi ve dilleri (`GET /v1/store`) | |
+| `read_products` | Ürünler, kategoriler, fiyatlar ve stok | |
+| `read_orders` | Siparişler (`GET /v1/orders`); `read_customers` olmadan müşteri adı ve e-postası `null` kalır | |
+| `read_customers` | Müşteriler; siparişlerde ve webhook'larda müşteri adı ve e-postası | evet |
+| `read_customers:limited` | Yalnızca kimliği belirlemeyen müşteri alanları | evet |
+| `webhooks:read` | Uygulamanın kendi webhook uçları | |
+| `webhooks:write` | Uygulamanın kendi webhook uçlarını oluşturma ve silme (`webhooks:read` dahil) | |
+
+Kişisel veri kapsamları `scopeReasons` içinde gerekçe ister, onay ekranında ayrı bir bölümde gösterilir ve iki inceleyici gerektirir.
+
+### Henüz açık değil
+
+`write_products`, `write_orders`, `read_deliveries`, `write_deliveries`, `read_coupons`, `write_coupons`, `read_players`, `write_players`, `read_roles`, `write_roles`, `write_customers`, `send_commands`, `read_storefront_blocks`, `write_storefront_blocks`.
+
+Katalogda yer alırlar ama arkalarında henüz API yoktur. Bunları isteyen sürüm `scope_not_available` ile reddedilir, onay ekranı da kabul etmez. Açıklamalarıyla katalogun tamamı: `GET https://api.crafter.net.tr/apps/scopes`.

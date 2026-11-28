@@ -3,7 +3,7 @@ title: "Apps API overview"
 description: "REST API v1 for installed apps: app access tokens, scopes, objects, pagination, rate limits and versioning."
 ---
 
-Apps run on their own servers and read store data through this API with the access token they got from the OAuth install flow (authorization code + PKCE). The store is always the one the token was issued for; you never pass a store id.
+Apps run on their own servers and read store data through this API with the access token they got from the [OAuth install flow](/en/developers/apps/oauth) (authorization code + PKCE). New to apps? Start with the [apps overview](/en/developers/apps/overview). The store is always the one the token was issued for; you never pass a store id.
 
 ## Base URL and conventions
 
@@ -64,7 +64,7 @@ Unknown query parameters return `400 validation_failed`.
 
 ## Rate limits
 
-120 requests per minute per installation (all endpoints together), on top of the per-IP limit. Responses carry `X-RateLimit-Limit` and `X-RateLimit-Remaining`. Over the limit you get `429 too_many_requests` with `Retry-After` (seconds).
+120 requests per minute per installation (all endpoints together) and 3,000 per minute per app across all of its installations, on top of the per-IP limit. Responses carry `X-RateLimit-Limit` / `X-RateLimit-Remaining` (installation) and `X-RateLimit-App-Limit` / `X-RateLimit-App-Remaining` (app). Over a limit you get `429 too_many_requests` with `Retry-After` (seconds) and `details.limitScope` (`installation` or `app`). More: [Limits](/en/developers/apps/limits).
 
 ## Versioning and deprecation
 
@@ -74,7 +74,7 @@ The version is a date sent in `Crafter-Version` (current: `2026-12`). Within a v
 
 | Type | Status | When |
 | --- | --- | --- |
-| `app_token_invalid` | 401 | Missing, expired or revoked token, or the app is uninstalled / disabled |
+| `app_token_invalid` | 401 | Missing, expired or revoked token, the app is uninstalled / disabled, or the app is suspended (applies within 60 seconds) |
 | `app_token_scope_missing` | 403 | The token lacks the endpoint's scope (`details.required`) |
 | `product_not_found`, `order_not_found`, `user_not_found` | 404 | No such object in this store |
 | `validation_failed` | 400 | Invalid query or body (`param` names the field) |

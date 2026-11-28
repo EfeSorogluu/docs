@@ -1,0 +1,39 @@
+---
+title: "Ücretli uygulamalar ve gelir paylaşımı"
+description: "Uygulamanızı tek seferlik fiyatla satma: kimlik doğrulama, fiyatlandırma, lisanslar, iadeler ve %10 gelir paylaşımı."
+---
+
+<Note>
+Ücretli uygulamalar lansmandan sonra aşamalı olarak açılır. Açılana kadar fiyatlı sürüm oluşturulabilir ama ücretli uygulamalar uygulama mağazasında gösterilmez.
+</Note>
+
+## Gereksinimler
+
+- **Herkese açık** bir uygulama. Ücretli uygulamalar uygulama mağazasındaki tanıtım sayfası üzerinden satılır.
+- **Kimlik doğrulama (KYC)**: bir mağazanın uygulamanızı satın alabilmesi için satıcı hesabınızın onaylanmış olması gerekir. Tema satışında kullandığınız satıcı hesabıyla aynıdır. Onay yoksa satın alma reddedilir.
+
+## Fiyatlandırma
+
+Ücretli uygulamanın mağaza başına **tek seferlik** bir fiyatı vardır. İki para birimini de sürümde belirtin:
+
+```json
+{ "pricing": { "model": "one_time", "priceTry": 499, "priceUsd": 15 } }
+```
+
+| | Sınır |
+| --- | --- |
+| `priceTry` | En çok 100.000 TRY |
+| `priceUsd` | En çok 5.000 USD |
+
+Fiyat sürümün parçasıdır; fiyat değişikliği de diğer değişiklikler gibi incelemeden geçer. Abonelikler henüz açık değildir.
+
+## Lisanslar
+
+- Mağaza uygulamayı bir kez satın alır; lisans **mağazaya** aittir. Ödemeyi CrafterPayments alır.
+- Ücretli bir uygulamayı kurmak için mağazanın etkin bir lisansı olmalıdır. Lisans yoksa kurulum `402 app_license_required` ile durur.
+- Kaldırma iade **edilmez**. Lisans mağazada kalır; mağaza uygulamayı yeniden ödeme yapmadan kurabilir.
+- İade ya da ters ibraz lisansı iptal eder ve kurulumu devre dışı bırakır: uygulamanın token'ları çalışmaz olur.
+
+## Gelir paylaşımı
+
+Crafter her satıştan vergi hariç tutar üzerinden **%10** alır. Kalanı satıcı bakiyenize yazılır ve tema satışları gibi ödenir. Uygulama satışlarını **Geliştirici > Kazançlar** sayfasında görürsünüz.

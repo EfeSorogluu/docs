@@ -1,0 +1,93 @@
+---
+title: "Embedded pages and session tokens"
+description: "Show your app inside the Crafter panel and verify who opened it with a short-lived session token signed by Crafter."
+---
+
+An app can have one page inside the Crafter panel. The store owner opens it from the store's **Apps** page; the panel loads your **Panel page URL** in an iframe.
+
+## What the panel loads
+
+Every time the page opens, the panel asks Crafter for a new session URL and loads:
+
+```
+https://app.example.com/embed?session=<JWT>&store=<storeId>&lang=<tr|en>
+```
+
+- `session`: a signed session token, valid for **60 seconds**.
+- `store`: the store id. Trust it only after it matches the token's `store` claim.
+- `lang`: the panel language.
+
+The iframe is sandboxed (`allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox`), loads with `referrerpolicy="no-referrer"` and may use the clipboard. There is no `postMessage` channel with the panel.
+
+## The session token
+
+A compact JWT signed with **Ed25519** (`alg: EdDSA`).
+
+```json Header
+{ "alg": "EdDSA", "typ": "JWT", "kid": "…" }
+```
+
+```json Claims
+{
+  "iss": "https://api.crafter.net.tr",
+  "aud": "capp_…",
+  "sub": "Qm9…",
+  "store": "…",
+  "app": "example-orders-viewer",
+  "iat": 1764930000,
+  "exp": 1764930060,
+  "jti": "1b4c…"
+}
+```
+
+| Claim | Meaning |
+| --- | --- |
+| `iss` | The Crafter API URL (`https://dev-api.crafter.net.tr` on dev) |
+| `aud` | Your client id |
+| `sub` | A pseudonymous id of the panel user: the same for the same user and app, different for every app. It is not the user's account id. |
+| `store` | The store id |
+| `app` | Your app id |
+| `exp` | `iat` + 60 seconds |
+| `jti` | Unique token id |
+
+## Verify it
+
+Public keys: `GET https://api.crafter.net.tr/apps/.well-known/jwks.json` (cacheable for 5 minutes). During a key rotation it lists two keys; pick the one with the token's `kid`.
+
+1. Split the token into header, payload and signature (base64url).
+2. Require `alg` = `EdDSA`. Never let the token pick the algorithm.
+3. Find the JWK with the token's `kid`. If it is unknown, fetch the JWKS again (not more than every 30 seconds).
+4. Verify the signature over `header.payload`.
+5. Check `aud` = your client id, `iss`, `exp` in the future and `iat` not in the future (allow a few seconds of clock skew).
+6. Check that `store` equals the `store` query parameter.
+7. Optional: refuse a `jti` you have already seen.
+
+```js Node.js (no JWT library)
+import { createPublicKey, verify } from 'node:crypto';
+
+export async function verifySession(token, { clientId, issuer, jwksUrl, store }) {
+  const [h, p, s] = token.split('.');
+  const header = JSON.parse(Buffer.from(h, 'base64url'));
+  if (header.alg !== 'EdDSA') throw new Error('unexpected alg');
+  const { keys } = await (await fetch(jwksUrl)).json(); // cache this in production
+  const jwk = keys.find((key) => key.kid === header.kid);
+  if (!jwk) throw new Error('unknown key');
+  const key = createPublicKey({ key: { kty: 'OKP', crv: 'Ed25519', x: jwk.x }, format: 'jwk' });
+  if (!verify(null, Buffer.from(`${h}.${p}`), key, Buffer.from(s, 'base64url'))) throw new Error('bad signature');
+  const claims = JSON.parse(Buffer.from(p, 'base64url'));
+  const now = Math.floor(Date.now() / 1000);
+  if (claims.aud !== clientId || claims.iss !== issuer) throw new Error('wrong audience or issuer');
+  if (claims.exp + 5 < now || claims.iat - 5 > now) throw new Error('expired');
+  if (claims.store !== store) throw new Error('store mismatch');
+  return claims;
+}
+```
+
+After the check, use the stored access token of `claims.store` to call the API. The session token itself is not an API token.
+
+## Your page
+
+- Allow only the Crafter panel to frame it: `Content-Security-Policy: frame-ancestors https://app.crafter.net.tr`.
+- Send `Cache-Control: no-store`, and never log the URL (it contains the token).
+- The token lives 60 seconds. If you need a longer session inside the iframe, start your own after the check (a cookie in an iframe needs `SameSite=None; Secure`, and `Partitioned` in browsers that partition third-party cookies).
+- A full reload asks the panel for a new token, so a reload always works.

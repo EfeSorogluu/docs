@@ -1,0 +1,59 @@
+---
+title: "Apps overview"
+description: "Build apps that store owners install from the Crafter app store: how apps work, public and private apps, and what is available at launch."
+---
+
+An app adds features to Crafter stores. It runs on **your own server**, the store owner installs it from the app store, and it works with the store's data through the API, webhooks and an optional page inside the Crafter panel.
+
+## How an app works
+
+1. You create the app in the panel and get a **client id** and a **client secret**.
+2. You publish a **version**: a [manifest](/en/developers/apps/manifest) (`crafter-app.json`) with the scopes and events the app needs, plus the store listing.
+3. A store owner clicks **Install**. Crafter sends them to your **app URL**, your app starts [OAuth with PKCE](/en/developers/apps/oauth), the owner approves the scopes on the consent screen and your app gets tokens for that store.
+4. Your app calls the [`/v1` API](/en/api-reference/apps/overview) with the access token, receives [webhooks](/en/developers/apps/webhooks) and can show an [embedded page](/en/developers/apps/embedded-pages) in the panel.
+5. When the owner uninstalls the app, every token is revoked and your app receives `app.uninstalled`.
+
+The token is always bound to one store, one app and the scopes the owner approved. You never pass a store id to the API.
+
+## App kinds
+
+| | Public | Private |
+| --- | --- | --- |
+| Who can install | Any store | Only the one store you choose when you create the app (you must own it) |
+| Listed in the app store | Yes, after review | No |
+| Review | Every version is reviewed by Crafter | No review: a submitted version is published at once |
+| URLs | `https` only | `https`, or `http://localhost` while you develop |
+| Consent screen | Normal | Shows that the app is not reviewed |
+| Paid | Possible ([paid apps](/en/developers/apps/paid-apps)) | Not sold in the app store |
+
+Start with a private app on your own store while you build, then create a public app when you are ready to list it.
+
+## Available at launch
+
+- OAuth 2.0 authorization code flow with PKCE, refresh token rotation.
+- Read access to the store, products, categories, orders and customers, and the app's own webhook endpoints. See [scopes available at launch](/en/developers/apps/oauth#scopes).
+- Webhooks: `order.*`, `checkout.*`, `app.installed`, `app.uninstalled`.
+- One embedded page in the panel.
+- Free apps, and one-time paid apps when paid apps open.
+
+Write scopes (for example `write_products`) and game server commands are in the catalog but are not granted yet. A version that asks for them is refused.
+
+## Example app
+
+<Card title="Node example app" icon="github" href="https://github.com/crafterhq/sdk/tree/main/examples/app-node">
+  Express app with the full flow: PKCE install, token refresh, `/v1/store` and `/v1/orders`, webhook verification, `app.uninstalled` and the embedded page.
+</Card>
+
+## Pages in this section
+
+<CardGroup cols={2}>
+  <Card title="Manifest" icon="file-code" href="/en/developers/apps/manifest">`crafter-app.json` fields and rules.</Card>
+  <Card title="Create an app" icon="plus" href="/en/developers/apps/create-app">Panel steps, credentials and the developer API.</Card>
+  <Card title="OAuth and scopes" icon="key" href="/en/developers/apps/oauth">PKCE install, tokens, refresh, revoke and scopes.</Card>
+  <Card title="API reference" icon="code" href="/en/api-reference/apps/overview">The `/v1` endpoints for apps.</Card>
+  <Card title="Webhooks" icon="bell" href="/en/developers/apps/webhooks">Endpoints, events and signature verification.</Card>
+  <Card title="Embedded pages" icon="window-maximize" href="/en/developers/apps/embedded-pages">Panel page and session tokens.</Card>
+  <Card title="Versions and review" icon="list-check" href="/en/developers/apps/publishing">Versions, listing, checks, review and publishing.</Card>
+  <Card title="Paid apps" icon="coins" href="/en/developers/apps/paid-apps">Pricing, identity verification and revenue share.</Card>
+  <Card title="Limits" icon="gauge" href="/en/developers/apps/limits">Rate limits and other limits.</Card>
+</CardGroup>

@@ -1,0 +1,64 @@
+---
+title: "Sınırlar"
+description: "Uygulama API'sinin ve OAuth uçlarının hız sınırları ve uygulamalar için diğer sınırlar."
+---
+
+## API hız sınırları
+
+| Sınır | Değer |
+| --- | --- |
+| Kurulum başına (bir mağazadaki bir uygulama) | Dakikada 120 istek, bütün `/v1` uçları birlikte |
+| Uygulama başına (bütün kurulumları birlikte) | Dakikada 3.000 istek |
+
+Her `/v1` yanıtında şu başlıklar gelir:
+
+| Başlık | Anlamı |
+| --- | --- |
+| `X-RateLimit-Limit`, `X-RateLimit-Remaining` | Kurulum sınırı ve bu dakika kalan |
+| `X-RateLimit-App-Limit`, `X-RateLimit-App-Remaining` | Uygulama sınırı ve bu dakika kalan |
+
+Sınır aşılırsa `429 too_many_requests`, `Retry-After` (saniye) ve `details.limitScope` (`installation` ya da `app`) döner. Yeniden denemeden önce `Retry-After` kadar bekleyin; sıkı bir döngüde tekrar denemeyin. IP başına sınır ayrıca geçerlidir.
+
+## OAuth uçları
+
+| Uç | Sınır |
+| --- | --- |
+| `GET /apps/oauth/authorize` | IP başına dakikada 60 |
+| `POST /apps/oauth/token` | IP başına dakikada 30 ve client id başına dakikada 60 |
+| `POST /apps/oauth/revoke` | IP başına dakikada 30 |
+| `GET /apps/.well-known/jwks.json` | IP başına dakikada 120 (5 dakika önbelleğe alın) |
+
+## Token'lar
+
+| | Süre |
+| --- | --- |
+| Yetkilendirme kodu | 120 saniye, tek kullanım |
+| Erişim token'ı | 1 saat |
+| Yenileme token'ı | 90 gün, her kullanımda yenilenir (tekrarlanan istek için 10 saniye tolerans) |
+| Gömülü sayfa oturum token'ı | 60 saniye |
+
+## Uygulamalar ve sürümler
+
+| | Sınır |
+| --- | --- |
+| Geliştirici başına uygulama | 10 |
+| Uygulama başına yönlendirme adresi | 10, her biri en çok 512 karakter |
+| Aynı anda incelemedeki sürüm | Uygulama başına 1 |
+| Tanıtım metni | Dil başına 50.000 karakter |
+| Değişiklik notu | 20.000 karakter |
+| Ekran görüntüsü | 1-8, PNG / JPEG / WebP, en çok 2 MB ve 1920 px |
+| İnceleme yazışması mesajı | 2.000 karakter |
+
+## Webhook'lar
+
+| | Sınır |
+| --- | --- |
+| Kurulum başına uç | 5 |
+| Uç başına olay | 50 |
+| Yanıt süresi | 10 saniye |
+| Yeniden deneme | Yaklaşık 12 saatte 8 deneme |
+| Otomatik kapatma | En az 3 gün boyunca art arda 40 başarısızlık |
+
+## Sayfalama
+
+Liste uçları sayfa başına 1-100 nesne döner (varsayılan 10). Aldığınız son kimliği `starting_after` ile gönderin.

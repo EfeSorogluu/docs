@@ -1,0 +1,39 @@
+---
+title: "Paid apps and revenue share"
+description: "Sell your app with a one-time price: identity verification, pricing, licenses, refunds and the 10% revenue share."
+---
+
+<Note>
+Paid apps open in stages after launch. Until they are open, versions with a price can be created but paid apps are not shown in the app store.
+</Note>
+
+## Requirements
+
+- A **public** app. Paid apps are sold through the app store listing.
+- **Identity verification (KYC)**: your seller account must be approved before a store can buy your app. It is the same seller account you use to sell themes. Without approval, the purchase is refused.
+
+## Pricing
+
+A paid app has a **one-time** price per store. Set both currencies in the version:
+
+```json
+{ "pricing": { "model": "one_time", "priceTry": 499, "priceUsd": 15 } }
+```
+
+| | Limit |
+| --- | --- |
+| `priceTry` | Up to 100,000 TRY |
+| `priceUsd` | Up to 5,000 USD |
+
+The price is part of the version, so a price change goes through review like any other change. Subscriptions are not available yet.
+
+## Licenses
+
+- A store buys the app once; the license belongs to the **store**. Payment is handled by CrafterPayments.
+- The store needs an active license to install a paid app. Without one, the install stops with `402 app_license_required`.
+- Uninstalling does **not** refund. The license stays with the store, so it can install the app again without paying.
+- A refund or a lost chargeback revokes the license and disables the installation: the app's tokens stop working.
+
+## Revenue share
+
+Crafter keeps **10%** of each sale, calculated on the amount excluding tax. The rest is credited to your seller balance and paid out like theme sales. You see app sales in **Developer > Earnings**.

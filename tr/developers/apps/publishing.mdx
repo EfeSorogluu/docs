@@ -1,0 +1,82 @@
+---
+title: "Sürümler, inceleme ve yayın"
+description: "Manifest ve Markdown tanıtım metniyle uygulama sürümü oluşturma, otomatik kontroller, inceleme ve yayın."
+---
+
+Mağazaların gördüğü her şey **yayımlanmış sürümden** gelir: manifest (kapsamlar, olaylar), tanıtım metni, ekran görüntüleri ve fiyat. Bunları ancak yeni bir sürüm yayımlayarak değiştirirsiniz.
+
+## Sürüm oluşturma
+
+**Geliştirici > Uygulamalar > uygulamanız > Sürümler** sayfasından ya da `POST /developer/apps/{appId}/versions` ile:
+
+| Alan | Kurallar |
+| --- | --- |
+| `manifest` | [Manifest](/tr/developers/apps/manifest). `manifest.id` uygulama kimliğiniz olmalı; `manifest.version` önceki bütün sürümlerden büyük olmalıdır. |
+| `listing` | Dil başına Markdown: `en` zorunlu, `tr` önerilir. Her biri en çok 50.000 karakter, başında front matter (aşağıda). |
+| `changelog` | Markdown, en çok 20.000 karakter |
+| `screenshots` | Medya ucuyla yüklenmiş 1-8 görsel (PNG, JPEG ya da WebP, en çok 2 MB ve 1920 px) |
+| `pricing` | `{ "model": "free" }` ya da `{ "model": "one_time", "priceTry": 499, "priceUsd": 15 }`. Bkz. [ücretli uygulamalar](/tr/developers/apps/paid-apps). |
+
+### Tanıtım metni front matter'ı
+
+```markdown
+---
+tagline: Son siparişleri panelde görün
+games: [minecraft]
+categories: [analytics]
+features: [Son siparişler, Sipariş durumu]
+---
+# Example Orders Viewer
+
+## Genel bakış
+…
+```
+
+| Anahtar | Kurallar |
+| --- | --- |
+| `tagline` | En çok 120 karakter |
+| `games` | Oyun kimlikleri ya da `*` |
+| `categories` | En çok 5, küçük harf ve tire |
+| `features` | En çok 10, her biri en çok 80 karakter |
+
+Tanıtım metnini mağaza sahipleri için yazın: uygulama ne yapar, hangi oyunları destekler, destek nereden alınır. Gerçeklere bağlı kalın: metinde fiyat ya da kupon, abartılı ifadeler ya da rakip adları olmasın; dış bağlantılar yalnızca destek ve dokümantasyon sayfalarınıza gitsin.
+
+## Otomatik kontroller
+
+Her sürüm oluşturulurken ve gönderilirken yeniden kontrol edilir. **Hata** gönderimi engeller (`422 app_checks_failed`); **uyarı** size ve inceleyiciye gösterilir.
+
+| Kontrol | Düzey | Anlamı |
+| --- | --- | --- |
+| `scope_not_available` | hata | Uygulamaların henüz alamadığı bir kapsam |
+| `scope_reason_missing` | hata | `scopeReasons` olmadan kişisel veri kapsamı |
+| `event_scope_missing` | hata | Kapsamı `scopes` içinde olmayan bir olay |
+| `event_not_delivered` | uyarı | Uygulamalara henüz gönderilmeyen bir olay |
+| `scope_escalation` | uyarı | Sürüm kapsam ekliyor; mevcut mağazaların yeniden onay vermesi gerekir |
+| `listing_tr_missing` | uyarı | Türkçe tanıtım metni yok; Türkçe mağazalar İngilizce metni görür |
+
+## Gönderme
+
+`POST /developer/apps/{appId}/versions/{version}/submit`
+
+- **Özel uygulama**: sürüm hemen yayımlanır.
+- **Herkese açık uygulama**: sürüm `pending_review` durumuna geçer. Aynı anda yalnızca bir sürüm incelemede olabilir (`409 app_review_in_progress`).
+
+## İnceleme
+
+Crafter herkese açık uygulamaların her sürümünü inceler: önceki sürüme göre manifest ve kapsam değişiklikleri, tanıtım metni, ekran görüntüleri ve fiyat. Kişisel veri kapsamı isteyen sürümü **iki farklı inceleyici** onaylar. Kapsamı değişen uygulamalar hiçbir zaman otomatik onaylanmaz.
+
+| Durum | Anlamı |
+| --- | --- |
+| `draft` | Oluşturuldu, gönderilmedi |
+| `pending_review` | İncelemeyi bekliyor |
+| `changes_requested` | İnceleyici yazışmada değişiklik istedi. Düzeltip aynı sürümü yeniden gönderin. |
+| `rejected` | Notla reddedildi. Yeni bir sürüm oluşturun. |
+| `published` | Yayında. Önceki yayımlanmış sürüm `superseded` olur. |
+
+Siz ve inceleyici sürümün **inceleme yazışmasında** konuşursunuz (`POST …/versions/{version}/comments`). Her kararda e-posta alırsınız.
+
+## Yayından sonra
+
+- Herkese açık bir uygulamanın ilk yayımlanan sürümü onu uygulama mağazasında görünür yapar.
+- Uygulamayı önceden kurmuş mağazalar verdikleri kapsamlarla devam eder. Yeni kapsamlar için yeniden onayları gerekir.
+- Crafter kurallara uymayan bir uygulamayı **askıya alabilir**. Askıya alınan uygulama mağazadan kalkar, kurulamaz ve token'ları 60 saniye içinde API'de çalışmaz olur (`401 app_token_invalid`).
