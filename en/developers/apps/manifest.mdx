@@ -15,7 +15,7 @@ The manifest describes **what** your app is and what it needs. It holds no code 
   "version": "1.0.0",
   "description": "Shows the store's latest orders in the Crafter panel.",
   "compatibleGames": ["*"],
-  "scopes": ["read_store", "read_orders", "webhooks:write"],
+  "scopes": ["read_store", "read_orders"],
   "settings": { "type": "object", "properties": {} },
   "events": ["app.installed", "app.uninstalled", "order.paid"],
   "themeBlocks": [],
@@ -36,7 +36,7 @@ The manifest describes **what** your app is and what it needs. It holds no code 
 | `scopes` | yes | [Permission scopes](/en/developers/apps/oauth#scopes) the app may request. Only the scopes available at launch are accepted. |
 | `scopeReasons` | for personal data scopes | Why the app needs a scope, shown to the store owner on the consent screen. Up to 300 characters each. Required for `read_customers` and `read_customers:limited`. |
 | `settings` | yes | A small JSON Schema subset (an object with `properties`). Use `{ "type": "object", "properties": {} }` when the app has no settings. |
-| `events` | yes | [Webhook events](/en/developers/apps/webhooks#events) the app may subscribe to. Every event's scope must also be in `scopes`. |
+| `events` | yes | [Webhook events](/en/developers/apps/webhooks#events) sent to your Webhook URL. Every event's scope must also be in `scopes`. `app.installed` and `app.uninstalled` are always sent. |
 | `themeBlocks` | yes | Use `[]`. Theme blocks from apps are not available yet. |
 | `connectors` | yes | Use `[]`. Game server connectors from apps are not available yet. |
 

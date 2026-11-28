@@ -88,7 +88,7 @@ Authorization: Basic base64(client_id:client_secret)
   "expires_in": 3600,
   "refresh_token": "crft_art_…",
   "refresh_token_expires_in": 7776000,
-  "scope": "read_store read_orders webhooks:write",
+  "scope": "read_store read_orders",
   "app_id": "example-orders-viewer",
   "store": { "id": "…", "name": "Örnek Mağaza", "url": "https://ornek-magaza.com" }
 }
@@ -96,7 +96,7 @@ Authorization: Basic base64(client_id:client_secret)
 
 `store.id` uygulamayı hangi mağazanın kurduğunu söyler. Token çiftini mağaza başına, şifreli olarak saklayın.
 
-Başarılı token alma işleminin kendisi **kurulumdur**. `app.installed` yalnızca o anda var olan webhook uçlarına gider; ilk kurulumda gelmez (uygulamanızın uç oluşturacak token'ı henüz yoktur).
+Başarılı token alma işleminin kendisi **kurulumdur**. Uygulamanın webhook adresi varsa `app.installed` token alma sırasında kuyruğa girer; dönüş adresiniz token'ları kaydetmeden önce webhook işleyicinize ulaşabilir.
 
 ## Yenileme
 
@@ -129,7 +129,7 @@ Token ucuyla aynı istemci kimlik doğrulaması (RFC 7009). Yenileme token'ı ye
 
 ## Kaldırma
 
-Mağaza sahibi uygulamayı kaldırınca kurulumun bütün token'ları hemen iptal edilir ve uçlarınıza `app.uninstalled` gelir. Geldiğinde o mağazanın token'larını silin. Sakladığınız müşteri verilerini gizlilik politikanıza göre silin.
+Mağaza sahibi uygulamayı kaldırınca kurulumun bütün token'ları hemen iptal edilir ve webhook adresinize `app.uninstalled` gelir. Geldiğinde o mağazanın token'larını silin. Sakladığınız müşteri verilerini gizlilik politikanıza göre silin.
 
 ## Hatalar
 
@@ -160,8 +160,8 @@ Token yalnızca kapsamlarının izin verdiğini yapabilir; yazma kapsamı okuma 
 | `read_orders` | Siparişler (`GET /v1/orders`); `read_customers` olmadan müşteri adı ve e-postası `null` kalır | |
 | `read_customers` | Müşteriler; siparişlerde ve webhook'larda müşteri adı ve e-postası | evet |
 | `read_customers:limited` | Yalnızca kimliği belirlemeyen müşteri alanları | evet |
-| `webhooks:read` | Uygulamanın kendi webhook uçları | |
-| `webhooks:write` | Uygulamanın kendi webhook uçlarını oluşturma ve silme (`webhooks:read` dahil) | |
+| `webhooks:read` | Uygulamanın ek webhook uçları | |
+| `webhooks:write` | Ek webhook uçları oluşturma ve silme (`webhooks:read` dahil). Webhook adresi için gerekmez. | |
 
 Kişisel veri kapsamları `scopeReasons` içinde gerekçe ister, onay ekranında ayrı bir bölümde gösterilir ve iki inceleyici gerektirir.
 

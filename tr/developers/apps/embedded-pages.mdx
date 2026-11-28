@@ -87,7 +87,7 @@ Doğrulamadan sonra API'yi çağırmak için `claims.store` mağazasının sakla
 
 ## Sayfanız
 
-- Sayfayı yalnızca Crafter panelinin çerçevelemesine izin verin: `Content-Security-Policy: frame-ancestors https://app.crafter.net.tr`.
+- Sayfayı yalnızca Crafter panelinin çerçevelemesine izin verin: `Content-Security-Policy: frame-ancestors https://app.crafter.net.tr` (dev'de: `https://dev-app.crafter.net.tr`).
 - `Cache-Control: no-store` gönderin ve adresi loglamayın (token içerir).
 - Token 60 saniye yaşar. iframe içinde daha uzun bir oturum gerekiyorsa doğrulamadan sonra kendi oturumunuzu başlatın (iframe içindeki çerez `SameSite=None; Secure`, üçüncü taraf çerezlerini bölen tarayıcılarda ayrıca `Partitioned` ister).
 - Sayfa yeniden yüklendiğinde panel yeni token ister; yeniden yükleme her zaman çalışır.

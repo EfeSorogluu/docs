@@ -16,7 +16,7 @@ description: "Crafter panelinde herkese açık ya da özel uygulama oluşturma, 
 | **Yönlendirme adresleri** | Onay ekranından sonra tarayıcının döneceği adresler. En az 1, en çok 10. Karakteri karakterine eşleşmelidir. |
 | **Uygulama adresi** | Crafter'ın kurulumu başlatmak için mağaza sahibini gönderdiği adres: `<Uygulama adresi>?store=<mağazaKimliği>&lang=<tr\|en>`. |
 | **Panel sayfası adresi** | İsteğe bağlı. Crafter'ın panel içinde gösterdiği sayfa. Bkz. [gömülü sayfalar](/tr/developers/apps/embedded-pages). |
-| **Webhook adresi** | İsteğe bağlı. Lansmanda olaylar bu adrese değil, uygulamanızın API ile oluşturduğu uçlara gönderilir. Bkz. [webhook'lar](/tr/developers/apps/webhooks). |
+| **Webhook adresi** | İsteğe bağlı. Uygulamayı kuran her mağaza olaylarını uygulamanın webhook secret'ıyla imzalayarak buraya gönderir. Yalnızca herkese açık `https` adresi. Bkz. [webhook'lar](/tr/developers/apps/webhooks). |
 | **Geliştirici** | Tanıtım sayfasında görünen adınız, web siteniz ve destek e-postanız. |
 
 Adresler `https` olmalıdır. Özel uygulamalar geliştirme sırasında `http://localhost` da kullanabilir. İç ağlara işaret eden adresler reddedilir.
@@ -27,8 +27,9 @@ Uygulamayı oluşturduktan sonra panel şunları gösterir:
 
 - **Client ID** (`capp_…`): gizli değildir, yetkilendirme adresine yazılır.
 - **Client secret** (`crft_acs_…`): **yalnızca bir kez** gösterilir. Sunucunuzun gizli anahtar deposuna kopyalayın. Crafter yalnızca özetini saklar.
+- **Webhook secret** (`whsec_…`), webhook adresi girdiyseniz: **yalnızca bir kez** gösterilir. Bütün mağazaların webhook'larını bununla doğrularsınız. Webhook adresini sonradan eklerseniz secret'ı görmek için bir kez yenileyin.
 
-Secret'ı kaybettiniz ya da sızdı mı? **Secret'ı yenile**'yi kullanın. Eski secret hemen geçersiz olur; sunucunuzu hemen güncelleyin.
+Bir secret'ı kaybettiniz ya da sızdı mı? Yenileyin. Yenilenen **client** secret hemen geçersiz olur; sunucunuzu hemen güncelleyin. **Webhook** secret'ı yenilendikten sonra teslimatlar 24 saat boyunca yeni ve eski secret'la imzalanır.
 
 <Warning>
 Client secret'ı tarayıcıya, mobil uygulamaya, kod deposuna ya da loglara koymayın. Sunucunuz onu yalnızca token ucuna gönderir.
@@ -62,6 +63,7 @@ Paneldeki her işlem API'den de yapılabilir: panel oturumunuzla ya da `apps:rea
 | `POST` | `/developer/apps/{appId}/versions/{version}/submit` | İncelemeye gönderir (özel uygulamada yayımlar) |
 | `POST` | `/developer/apps/{appId}/versions/{version}/comments` | İnceleme yazışmasına yanıt (en çok 2000 karakter) |
 | `GET` | `/developer/apps/{appId}/installs` | Uygulamayı kuran mağazalar (mağaza kimlikleri maskelenir) |
+| `GET` | `/developer/apps/{appId}/webhook-deliveries` | Son webhook teslimatları: olay, durum, deneme sayısı, son HTTP durumu (gövde ve mağaza yok) |
 
 Oluşturma isteği:
 
@@ -72,6 +74,7 @@ Oluşturma isteği:
   "kind": "public",
   "redirectUris": ["https://app.example.com/oauth/callback"],
   "appUrl": "https://app.example.com/install",
+  "webhookUrl": "https://app.example.com/webhooks/crafter",
   "embedUrl": "https://app.example.com/embed",
   "developer": { "name": "Example Studio", "url": "https://example.com", "supportEmail": "support@example.com" }
 }

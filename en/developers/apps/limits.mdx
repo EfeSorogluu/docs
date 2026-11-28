@@ -53,7 +53,8 @@ Over a limit you get `429 too_many_requests` with `Retry-After` (seconds) and `d
 
 | | Limit |
 | --- | --- |
-| Endpoints per installation | 5 |
+| Webhook URL endpoint | 1 per installation, created by Crafter |
+| Extra endpoints per installation (`/v1/webhook_endpoints`) | 5 |
 | Events per endpoint | 50 |
 | Response time | 10 seconds |
 | Retries | 8 attempts over about 12 hours |

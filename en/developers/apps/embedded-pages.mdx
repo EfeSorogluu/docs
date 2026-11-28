@@ -87,7 +87,7 @@ After the check, use the stored access token of `claims.store` to call the API. 
 
 ## Your page
 
-- Allow only the Crafter panel to frame it: `Content-Security-Policy: frame-ancestors https://app.crafter.net.tr`.
+- Allow only the Crafter panel to frame it: `Content-Security-Policy: frame-ancestors https://app.crafter.net.tr` (on dev: `https://dev-app.crafter.net.tr`).
 - Send `Cache-Control: no-store`, and never log the URL (it contains the token).
 - The token lives 60 seconds. If you need a longer session inside the iframe, start your own after the check (a cookie in an iframe needs `SameSite=None; Secure`, and `Partitioned` in browsers that partition third-party cookies).
 - A full reload asks the panel for a new token, so a reload always works.

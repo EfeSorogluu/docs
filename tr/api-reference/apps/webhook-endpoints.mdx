@@ -5,7 +5,7 @@ api: "POST https://api.crafterpayments.com/v1/webhook_endpoints"
 playground: "none"
 ---
 
-Kapsamlar: listelemek için `webhooks:read`, oluşturmak ve silmek için `webhooks:write`. Yalnızca kurulumunuzun bu mağazada oluşturduğu uç noktaları görürsünüz. Olaylar, imza, yeniden denemeler ve olay kataloğu: [Webhook'lar](/tr/developers/payments/webhooks).
+Kapsamlar: listelemek için `webhooks:read`, oluşturmak ve silmek için `webhooks:write`. Yalnızca kurulumunuzun bu mağazada oluşturduğu uç noktaları görürsünüz. Bunlar **ek** uçlardır: Crafter'ın kurulumda uygulamanızın webhook adresi için oluşturduğu uç burada listelenmez ve panelden yönetilir ([uygulama webhook'ları](/tr/developers/apps/webhooks)). Olaylar, imza, yeniden denemeler ve olay kataloğu: [Webhook'lar](/tr/developers/payments/webhooks).
 
 - `GET /v1/webhook_endpoints`: listeleme (kurulum başına en fazla 5, `hasMore` her zaman `false`).
 - `POST /v1/webhook_endpoints`: oluşturma. `Idempotency-Key` zorunlu.

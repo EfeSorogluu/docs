@@ -15,7 +15,7 @@ Manifest uygulamanızın **ne olduğunu** ve neye ihtiyaç duyduğunu anlatır. 
   "version": "1.0.0",
   "description": "Mağazanın son siparişlerini Crafter panelinde gösterir.",
   "compatibleGames": ["*"],
-  "scopes": ["read_store", "read_orders", "webhooks:write"],
+  "scopes": ["read_store", "read_orders"],
   "settings": { "type": "object", "properties": {} },
   "events": ["app.installed", "app.uninstalled", "order.paid"],
   "themeBlocks": [],
@@ -36,7 +36,7 @@ Manifest uygulamanızın **ne olduğunu** ve neye ihtiyaç duyduğunu anlatır. 
 | `scopes` | evet | Uygulamanın isteyebileceği [izin kapsamları](/tr/developers/apps/oauth#kapsamlar). Yalnızca lansmanda açık kapsamlar kabul edilir. |
 | `scopeReasons` | kişisel veri kapsamlarında | Uygulamanın kapsama neden ihtiyaç duyduğu; onay ekranında mağaza sahibine gösterilir. Her biri en çok 300 karakter. `read_customers` ve `read_customers:limited` için zorunludur. |
 | `settings` | evet | Küçük bir JSON Schema alt kümesi (`properties` içeren bir nesne). Ayarı olmayan uygulama `{ "type": "object", "properties": {} }` yazar. |
-| `events` | evet | Uygulamanın abone olabileceği [webhook olayları](/tr/developers/apps/webhooks#olaylar). Her olayın kapsamı `scopes` içinde de olmalıdır. |
+| `events` | evet | Webhook adresinize gönderilen [webhook olayları](/tr/developers/apps/webhooks#olaylar). Her olayın kapsamı `scopes` içinde de olmalıdır. `app.installed` ve `app.uninstalled` her zaman gönderilir. |
 | `themeBlocks` | evet | `[]` yazın. Uygulamalardan tema blokları henüz açık değildir. |
 | `connectors` | evet | `[]` yazın. Uygulamalardan oyun sunucusu bağlayıcıları henüz açık değildir. |
 

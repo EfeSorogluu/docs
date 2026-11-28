@@ -5,7 +5,7 @@ api: "POST https://api.crafterpayments.com/v1/webhook_endpoints"
 playground: "none"
 ---
 
-Scopes: `webhooks:read` to list, `webhooks:write` to create and delete. You only see the endpoints your installation created on this store. Events, signature, retries and the event catalog: [Webhooks](/en/developers/payments/webhooks).
+Scopes: `webhooks:read` to list, `webhooks:write` to create and delete. You only see the endpoints your installation created on this store. These are **extra** endpoints: the endpoint Crafter creates for your app's Webhook URL on install is not listed here and is managed from the panel ([app webhooks](/en/developers/apps/webhooks)). Events, signature, retries and the event catalog: [Webhooks](/en/developers/payments/webhooks).
 
 - `GET /v1/webhook_endpoints`: list (at most 5 per installation, `hasMore` is always `false`).
 - `POST /v1/webhook_endpoints`: create. `Idempotency-Key` is required.
